@@ -1,0 +1,37 @@
+{
+    "name": "@asnc/tslib",
+    "version": "1.0.1",
+    "description": "",
+    "scripts": {
+        "build_cjs": "tsc -p ./tsconfig.build.cjs.json"
+    },
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org/"
+    },
+    "files": [
+        "lib",
+        "lib_cjs",
+        "types",
+        "config"
+    ],
+    "keywords": [],
+    "author": "asnow",
+    "license": "MIT",
+    "exports": {
+        "./*": {
+            "import": "./lib_cjs/*.js",
+            "require": "./lib_cjs/*.js",
+            "types": "./types/*.d.ts"
+        }
+    },
+    "imports": {
+        "#home/*": {
+            "import": "./lib_cjs/*"
+        }
+    },
+    "devDependencies": {
+        "@types/node": "^18.14.2",
+        "fs-extra": "^11.1.1"
+    }
+}

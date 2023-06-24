@@ -1,0 +1,12 @@
+{
+    "extends": "./node_modules/@asnc/tslib/config/tsconfig.std.json",
+    "compilerOptions": {
+        "moduleResolution": "nodenext",
+        "types": ["node"],
+        "rootDir": "./src",
+        "outDir": "./lib",
+        "baseUrl": ".",
+        "plugins": []
+    },
+    "include": ["**/*.ts"]
+}

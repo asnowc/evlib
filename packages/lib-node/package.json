@@ -1,0 +1,24 @@
+{
+    "name": "@asnc/lib-node",
+    "version": "1.0.0",
+    "description": "",
+    "type": "module",
+    "scripts": {
+        "build": "tsc -p ./tsconfig.build.json"
+    },
+    "files": [
+        "lib"
+    ],
+    "keywords": [],
+    "author": "asnow",
+    "license": "MIT",
+    "exports": {
+        "./*": "./lib/*.js"
+    },
+    "devDependencies": {
+        "@types/node": "^18.14.2"
+    },
+    "peerDependencies": {
+        "@asnc/tslib": "workspace:^1.0.0"
+    }
+}
