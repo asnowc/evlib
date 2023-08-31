@@ -1,0 +1,30 @@
+{
+    "name": "evlib",
+    "version": "0.0.1-1",
+    "description": "",
+    "type": "module",
+    "author": "Eavid",
+    "license": "MIT",
+    "scripts": {
+        "build": "tsc -p tsconfig.build.json"
+    },
+    "exports": {
+        ".": {
+            "import": "./out/core/index.js",
+            "types": "./types/core/index.d.ts"
+        },
+        "./*": {
+            "import": "./out/*.js",
+            "types": "./types/*.d.ts"
+        }
+    },
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org/"
+    },
+    "files": [
+        "out",
+        "types"
+    ],
+    "keywords": []
+}

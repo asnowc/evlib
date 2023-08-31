@@ -1,4 +1,4 @@
-/packages/*/lib
-/packages/*/lib_cjs
+/packages/*/out
+/packages/*/out
 /packages/*/types
 node_modules

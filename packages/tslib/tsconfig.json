@@ -1,8 +1,0 @@
-{
-    "extends": "./config/tsconfig.std.json",
-    "compilerOptions": {
-        "noEmit": true
-    },
-    "exclude": ["node_modules"],
-    "include": ["./src", "./scripts"]
-}

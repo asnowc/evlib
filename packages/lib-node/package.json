@@ -7,13 +7,13 @@
         "build": "tsc -p ./tsconfig.build.json"
     },
     "files": [
-        "lib"
+        "out"
     ],
     "keywords": [],
     "author": "asnow",
     "license": "MIT",
     "exports": {
-        "./*": "./lib/*.js"
+        "./*": "./out/*.js"
     },
     "devDependencies": {
         "@types/node": "^18.14.2"
