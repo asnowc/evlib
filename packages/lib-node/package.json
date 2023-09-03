@@ -1,6 +1,6 @@
 {
-    "name": "@asnc/lib-node",
-    "version": "1.0.0",
+    "name": "@eavid/lib-node",
+    "version": "0.0.1-1",
     "description": "",
     "type": "module",
     "scripts": {
@@ -13,12 +13,13 @@
     "author": "asnow",
     "license": "MIT",
     "exports": {
-        "./*": "./out/*.js"
+        "./*": "./out/*.js",
+        "./util/*": "./out/util/*"
     },
     "devDependencies": {
-        "@types/node": "^18.14.2"
+        "@types/node": "^20.5.7"
     },
-    "peerDependencies": {
-        "@asnc/tslib": "workspace:^1.0.0"
+    "dependencies": {
+        "evlib": "workspace:0.0.1-1"
     }
 }

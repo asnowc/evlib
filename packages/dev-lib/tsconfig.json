@@ -1,10 +1,7 @@
 {
     "extends": "../dev-lib/config/tsconfig.std.json",
     "compilerOptions": {
-        "baseUrl": ".",
-        "paths": {
-            "@eavid/lib-node/util/*": ["./src/util/*"]
-        }
+        "baseUrl": "."
     },
     "include": ["**/*.ts"]
 }

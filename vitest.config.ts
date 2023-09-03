@@ -9,9 +9,9 @@ export default defineConfig({
             exclude: ["**/__mocks__"],
         },
         alias: [
-            ...createMap(root, [{ find: /^#rt\//, replacement: "src/" }]),
             { find: /^evlib$/, replacement: path.resolve(root, "evlib/src/core/index.js") },
             { find: /^evlib/, replacement: path.resolve(root, "evlib", "src") },
+            { find: /^@eavid\/lib-node/, replacement: path.resolve(root, "lib-node/src") },
         ],
     },
 });

@@ -1,7 +1,5 @@
 import { UniqueKeyMap } from "evlib/data_struct.js";
 import { it, describe, expect } from "vitest";
-let aa = UniqueKeyMap;
-console.log(aa);
 
 describe("UniqueKeyMap", function () {
     describe("申请>读取>更新>删除", function () {

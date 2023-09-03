@@ -6,9 +6,7 @@
 
         "noEmit": true,
         "baseUrl": ".",
-        "paths": {
-            "#rt/*": ["./src/*"]
-        }
+        "paths": {}
     },
     "exclude": ["node_modules"],
     "include": ["./src"]

@@ -10,6 +10,5 @@
             "evlib": ["./src/core/index.js"]
         }
     },
-    "exclude": ["node_modules"],
-    "include": ["./src/**/*.ts"]
+    "exclude": ["node_modules", "out"]
 }
