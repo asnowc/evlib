@@ -1,5 +1,5 @@
 import { it, describe, expect, vi } from "vitest";
-import { InquiryRequest, PromiseHandle, TimeoutPromise } from "evlib/async.js";
+import { InquiryRequest, PromiseHandle, TimeoutPromise } from "evlib/async";
 
 describe("PromiseHandle", function () {
     it("成功", async function () {

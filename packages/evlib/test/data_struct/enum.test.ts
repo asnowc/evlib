@@ -1,4 +1,4 @@
-import { Enum } from "evlib/data_struct.js";
+import { Enum } from "evlib/data_struct";
 import { describe, it, expect } from "vitest";
 
 describe("enum", function () {

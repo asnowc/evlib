@@ -1,19 +1,20 @@
 {
     "name": "evlib",
-    "version": "0.0.1-1",
+    "version": "0.0.3",
     "description": "",
     "type": "module",
     "author": "Eavid",
     "license": "MIT",
     "scripts": {
-        "build": "tsc -p src/tsconfig.json"
+        "build": "tsc -p src/tsconfig.json",
+        "publish:try": "pnpm publish --no-git-checks --dry-run"
     },
     "exports": {
         ".": {
             "import": "./out/core/index.js",
             "types": "./out/core/index.d.ts"
         },
-        "./*": "./out/*"
+        "./*": "./out/*.js"
     },
     "publishConfig": {
         "access": "public",

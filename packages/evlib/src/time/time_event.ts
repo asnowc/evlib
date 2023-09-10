@@ -1,4 +1,4 @@
-import { TimeoutError } from "evlib/errors/time.error.js";
+import { TimeoutError } from "../errors/time.error.js";
 
 /**
  * @description 超时控制器，超时将自动执行 abort()

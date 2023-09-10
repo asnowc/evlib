@@ -1,4 +1,4 @@
-import { NumericalRangeException } from "evlib/errors/validation.error.js";
+import { NumericalRangeException } from "../errors/validation.error.js";
 
 /**
  * @description 自动控制key的Map

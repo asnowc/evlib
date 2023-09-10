@@ -1,4 +1,4 @@
-import { UniqueKeyMap } from "evlib/data_struct.js";
+import { UniqueKeyMap } from "evlib/data_struct";
 import { it, describe, expect } from "vitest";
 
 describe("UniqueKeyMap", function () {
