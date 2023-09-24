@@ -5,6 +5,7 @@
         "types": [],
         "declaration": true,
         "outDir": "../out",
-        "rootDir": "./"
+        "rootDir": "./",
+        "declarationMap": true
     }
 }

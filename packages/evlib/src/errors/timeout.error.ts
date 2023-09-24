@@ -1,6 +1,6 @@
 /**
  * @public
- * @remark 等待超时异常
+ * @remarks 等待超时异常
  */
 export class TimeoutError extends Error {
     constructor(time?: number) {

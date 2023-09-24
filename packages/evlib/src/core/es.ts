@@ -2,7 +2,7 @@ declare const window: any;
 
 /**
  * @public
- * @remark ECMA年份版本
+ * @remarks ECMA年份版本
  */
 export const ECMA_VERSION = getESVersion(true);
 
@@ -39,7 +39,7 @@ function getESVersion(useYear?: boolean): number {
 }
 /**
  * @public
- * @remark JS运行时
+ * @remarks JS运行时
  */
 export let runtimeEngine: "node" | "browser" | "deno" | "bun" | "unknown" = "unknown";
 

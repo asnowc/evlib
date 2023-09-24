@@ -1,6 +1,7 @@
 /**
  * @public
- * @remark 与 Node 的 EventEmitter 类似仅实现最基本功能
+ * @remarks 与 Node 的 EventEmitter 类似仅实现最基本功能
+ * @event error 如果触发Listener时出现异常,会在触发事件结束后触发error事件, 参数为 EventError
  */
 export class EventEmitter<T extends EventList = {}> {
     #listeners = new Map<EventName, Set<EvListener>>();
@@ -21,13 +22,14 @@ export class EventEmitter<T extends EventList = {}> {
         this.#listeners.get(name)?.delete(fn);
         return this;
     }
-    emit<E extends keyof T, Prams extends T[E]>(name: E, ...args: Prams): boolean;
-    emit<E extends EventName, Prams extends LimitEmitPrams<T, E>>(name: E, ...args: Prams): boolean;
+    emit<E extends keyof T, Prams extends T[E]>(name: E, ...args: Prams): number;
+    emit<E extends EventName, Prams extends LimitEmitPrams<T, E>>(name: E, ...args: Prams): number;
     emit(name: EventName, ...args: any[]) {
         if (name === "error") return this.#emitError(args);
 
         const listeners = this.#listeners.get(name);
-        if (!listeners?.size) return false;
+        const size = listeners?.size;
+        if (!size) return 0;
 
         const errors: any[] = [];
         for (const fn of listeners) {
@@ -37,10 +39,8 @@ export class EventEmitter<T extends EventList = {}> {
                 errors.push(error);
             }
         }
-        for (let i = 0; i < errors.length; i++) {
-            this.#emitError([new EventError(errors[i])]);
-        }
-        return true;
+        this.#emitError([new EventError(errors, name)]);
+        return size;
     }
     #emitError(args: any[]) {
         const listeners = this.#listeners.get("error");
@@ -67,7 +67,7 @@ type LimitEvListener<T extends EventList, K extends EventName> = T[K] extends an
     : EvListener;
 
 class EventError extends Error {
-    constructor(cause: any) {
+    constructor(cause: any, readonly eventName: EventName) {
         super("Listener exception", { cause });
     }
 }

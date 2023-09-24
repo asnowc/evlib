@@ -7,7 +7,10 @@
     "license": "MIT",
     "scripts": {
         "build": "tsc -p src/tsconfig.json",
-        "publish:try": "pnpm publish --no-git-checks --dry-run"
+        "publish:try": "pnpm publish --no-git-checks --dry-run",
+        "ci:build": "pnpm build && pnpm api:extractor",
+        "api:extractor": "api-extractor run -v",
+        "api:extractor-local": "pnpm api:extractor -l"
     },
     "exports": {
         ".": {
@@ -24,5 +27,8 @@
         "out/**/*.js",
         "out/**/*.d.ts"
     ],
-    "keywords": []
+    "keywords": [],
+    "devDependencies": {
+        "@microsoft/api-extractor": "^7.37.0"
+    }
 }

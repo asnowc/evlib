@@ -1,3 +1,4 @@
+/** @public */
 export class NumericalRangeException extends Error {
     constructor(min?: number, max?: number, valueName = "numerical range") {
         const invalid = valueName + " exception";

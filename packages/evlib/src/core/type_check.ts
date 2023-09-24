@@ -112,13 +112,13 @@ export function checkType(value: any, except: ExceptType, opts: CheckOptions = {
 
 /**
  * @public
- * @remark 在typeof之上区分null
+ * @remarks 在typeof之上区分null
  */
 export function getBasicType(val: any): BasicType {
     return val === null ? "null" : typeof val;
 }
 /**
- * @remark 获取对象的类名, 如果val为基础类型, 则返回基础类型
+ * @remarks 获取对象的类名, 如果val为基础类型, 则返回基础类型
  * @public
  */
 export function getClassType(val: any) {
@@ -135,7 +135,7 @@ class OptionalKey {
 /** @public */
 export interface CheckOptions {
     /**
-     * @remark 对于对象和元组类型, 如果对象或元组中存在预期类型中不存在的字段, 应该执行的策略
+     * @remarks 对于对象和元组类型, 如果对象或元组中存在预期类型中不存在的字段, 应该执行的策略
      *   "pass": 检测通过
      *   "error": 检测不通过
      *   "delete": 检测通过, 并删除多余字段
@@ -144,25 +144,25 @@ export interface CheckOptions {
     redundantFieldPolicy?: "pass" | "delete" | "error";
 
     /**
-     * @remark 为true检测所有预期类型, 为false时返回第一检测不通过的结果
+     * @remarks 为true检测所有预期类型, 为false时返回第一检测不通过的结果
      * @defaultValue false
      */
     checkAll?: boolean;
     /**
-     * @remark 如果设置为true, 对于数组类型和对象类型, 将会进行拷贝
+     * @remarks 如果设置为true, 对于数组类型和对象类型, 将会进行拷贝
      */
     // new?: boolean;
 }
 /** @public */
 export interface CheckFn {
     (val: any, option: Readonly<CheckOptions>): Partial<CheckRes> | undefined;
-    /** @remark 前置类型, 前置类型匹配才会执行检测函数, 如果不匹配, 检测直接不通过 */
+    /** @remarks 前置类型, 前置类型匹配才会执行检测函数, 如果不匹配, 检测直接不通过 */
     baseType?: BasicType;
 }
 
 /**
  * @public
- * @remark 生成可选类型检测函数
+ * @remarks 生成可选类型检测函数
  */
 export function optional(type: ExceptType) {
     return new OptionalKey(type);
@@ -173,10 +173,10 @@ optional.string = new OptionalKey("string");
 
 /**
  * @public
- * @remark 预定义的检测函数工厂
+ * @remarks 预定义的检测函数工厂
  */
 export const checkFnFactor = {
-    /** @remark 生成数字范围检测函数 */
+    /** @remarks 生成数字范围检测函数 */
     numberRange(min: number, max = Infinity): CheckFn {
         const checkFn: CheckFn = function checkFn(val: number, option) {
             if (val > max || val < min) {
@@ -186,7 +186,7 @@ export const checkFnFactor = {
         checkFn.baseType = "number";
         return checkFn;
     },
-    /** @remark 生成实例类型检测函数 */
+    /** @remarks 生成实例类型检测函数 */
     instanceof(obj: Function): CheckFn {
         if (typeof obj !== "function") throw new Error();
         const checkFn: CheckFn = function checkFn(val: object) {
@@ -196,7 +196,7 @@ export const checkFnFactor = {
         checkFn.baseType = "object";
         return checkFn;
     },
-    /** @remark 生成联合类型检测函数 */
+    /** @remarks 生成联合类型检测函数 */
     unionType(types: ExceptType[]): CheckFn {
         const checkFn: CheckFn = function testFx(val: any, option) {
             let errors: TypeErrorDesc[] = [];
@@ -209,7 +209,7 @@ export const checkFnFactor = {
         };
         return checkFn;
     },
-    /** @remark 生成数组类型检测函数 */
+    /** @remarks 生成数组类型检测函数 */
     arrayType(type: ExceptType, length?: number): CheckFn {
         const checkFn: CheckFn = function checkFn(val: any, options) {
             const { checkAll } = options;
@@ -243,16 +243,16 @@ export const checkFnFactor = {
 };
 
 type BasicType = "string" | "number" | "bigint" | "boolean" | "symbol" | "undefined" | "object" | "function" | "null";
-/** @remark 元组项检测 */
+/** @remarks 元组项检测 */
 type ExceptTypeTuple = ExceptType[];
 /**
- * @remark 对象属性检测
+ * @remarks 对象属性检测
  * @public
  */
 export type ExceptTypeMap = { [key: string | number]: ExceptType };
 /**
  * @public
- * @remark 类型检测
+ * @remarks 类型检测
  * string: BasicType 基础类型检测
  * function: 自定义检测函数
  * true: 检测通过, 可以用于 any类型

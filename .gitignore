@@ -1,5 +1,5 @@
 /packages/*/out
 /packages/*/types
 node_modules
-/api/temp
+temp/
 /coverage

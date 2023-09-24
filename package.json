@@ -10,7 +10,6 @@
         "publish:try": "pnpm -r publish --no-git-checks --dry-run"
     },
     "devDependencies": {
-        "@microsoft/api-extractor": "^7.36.4",
         "@vitest/coverage-v8": "^0.34.3",
         "@vitest/ui": "^0.34.3",
         "vitest": "^0.34.3"
