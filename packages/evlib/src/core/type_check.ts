@@ -1,11 +1,15 @@
+import { TypeError, ParametersError } from "../errors.js";
+const createErrDesc = TypeError.createErrDesc;
 /**
  * 如果 对象的字段预期类型为可选, 并且实际存在字段为undefined, 则在deleteSurplus为true是将字段删除
  */
-function checkObject(doc: Record<string, any>, except: ExceptTypeMap, options?: CheckTypeOption) {
-    let errors: Record<string, any> = {};
-    let checkAll = options?.checkAll;
-    let deleteSurplus = options?.deleteSurplus;
-    let checkProvidedOnly = !deleteSurplus && options?.checkProvidedOnly;
+function checkObject(doc: Record<string, any>, except: ExceptTypeMap, options: CheckOptions): CheckRes {
+    const error: Record<string, TypeErrorDesc> = {};
+    const { checkAll } = options;
+    const deleteSurplus = options.redundantFieldPolicy === "delete";
+    const checkProvidedOnly = options.redundantFieldPolicy == "pass";
+
+    let isErr = false;
 
     let keys = deleteSurplus || !checkProvidedOnly ? new Set(Object.keys(doc)) : undefined;
 
@@ -19,136 +23,147 @@ function checkObject(doc: Record<string, any>, except: ExceptTypeMap, options?: 
             }
             exceptType = exceptType.type;
         } else if (!exist) {
-            errors[testKey] = createErrDesc("存在", "不存在");
-            if (!checkAll) return errors;
+            error[testKey] = createErrDesc("存在", "不存在");
+            if (!checkAll) return { error, value: doc };
             continue;
         }
 
-        let res = checkType(doc[testKey], exceptType, options);
-        if (res) {
-            errors[testKey] = res;
-            if (!checkAll) return errors;
+        const res = checkType(doc[testKey], exceptType, options);
+        if (res.error) {
+            error[testKey] = res.error;
+            if (!checkAll) return { error, value: doc };
+            else isErr = true;
         }
         keys?.delete(testKey);
     }
     if (keys?.size) {
         if (deleteSurplus) for (const key of keys) delete doc[key];
         else if (!checkProvidedOnly) {
-            for (const key of keys) errors[key] = createErrDesc("不存在", "存在");
+            for (const key of keys) error[key] = createErrDesc("不存在", "存在");
+            isErr = true;
         }
     }
-    if (Object.keys(errors).length) return errors;
+    if (isErr) return { error, value: doc };
+    return { value: doc };
 }
-function checkTuple(arr: any[], except: ExceptType[], options?: CheckTypeOption) {
-    let errors: Record<any, any> = {};
-    let checkAll = options?.checkAll;
-    let deleteSurplus = options?.deleteSurplus;
-    let checkProvidedOnly = !deleteSurplus && options?.checkProvidedOnly;
+function checkTuple<T = unknown>(arr: any[], except: ExceptType[], options: CheckOptions): CheckRes<T[]> {
+    const error: Record<string, TypeErrorDesc> = {};
+    const { checkAll } = options;
+    const deleteSurplus = options.redundantFieldPolicy === "delete";
+    const checkProvidedOnly = options.redundantFieldPolicy == "pass";
 
+    let isErr = false;
     if (Array.isArray(arr)) {
         let maxLen = except.length;
+
         if (arr.length != except.length) {
             if (arr.length > except.length && deleteSurplus) arr.length = except.length;
             else if (arr.length > except.length && checkProvidedOnly) {
             } else {
                 if (arr.length < except.length) maxLen = except.length;
-                errors.length = `预期长度: ${except.length}, 实际: ${arr.length}`;
-                if (!checkAll) return errors;
+                error.length = `预期长度: ${except.length}, 实际: ${arr.length}`;
+                if (!checkAll) return { error, value: arr };
             }
         }
         for (let i = 0; i < maxLen; i++) {
             let exceptType = except[i];
             let actualType = arr[i];
-            let res = checkType(actualType, exceptType, options);
-            if (res) {
-                errors[i] = res;
-                if (!checkAll) return errors;
+            const res = checkType(actualType, exceptType, options);
+            if (res.error) {
+                error[i] = res.error;
+                if (!checkAll) return { error, value: arr };
+                else isErr = true;
             }
         }
-    } else errors.push(createErrDesc("Array", getClassType(arr)));
+    } else return { error: createErrDesc("Array", getClassType(arr)), value: arr };
 
-    if (errors.length) return errors;
+    if (isErr) return { error, value: arr };
+    else return { value: arr };
 }
 
-interface CheckTypeOption {
-    /** 当为true时, 如果元组或对象中的key不存在 ExceptType 中, 则将其字段删除. */
-    deleteSurplus?: boolean;
-    /** 仅匹配提供的预期字段, 默认为 false . 如果对象或元组中存在预期类型中不存在的字段, 当 checkProvidedOnly 为true时, 检测通过, 否则不通过. 当deleteSurplus为true时无效  */
-    checkProvidedOnly?: boolean;
-    /** 为true检测所有预期类型, 为false时返回第一检测不通过的结果 */
-    checkAll?: boolean;
-}
+/** @public */
+export function checkType<T = unknown>(value: any, except: ExceptType, options?: CheckOptions): CheckRes<T>;
+export function checkType(value: any, except: ExceptType, opts: CheckOptions = {}): CheckRes<unknown> {
+    if (except === null) throw new ParametersError(2, createErrDesc("ExceptType", typeof except), "exceptType");
 
-/**
- * @deprecated
- */
-export function checkType(val: any, exceptType: ExceptType, options?: CheckTypeOption): undefined | string | any {
-    switch (typeof exceptType) {
-        case "string":
-            let actualType = getBasicType(val);
-            if (actualType !== exceptType) return createErrDesc(exceptType, actualType);
-            break;
-        case "function":
-            if (exceptType.type && typeof val !== exceptType.type) return createErrDesc(exceptType.type, typeof val);
-            return exceptType(val);
-        case "object":
-            if (exceptType === null) throw new Error("预期类型错误");
-            else if (Array.isArray(exceptType)) return checkTuple(val, exceptType, options);
-            else if (getBasicType(val) === "object") return checkObject(val, exceptType as ExceptTypeMap, options);
-            else return createErrDesc("object", getBasicType(val));
-
-        default:
-            throw new Error("传入参数2类型错误");
-    }
-}
-
-export function validate<Val = unknown>(
-    value: any,
-    exceptType: ExceptType,
-    options?: CheckTypeOption
-): { error?: any; value: Val } {
-    switch (typeof exceptType) {
+    switch (typeof except) {
         case "string":
             let actualType = getBasicType(value);
-            if (actualType !== exceptType) return { error: createErrDesc(exceptType, actualType), value };
+            if (actualType !== except) return { error: createErrDesc(except, actualType), value };
             break;
-        case "function":
-            if (exceptType.type && typeof value !== exceptType.type)
-                return { error: createErrDesc(exceptType.type, typeof value), value };
-            return exceptType(value);
+        case "function": {
+            if (except.baseType && typeof value !== except.baseType)
+                return { error: createErrDesc(except.baseType, typeof value), value };
+            const res = except(value, opts) ?? { value };
+            if (!Object.hasOwn(res, "value")) res.value = value;
+            return res as CheckRes;
+        }
         case "object":
-            if (exceptType === null) throw new Error("预期类型错误");
-            else if (Array.isArray(exceptType)) return { error: checkTuple(value, exceptType, options), value };
+            if (Array.isArray(except)) return checkTuple(value, except, opts);
             else if (getBasicType(value) === "object")
-                return { error: checkObject(value, exceptType as ExceptTypeMap, options), value };
+                return checkObject(value, except as ExceptTypeMap, opts) ?? { value };
             else return { error: createErrDesc("object", getBasicType(value)), value };
 
         default:
-            throw new Error("传入参数2类型错误");
+            throw new ParametersError(2, createErrDesc("ExceptType", typeof except), "exceptType");
     }
     return { value };
 }
-function transformFx() {}
 
-/** 在typeof之上区分null */
-export function getBasicType(val: any): VabBasicType {
+/**
+ * @public
+ * @remark 在typeof之上区分null
+ */
+export function getBasicType(val: any): BasicType {
     return val === null ? "null" : typeof val;
 }
+/**
+ * @remark 获取对象的类名, 如果val为基础类型, 则返回基础类型
+ * @public
+ */
 export function getClassType(val: any) {
     let basicType = getBasicType(val);
     if (basicType === "object") {
-        let type: string = val.__proto__?.constructor?.name ?? "Object";
+        let type: string = val.constructor?.name ?? "Object";
         return type;
     } else return basicType;
-}
-export function createErrDesc(exceptType: string, actualType: string) {
-    return "预期类型:" + exceptType + ", 实际:" + actualType;
 }
 
 class OptionalKey {
     constructor(public readonly type: ExceptType) {}
 }
+/** @public */
+export interface CheckOptions {
+    /**
+     * @remark 对于对象和元组类型, 如果对象或元组中存在预期类型中不存在的字段, 应该执行的策略
+     *   "pass": 检测通过
+     *   "error": 检测不通过
+     *   "delete": 检测通过, 并删除多余字段
+     * @defaultValue "error"
+     */
+    redundantFieldPolicy?: "pass" | "delete" | "error";
 
+    /**
+     * @remark 为true检测所有预期类型, 为false时返回第一检测不通过的结果
+     * @defaultValue false
+     */
+    checkAll?: boolean;
+    /**
+     * @remark 如果设置为true, 对于数组类型和对象类型, 将会进行拷贝
+     */
+    // new?: boolean;
+}
+/** @public */
+export interface CheckFn {
+    (val: any, option: Readonly<CheckOptions>): Partial<CheckRes> | undefined;
+    /** @remark 前置类型, 前置类型匹配才会执行检测函数, 如果不匹配, 检测直接不通过 */
+    baseType?: BasicType;
+}
+
+/**
+ * @public
+ * @remark 生成可选类型检测函数
+ */
 export function optional(type: ExceptType) {
     return new OptionalKey(type);
 }
@@ -156,41 +171,49 @@ export function optional(type: ExceptType) {
 optional.number = new OptionalKey("number");
 optional.string = new OptionalKey("string");
 
-export interface CheckFx {
-    (val: any): any;
-    type?: string;
-}
-export const checkFx = {
-    numScope(min: number, max = Infinity): CheckFx {
-        function testFx(val: any) {
-            if (val > max || val < min) return `超过范围:[${min},${max}], 值为:${val}`;
-        }
-        testFx.type = "number";
-        return testFx;
-    },
-    instanceof(obj: Function): CheckFx {
-        function testFx(val: any) {
-            if (val === null || !(val instanceof obj)) {
-                return createErrDesc(obj.name, val === null ? "null" : val.constructor.name);
+/**
+ * @public
+ * @remark 预定义的检测函数工厂
+ */
+export const checkFnFactor = {
+    /** @remark 生成数字范围检测函数 */
+    numberRange(min: number, max = Infinity): CheckFn {
+        const checkFn: CheckFn = function checkFn(val: number, option) {
+            if (val > max || val < min) {
+                return { error: createErrDesc(`[${min},${max}]`, val.toString()) };
             }
-        }
-        testFx.type = "object";
-        return testFx;
+        };
+        checkFn.baseType = "number";
+        return checkFn;
     },
-    unionType(types: ExceptType[]): CheckFx {
-        function testFx(val: any) {
-            let errors: string[] = [];
-            for (const type of types) {
-                let res = checkType(val, type);
-                if (res === undefined) return;
-                errors.push(res);
+    /** @remark 生成实例类型检测函数 */
+    instanceof(obj: Function): CheckFn {
+        if (typeof obj !== "function") throw new Error();
+        const checkFn: CheckFn = function checkFn(val: object) {
+            if (val instanceof obj) return;
+            return { error: createErrDesc(obj.name, getClassType(val)) };
+        };
+        checkFn.baseType = "object";
+        return checkFn;
+    },
+    /** @remark 生成联合类型检测函数 */
+    unionType(types: ExceptType[]): CheckFn {
+        const checkFn: CheckFn = function testFx(val: any, option) {
+            let errors: TypeErrorDesc[] = [];
+            for (const except of types) {
+                const error = checkType(val, except, option)?.error;
+                if (error === undefined) return;
+                errors.push(error);
             }
-            return errors;
-        }
-        return testFx;
+            return { error: errors.join(" | ") };
+        };
+        return checkFn;
     },
-    arrayType(type: ExceptType, length?: number, deleteSurplus = true): CheckFx {
-        function testFx(val: any) {
+    /** @remark 生成数组类型检测函数 */
+    arrayType(type: ExceptType, length?: number): CheckFn {
+        const checkFn: CheckFn = function checkFn(val: any, options) {
+            const { checkAll } = options;
+            const deleteSurplus = options.redundantFieldPolicy === "delete";
             if (Array.isArray(val)) {
                 let errCount = 0;
                 let errors: any = {};
@@ -199,37 +222,66 @@ export const checkFx = {
                     else {
                         errors.length = `预期长度: ${length}, 实际: ${val.length}`;
                         errCount++;
+                        if (!checkAll) return { error: errors };
                     }
                 }
                 for (let i = 0; i < val.length; i++) {
                     let item = val[i];
                     let res = checkType(item, type);
-                    if (res) {
-                        errors[i] = res;
+                    if (res.error) {
+                        errors[i] = res.error;
+                        if (!checkAll) return { error: errors };
                         errCount++;
                     }
                 }
-                if (errCount) return errors;
-            } else return createErrDesc("Array", getClassType(val));
-        }
-        testFx.type = "object";
-        return testFx;
-    },
-    any(): CheckFx {
-        return function testFx() {};
+                if (errCount) return { error: errors };
+            } else return { error: createErrDesc("Array", getClassType(val)) };
+        };
+        checkFn.baseType = "object";
+        return checkFn;
     },
 };
-/** @deprecated */
-export const testFx = checkFx;
+
+type BasicType = "string" | "number" | "bigint" | "boolean" | "symbol" | "undefined" | "object" | "function" | "null";
+/** @remark 元组项检测 */
+type ExceptTypeTuple = ExceptType[];
+/**
+ * @remark 对象属性检测
+ * @public
+ */
 export type ExceptTypeMap = { [key: string | number]: ExceptType };
-export type ExceptType = CheckFx | OptionalKey | VabBasicType | ExceptTypeMap | ExceptType[];
-type VabBasicType =
-    | "string"
-    | "number"
-    | "bigint"
-    | "boolean"
-    | "symbol"
-    | "undefined"
-    | "object"
-    | "function"
-    | "null";
+/**
+ * @public
+ * @remark 类型检测
+ * string: BasicType 基础类型检测
+ * function: 自定义检测函数
+ * true: 检测通过, 可以用于 any类型
+ */
+export type ExceptType = CheckFn | OptionalKey | BasicType | ExceptTypeMap | ExceptTypeTuple | boolean;
+
+type TypeErrorDesc = string | { [key: string]: TypeErrorDesc };
+interface CheckRes<T = unknown> {
+    error?: TypeErrorDesc;
+    /** 要替换的值 */
+    value: T;
+}
+
+/**
+ * 类型转换
+ *
+ * 上下文:
+ *
+ *
+ * ExceptType:
+ *   string: 基础检测
+ *   array: 深度匹配元组  多余判定
+ *   object: 深度匹配对象 多余判定
+ *
+ * checkFn:
+ *   联合类型
+ *   数组类型
+ *   任意类型
+ *   对象类型
+ *   数字范围
+ *
+ */
