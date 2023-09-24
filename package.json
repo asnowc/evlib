@@ -1,5 +1,6 @@
 {
-    "name": "evlib",
+    "name": "libs",
+    "version": "0.0.1",
     "scripts": {
         "test": "vitest",
         "test:ui": "vitest --ui",

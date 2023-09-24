@@ -21,6 +21,12 @@ importers:
         specifier: ^0.34.3
         version: registry.npmmirror.com/vitest@0.34.3(@vitest/ui@0.34.3)
 
+  packages/deno-api:
+    dependencies:
+      '@deno/shim-deno':
+        specifier: ^0.16.1
+        version: registry.npmmirror.com/@deno/shim-deno@0.16.1
+
   packages/dev-lib:
     dependencies:
       glob:
@@ -36,7 +42,7 @@ importers:
   packages/lib-node:
     dependencies:
       evlib:
-        specifier: workspace:0.0.1-1
+        specifier: workspace:0.0.3
         version: link:../evlib
     devDependencies:
       '@types/node':
@@ -62,6 +68,21 @@ packages:
     name: '@bcoe/v8-coverage'
     version: 0.2.3
     dev: true
+
+  registry.npmmirror.com/@deno/shim-deno-test@0.4.0:
+    resolution: {integrity: sha512-oYWcD7CpERZy/TXMTM9Tgh1HD/POHlbY9WpzmAk+5H8DohcxG415Qws8yLGlim3EaKBT2v3lJv01x4G0BosnaQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@deno/shim-deno-test/-/shim-deno-test-0.4.0.tgz}
+    name: '@deno/shim-deno-test'
+    version: 0.4.0
+    dev: false
+
+  registry.npmmirror.com/@deno/shim-deno@0.16.1:
+    resolution: {integrity: sha512-s9v0kzF5bm/o9TgdwvsraHx6QNllYrXXmKzgOG2lh4LFXnVMr2gpjK/c/ve6EflQn1MqImcWmVD8HAv5ahuuZQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@deno/shim-deno/-/shim-deno-0.16.1.tgz}
+    name: '@deno/shim-deno'
+    version: 0.16.1
+    dependencies:
+      '@deno/shim-deno-test': registry.npmmirror.com/@deno/shim-deno-test@0.4.0
+      which: registry.npmmirror.com/which@2.0.2
+    dev: false
 
   registry.npmmirror.com/@esbuild/android-arm64@0.17.18:
     resolution: {integrity: sha512-/iq0aK0eeHgSC3z55ucMAHO05OIqmQehiGay8eP5l/5l+iEr4EIbh4/MI8xD9qRFjqzgkc0JkX0LculNC9mXBw==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@esbuild/android-arm64/-/android-arm64-0.17.18.tgz}
