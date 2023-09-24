@@ -1,6 +1,7 @@
 import { it, expect, describe } from "vitest";
-import { checkType, checkFnFactor, optional } from "evlib";
+import { checkType, checkFnFactor } from "evlib";
 import "./assests/type_check.assert.js";
+const optional = checkFnFactor.optional;
 describe("基本", function () {
     describe("基础类型检测", function () {
         it("null", function () {
@@ -127,7 +128,10 @@ describe("内置测试函数", function () {
         expect(
             checkType(
                 { s: 3, i: null },
-                { s: checkFnFactor.unionType(["number", "string"]), i: checkFnFactor.unionType(["string", (a) => undefined]) }
+                {
+                    s: checkFnFactor.unionType(["number", "string"]),
+                    i: checkFnFactor.unionType(["string", (a) => undefined]),
+                }
             )
         ).toCheckPass();
         expect(checkType({ s: 3 }, { s: checkFnFactor.unionType(["bigint", "string"]) })).toCheckFailWithField(["s"]);

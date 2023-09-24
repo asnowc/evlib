@@ -1,20 +1,13 @@
-const msg = {
-    en: {
-        createErrDesc(except: string, actual: string) {
-            return `Except: ${except}, actual: ${actual}`;
-        },
-    },
-    zh: {
-        createErrDesc(except: string, actual: string) {
-            return `预期: ${except}, 实际: ${actual}`;
-        },
-    },
-};
-let desc = msg.zh;
-
+/**
+ * @public
+ * @remarks 创建一个类型错误的描述
+ */
+export function createErrDesc(except: string, actual: string) {
+    return `预期: ${except}, 实际: ${actual}`;
+    //return `Except: ${except}, actual: ${actual}`;
+}
 /** @public */
 export class TypeError extends Error {
-    static createErrDesc = desc.createErrDesc;
     constructor(public cause: TypeErrorDesc, msg?: string) {
         if (!msg) msg = "类型不匹配";
         super(msg, { cause });
@@ -38,6 +31,6 @@ export class ParametersError extends Error {
 export class ParametersTypeError extends ParametersError {
     constructor(index: number, cause: string, name?: string);
     constructor(index: number, except: string, actual: string, name?: string) {
-        super(index, TypeError.createErrDesc(except, actual), name);
+        super(index, createErrDesc(except, actual), name);
     }
 }

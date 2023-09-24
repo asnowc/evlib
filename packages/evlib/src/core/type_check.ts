@@ -1,9 +1,8 @@
-import { TypeError, ParametersError } from "../errors.js";
-const createErrDesc = TypeError.createErrDesc;
+import { ParametersError, createErrDesc } from "../errors.js";
 /**
  * 如果 对象的字段预期类型为可选, 并且实际存在字段为undefined, 则在deleteSurplus为true是将字段删除
  */
-function checkObject(doc: Record<string, any>, except: ExceptTypeMap, options: CheckOptions): CheckRes {
+function checkObject(doc: Record<string, any>, except: ExceptTypeMap, options: TypeCheckOptions): CheckRes {
     const error: Record<string, TypeErrorDesc> = {};
     const { checkAll } = options;
     const deleteSurplus = options.redundantFieldPolicy === "delete";
@@ -46,7 +45,7 @@ function checkObject(doc: Record<string, any>, except: ExceptTypeMap, options: C
     if (isErr) return { error, value: doc };
     return { value: doc };
 }
-function checkTuple<T = unknown>(arr: any[], except: ExceptType[], options: CheckOptions): CheckRes<T[]> {
+function checkTuple<T = unknown>(arr: any[], except: ExceptType[], options: TypeCheckOptions): CheckRes<T[]> {
     const error: Record<string, TypeErrorDesc> = {};
     const { checkAll } = options;
     const deleteSurplus = options.redundantFieldPolicy === "delete";
@@ -82,8 +81,8 @@ function checkTuple<T = unknown>(arr: any[], except: ExceptType[], options: Chec
 }
 
 /** @public */
-export function checkType<T = unknown>(value: any, except: ExceptType, options?: CheckOptions): CheckRes<T>;
-export function checkType(value: any, except: ExceptType, opts: CheckOptions = {}): CheckRes<unknown> {
+export function checkType<T = unknown>(value: any, except: ExceptType, options?: TypeCheckOptions): CheckRes<T>;
+export function checkType(value: any, except: ExceptType, opts: TypeCheckOptions = {}): CheckRes<unknown> {
     if (except === null) throw new ParametersError(2, createErrDesc("ExceptType", typeof except), "exceptType");
 
     switch (typeof except) {
@@ -133,7 +132,7 @@ class OptionalKey {
     constructor(public readonly type: ExceptType) {}
 }
 /** @public */
-export interface CheckOptions {
+export interface TypeCheckOptions {
     /**
      * @remarks 对于对象和元组类型, 如果对象或元组中存在预期类型中不存在的字段, 应该执行的策略
      *   "pass": 检测通过
@@ -154,8 +153,8 @@ export interface CheckOptions {
     // new?: boolean;
 }
 /** @public */
-export interface CheckFn {
-    (val: any, option: Readonly<CheckOptions>): Partial<CheckRes> | undefined;
+export interface TypeCheckFn {
+    (val: any, option: Readonly<TypeCheckOptions>): Partial<CheckRes> | undefined;
     /** @remarks 前置类型, 前置类型匹配才会执行检测函数, 如果不匹配, 检测直接不通过 */
     baseType?: BasicType;
 }
@@ -164,7 +163,7 @@ export interface CheckFn {
  * @public
  * @remarks 生成可选类型检测函数
  */
-export function optional(type: ExceptType) {
+function optional(type: ExceptType) {
     return new OptionalKey(type);
 }
 
@@ -177,8 +176,8 @@ optional.string = new OptionalKey("string");
  */
 export const checkFnFactor = {
     /** @remarks 生成数字范围检测函数 */
-    numberRange(min: number, max = Infinity): CheckFn {
-        const checkFn: CheckFn = function checkFn(val: number, option) {
+    numberRange(min: number, max = Infinity): TypeCheckFn {
+        const checkFn: TypeCheckFn = function checkFn(val: number, option) {
             if (val > max || val < min) {
                 return { error: createErrDesc(`[${min},${max}]`, val.toString()) };
             }
@@ -187,9 +186,9 @@ export const checkFnFactor = {
         return checkFn;
     },
     /** @remarks 生成实例类型检测函数 */
-    instanceof(obj: Function): CheckFn {
+    instanceof(obj: Function): TypeCheckFn {
         if (typeof obj !== "function") throw new Error();
-        const checkFn: CheckFn = function checkFn(val: object) {
+        const checkFn: TypeCheckFn = function checkFn(val: object) {
             if (val instanceof obj) return;
             return { error: createErrDesc(obj.name, getClassType(val)) };
         };
@@ -197,8 +196,8 @@ export const checkFnFactor = {
         return checkFn;
     },
     /** @remarks 生成联合类型检测函数 */
-    unionType(types: ExceptType[]): CheckFn {
-        const checkFn: CheckFn = function testFx(val: any, option) {
+    unionType(types: ExceptType[]): TypeCheckFn {
+        const checkFn: TypeCheckFn = function testFx(val: any, option) {
             let errors: TypeErrorDesc[] = [];
             for (const except of types) {
                 const error = checkType(val, except, option)?.error;
@@ -209,9 +208,10 @@ export const checkFnFactor = {
         };
         return checkFn;
     },
+    optional,
     /** @remarks 生成数组类型检测函数 */
-    arrayType(type: ExceptType, length?: number): CheckFn {
-        const checkFn: CheckFn = function checkFn(val: any, options) {
+    arrayType(type: ExceptType, length?: number): TypeCheckFn {
+        const checkFn: TypeCheckFn = function checkFn(val: any, options) {
             const { checkAll } = options;
             const deleteSurplus = options.redundantFieldPolicy === "delete";
             if (Array.isArray(val)) {
@@ -257,7 +257,7 @@ export type ExceptTypeMap = { [key: string | number]: ExceptType };
  * function: 自定义检测函数
  * true: 检测通过, 可以用于 any类型
  */
-export type ExceptType = CheckFn | OptionalKey | BasicType | ExceptTypeMap | ExceptTypeTuple | boolean;
+export type ExceptType = TypeCheckFn | OptionalKey | BasicType | ExceptTypeMap | ExceptTypeTuple | boolean;
 
 type TypeErrorDesc = string | { [key: string]: TypeErrorDesc };
 interface CheckRes<T = unknown> {

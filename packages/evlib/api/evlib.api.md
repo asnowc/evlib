@@ -4,36 +4,21 @@
 
 ```ts
 
-// @public (undocumented)
-interface CheckFn {
-    // Warning: (ae-forgotten-export) The symbol "CheckRes" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
-    (val: any, option: Readonly<CheckOptions>): Partial<CheckRes> | undefined;
-    // Warning: (ae-forgotten-export) The symbol "BasicType" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
-    baseType?: BasicType;
-}
+import * as time from './out/time.js';
 
 // @public (undocumented)
 const checkFnFactor: {
-    numberRange(min: number, max?: number): CheckFn;
-    instanceof(obj: Function): CheckFn;
-    unionType(types: ExceptType[]): CheckFn;
-    arrayType(type: ExceptType, length?: number): CheckFn;
+    numberRange(min: number, max?: number): TypeCheckFn;
+    instanceof(obj: Function): TypeCheckFn;
+    unionType(types: ExceptType[]): TypeCheckFn;
+    optional: typeof optional;
+    arrayType(type: ExceptType, length?: number): TypeCheckFn;
 };
 
+// Warning: (ae-forgotten-export) The symbol "CheckRes" needs to be exported by the entry point index.d.ts
+//
 // @public (undocumented)
-interface CheckOptions {
-    // (undocumented)
-    checkAll?: boolean;
-    // (undocumented)
-    redundantFieldPolicy?: "pass" | "delete" | "error";
-}
-
-// @public (undocumented)
-function checkType<T = unknown>(value: any, except: ExceptType, options?: CheckOptions): CheckRes<T>;
+function checkType<T = unknown>(value: any, except: ExceptType, options?: TypeCheckOptions): CheckRes<T>;
 
 declare namespace core {
     export {
@@ -44,15 +29,19 @@ declare namespace core {
         checkType,
         getBasicType,
         getClassType,
-        optional,
-        CheckOptions,
-        CheckFn,
+        TypeCheckOptions,
+        TypeCheckFn,
         checkFnFactor,
         ExceptTypeMap,
-        ExceptType
+        ExceptType,
+        createTimeoutHandle,
+        TimeoutController
     }
 }
 export { core }
+
+// @public (undocumented)
+function createErrDesc(except: string, actual: string): string;
 
 // @public (undocumented)
 function createTimeoutHandle(fx: () => void, timeout: number): () => void;
@@ -64,6 +53,7 @@ declare namespace errors {
     export {
         NumericalRangeException,
         TimeoutError,
+        createErrDesc,
         TypeError_2 as TypeError,
         ParametersError,
         ParametersTypeError
@@ -97,16 +87,19 @@ type EventList = {
     [key: EventName]: any[];
 };
 
+// Warning: (ae-forgotten-export) The symbol "OptionalKey" needs to be exported by the entry point index.d.ts
 // Warning: (ae-forgotten-export) The symbol "ExceptTypeTuple" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-type ExceptType = CheckFn | OptionalKey | BasicType | ExceptTypeMap | ExceptTypeTuple | boolean;
+type ExceptType = TypeCheckFn | OptionalKey | BasicType | ExceptTypeMap | ExceptTypeTuple | boolean;
 
 // @public (undocumented)
 type ExceptTypeMap = {
     [key: string | number]: ExceptType;
 };
 
+// Warning: (ae-forgotten-export) The symbol "BasicType" needs to be exported by the entry point index.d.ts
+//
 // @public (undocumented)
 function getBasicType(val: any): BasicType;
 
@@ -116,19 +109,6 @@ function getClassType(val: any): string;
 // @public (undocumented)
 class NumericalRangeException extends Error {
     constructor(min?: number, max?: number, valueName?: string);
-}
-
-// Warning: (ae-forgotten-export) The symbol "OptionalKey" needs to be exported by the entry point index.d.ts
-//
-// @public (undocumented)
-function optional(type: ExceptType): OptionalKey;
-
-// @public (undocumented)
-namespace optional {
-    var // (undocumented)
-    number: OptionalKey;
-    var // (undocumented)
-    string: OptionalKey;
 }
 
 // @public (undocumented)
@@ -144,12 +124,6 @@ class ParametersTypeError extends ParametersError {
 // @public (undocumented)
 let runtimeEngine: "node" | "browser" | "deno" | "bun" | "unknown";
 
-declare namespace time {
-    export {
-        createTimeoutHandle,
-        TimeoutController
-    }
-}
 export { time }
 
 // @public (undocumented)
@@ -165,15 +139,33 @@ class TimeoutError extends Error {
 }
 
 // @public (undocumented)
+interface TypeCheckFn {
+    // (undocumented)
+    (val: any, option: Readonly<TypeCheckOptions>): Partial<CheckRes> | undefined;
+    // (undocumented)
+    baseType?: BasicType;
+}
+
+// @public (undocumented)
+interface TypeCheckOptions {
+    // (undocumented)
+    checkAll?: boolean;
+    // (undocumented)
+    redundantFieldPolicy?: "pass" | "delete" | "error";
+}
+
+// @public (undocumented)
 class TypeError_2 extends Error {
     constructor(cause: TypeErrorDesc_2, msg?: string);
     // Warning: (ae-forgotten-export) The symbol "TypeErrorDesc_2" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
     cause: TypeErrorDesc_2;
-    // (undocumented)
-    static createErrDesc: (except: string, actual: string) => string;
 }
+
+// Warnings were encountered during analysis:
+//
+// src/core/type_check.ts:200:5 - (ae-forgotten-export) The symbol "optional" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 
