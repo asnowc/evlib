@@ -1,3 +1,5 @@
+import { clearTimeout, setTimeout } from "./internal.js";
+
 interface Resolve<T> {
     (value: T | PromiseLike<T>): void;
 }

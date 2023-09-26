@@ -84,7 +84,7 @@ class CommonError extends Error {
     shield(up: number = 1) {
         if (up > 0) {
             let index = this.getCallerIndex();
-            if (!this.inShield(index, up)) console.warn("调用者不在该error的调用栈上");
+            // if (!this.inShield(index, up)) console.warn("调用者不在该error的调用栈上");
         } else {
             throw err.arg(up, "参数不能小于1");
         }

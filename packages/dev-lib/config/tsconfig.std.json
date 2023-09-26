@@ -5,7 +5,7 @@
         "moduleResolution": "nodenext",
         "lib": ["ESNext"],
         "allowSyntheticDefaultImports": true,
-        "skipLibCheck": true,
+        "skipDefaultLibCheck": true,
         "strict": true,
         "isolatedModules": true
     }

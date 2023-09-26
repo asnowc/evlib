@@ -35,7 +35,7 @@ declare namespace core {
         ExceptTypeMap,
         ExceptType,
         createTimeoutHandle,
-        TimeoutController
+        Listenable
     }
 }
 export { core }
@@ -107,6 +107,27 @@ function getBasicType(val: any): BasicType;
 function getClassType(val: any): string;
 
 // @public (undocumented)
+class Listenable<T> {
+    constructor(onError?: Listener<any> | undefined);
+    // (undocumented)
+    get count(): number;
+    // (undocumented)
+    emit(arg: T): number;
+    // (undocumented)
+    listening(listener: Function): boolean;
+    // (undocumented)
+    off(listener: Function): boolean;
+    // (undocumented)
+    on<R extends Listener<T>>(listener: R): R;
+    // Warning: (ae-forgotten-export) The symbol "Listener" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    onError?: Listener<any> | undefined;
+    // (undocumented)
+    then<R extends Listener<T>>(listener: R): R;
+}
+
+// @public (undocumented)
 class NumericalRangeException extends Error {
     constructor(min?: number, max?: number, valueName?: string);
 }
@@ -125,13 +146,6 @@ class ParametersTypeError extends ParametersError {
 let runtimeEngine: "node" | "browser" | "deno" | "bun" | "unknown";
 
 export { time }
-
-// @public (undocumented)
-class TimeoutController extends AbortController {
-    constructor(timeout: number);
-    abort(): void;
-    clear(): void;
-}
 
 // @public (undocumented)
 class TimeoutError extends Error {
