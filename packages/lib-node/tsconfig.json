@@ -4,7 +4,8 @@
         "baseUrl": ".",
         "paths": {
             "@eavid/lib-node/util/*": ["./src/util/*"]
-        }
+        },
+        "lib": ["ESNext"]
     },
-    "include": ["**/*.ts"]
+    "include": ["src", "test"]
 }
