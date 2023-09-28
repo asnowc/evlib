@@ -104,6 +104,7 @@ export class ReadableSource<T> implements UnderlyingSource {
     }
     private readonly objectMode;
     private readableState: ReadableState<T>;
+
     start(ctrl: ReadableStreamController<T>) {
         const readable = this.readable;
         if (readable.readableEnded) {
@@ -117,74 +118,101 @@ export class ReadableSource<T> implements UnderlyingSource {
             ctrl.error(new Error("raw stream closed"));
             return;
         }
-        readable.on("close", () => {
-            if (this.waiting) {
-                if (this.readableState.errored) this.waiting.reject(this.readableState.errored);
-                else this.waiting.resolve({ closed: true });
-                this.waiting = undefined;
-            } else if (!this.ctrlClosed) {
+        const tryClose = () => {
+            //没有进行读取，但是流已经关闭
+            if (!this.ctrlClosed) {
                 if (this.readableState.errored) {
                     ctrl.error(this.readableState.errored);
                 } else {
                     ctrl.close();
                 }
-            }
-        });
-        readable.on("error", (err) => {
-            if (!this.ctrlClosed) ctrl.error(err);
-        });
-
-        readable.on("readable", () => {}); //确保触发底层读取
-        /** 拦截内部函数 */
-        const queue = this.readableState.buffer; //readable queue
-        const oldPush = queue.push;
-        queue.push = (chunk) => {
-            if (this.waiting) {
-                this.waiting.resolve({ value: chunk });
-                this.waiting = undefined;
-            } else {
-                return oldPush.call(queue, chunk);
+                this.ctrlClosed = true;
             }
         };
+        readable.on("close", () => {
+            if (this.waiting) {
+                if (this.readableState.errored) this.waiting.reject(this.readableState.errored);
+                else this.waiting.resolve(undefined); //触发 close
+                this.waiting = undefined;
+                return true;
+            } else tryClose();
+        });
+        readable.on("end", tryClose);
+
+        readable.on("error", (err) => {
+            ctrl.error(err);
+        });
+
+        //确保触发底层读取
+        readable.on("readable", () => {
+            if (this.waiting) {
+                //理论上至少命中 readableState.length 或 readableState.ended
+                const res = this.takeChunkFromReadableState()!;
+                if (res.chunk) this.waiting.resolve(res.chunk);
+                else if (res.err) this.waiting.reject(res.err);
+                else this.waiting.resolve(undefined);
+                this.waiting = undefined;
+            } else if (this.readableState.length === 0) readable.read(); //触发更新
+        });
     }
+    /**
+     * @remarks 如果流可以读取、或已关闭、或已出错，则返回信息
+     * @returns undefined: 需要等待流读取
+     */
+    private takeChunkFromReadableState(): WaitChunkRes<T> | undefined {
+        const readableQueue = this.readableState.buffer;
+        if (this.readableState.errored) {
+            return { err: this.readableState.errored };
+        } else if (readableQueue.length) {
+            const chunk = readableQueue.shift()!;
+            this.readableState.length -= this.objectMode ? 1 : (chunk as unknown as Uint8Array).byteLength;
+            const res = { closed: false, chunk };
+            if (readableQueue.length === 0 && this.readableState.ended) {
+                this.readable.read(); //触发readable的对应事件
+                res.closed = true;
+            }
+            return res;
+        } else if (this.readableState.ended || this.readableState.closed) {
+            this.readable.read(); //触发readable的 end close 事件
+            return { closed: true };
+        }
+    }
+    /**
+     * todo: 处理字节流
+     */
     private queue(ctrl: ReadableStreamController<T>, chunk: T) {
         ctrl.enqueue(chunk);
     }
     private ctrlClosed = false;
-    private waiting?: { resolve(chunk: { closed?: boolean; value?: T }): void; reject(reason?: any): void };
+    private waiting?: { resolve(chunk: T | undefined): void; reject(reason?: any): void };
     pull(ctrl: ReadableStreamController<T>) {
-        const readableQueue = this.readableState.buffer;
-        if (this.readableState.errored) {
-            ctrl.error(this.readable.errored);
-        } else if (readableQueue.length) {
-            const chunk = readableQueue.shift()!;
-            this.readableState.length -= this.objectMode ? 1 : (chunk as unknown as Uint8Array).byteLength;
-            this.queue(ctrl, chunk);
-            if (readableQueue.length === 0 && this.readableState.ended) {
-                this.readable.read(); //触发readable的对应事件
+        const res = this.takeChunkFromReadableState();
+        if (res) {
+            if (res.chunk) this.queue(ctrl, res.chunk);
+
+            if (res.err) ctrl.error(res.err);
+            else if (res.closed) {
                 ctrl.close();
                 this.ctrlClosed = true;
             }
-            return;
-        } else if (this.readableState.ended || this.readableState.closed) {
-            this.readable.read(); //触发readable的对应事件
-            ctrl.close();
-            this.ctrlClosed = true;
-            return;
+        } else {
+            return new Promise<T | undefined>((resolve, reject) => {
+                this.waiting = { resolve, reject };
+            }).then(
+                (chunk) => {
+                    if (chunk) this.queue(ctrl, chunk);
+                    else {
+                        ctrl.close();
+                        this.ctrlClosed = true;
+                    }
+                },
+                (err) => ctrl.error(err)
+            );
         }
-        return new Promise<{ closed?: boolean; value?: T }>((resolve, reject) => {
-            this.waiting = { resolve, reject };
-        }).then(
-            ({ closed, value }) => {
-                if (closed) ctrl.close();
-                else this.queue(ctrl, value!);
-            },
-            (err) => ctrl.error(err)
-        );
     }
+    /** cancel将销毁可读流 */
     cancel(reason?: unknown): void | PromiseLike<void> {
         this.readable.destroy(reason as any);
-        //todo: socket处理中断
     }
     type: any;
 }
@@ -193,6 +221,10 @@ interface ReadableStreamBYOBRequest {
     respond(bytesWritten: number): void;
     respondWithNewView(view: ArrayBufferView): void;
 }
+
+type WaitChunkRes<T> =
+    | { err: unknown; closed?: undefined; chunk?: undefined }
+    | { err?: undefined; closed: boolean; chunk?: T };
 
 const fastArrayBuffer = Buffer.allocUnsafe(1).buffer;
 /** 可读字节流chunk处理，避免将 node 的 Buffer 的底层 转移*/

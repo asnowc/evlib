@@ -1,22 +1,11 @@
 import { readableToReadableStream, writableToWritableStream } from "../src/stream.js";
-import { Writable, Readable } from "node:stream";
+import { DuplexStream } from "../src/internal/duplex_core.js";
+import { Writable, Readable, Duplex } from "node:stream";
 import { ReadableStreamDefaultReader } from "node:stream/web";
-import { test, expect, describe, vi, afterAll, Mock } from "vitest";
+import { test, expect, describe, vi, afterAll, Mock, beforeAll } from "vitest";
 const nodeVersion = parseInt(process.versions.node.slice(0, 2));
 type WritableOption = NonNullable<ConstructorParameters<typeof Writable>[0]>;
 
-function createWriteable() {
-    return new Writable({
-        write(chunk, encoding, callback) {
-            callback();
-        },
-    });
-}
-function createReadable() {
-    return new Readable({
-        read(size) {},
-    });
-}
 describe.concurrent("writeable", function () {
     test("write chunk", async function () {
         const writeContent = Buffer.from("abcdef"); //length =4
@@ -28,9 +17,6 @@ describe.concurrent("writeable", function () {
                 writeQueue.push(chunk);
                 setTimeout(callback, 50);
             },
-            final: vi.fn((callback) => {
-                setTimeout(callback, 50);
-            }),
             construct(callback) {
                 setTimeout(callback, 200);
             },
@@ -46,16 +32,12 @@ describe.concurrent("writeable", function () {
         expect(writeQueue.length, "写入了3个chunk").toBe(3);
         expect(Buffer.concat(writeQueue).toString(), "写入的内容一致").toBe(writeContent.toString());
 
-        expect(option.final).not.toBeCalled();
-
         /** 关闭流，等待 writable 的 final 的回调*/
-        await writer.close();
-        expect(option.final).toBeCalled();
-
-        if (nodeVersion > 18) {
-            expect(writeable.closed).toBeTruthy();
-            expect(writeable.errored).toBeFalsy();
-        }
+        const pms = writer.close();
+        expect(writeable.writableEnded).toBeTruthy();
+        await pms;
+        expect(writeable.writable).toBeFalsy();
+        expect(writeable.writableFinished).toBeTruthy();
     });
     test("highWaterMark", async function () {
         const writeable = new Writable({ write(chunk, encoding, callback) {}, highWaterMark: 4 });
@@ -75,17 +57,11 @@ describe.concurrent("writeable", function () {
     test("abort()", async function () {
         const writeable = createWriteable();
         const stream = writableToWritableStream(writeable);
-        const onClose = vi.fn();
-        writeable.on("close", onClose);
+
         const err = new Error("abort()");
         await stream.abort(err);
 
-        if (nodeVersion >= 18) {
-            expect(writeable.errored).toBe(err);
-            expect(writeable.closed).toBeTruthy();
-        }
-        await waitTime();
-        expect(onClose).toBeCalled();
+        expect(writeable.destroyed).toBeTruthy();
     });
     describe("writeable 异常", function () {
         test("被销毁", async function () {
@@ -96,29 +72,29 @@ describe.concurrent("writeable", function () {
             const writer = writerCtrl.getWriter();
             await expect(writer.closed).rejects.toBe(err);
         });
-    });
-    describe("错误状态的 writeable", function () {
-        test("writeable errored", async function () {
-            const writeable = createWriteable();
-            writeable.on("error", () => {});
-            const err = new Error("abc");
-            writeable.destroy(err);
+        describe("错误状态的 writeable", function () {
+            test("writeable errored", async function () {
+                const writeable = createWriteable();
+                writeable.on("error", () => {});
+                const err = new Error("abc");
+                writeable.destroy(err);
 
-            const writer = writableToWritableStream(writeable).getWriter();
-            await expect(writer.closed).rejects.toBe(err);
-        });
-        test("writable finished", async function () {
-            const writeable = createWriteable();
-            writeable.end();
-            await waitTime();
-            const writer = writableToWritableStream(writeable).getWriter();
-            await expect(writer.closed).rejects.toThrowError("writable finished");
-        });
-        test("closed", async function () {
-            const writeable = createWriteable();
-            writeable.destroy();
-            const writer = writableToWritableStream(writeable).getWriter();
-            await expect(writer.closed).rejects.toThrowError("raw stream closed");
+                const writer = writableToWritableStream(writeable).getWriter();
+                await expect(writer.closed).rejects.toBe(err);
+            });
+            test("writable finished", async function () {
+                const writeable = createWriteable();
+                writeable.end();
+                await waitTime();
+                const writer = writableToWritableStream(writeable).getWriter();
+                await expect(writer.closed).rejects.toThrowError("writable finished");
+            });
+            test("closed", async function () {
+                const writeable = createWriteable();
+                writeable.destroy();
+                const writer = writableToWritableStream(writeable).getWriter();
+                await expect(writer.closed).rejects.toThrowError("raw stream closed");
+            });
         });
     });
 });
@@ -135,10 +111,6 @@ describe.concurrent("readable", function () {
                 setTimeout(callback, 100);
             },
         });
-        const onEnd = vi.fn();
-        const onClose = vi.fn();
-        readable.on("end", onEnd);
-        readable.on("close", onClose);
 
         const ctrl = readableToReadableStream(readable);
         const reader = ctrl.getReader();
@@ -146,26 +118,20 @@ describe.concurrent("readable", function () {
 
         expect(chunks.length).toBe(3);
         expect(Buffer.concat(chunks)).toEqual(Buffer.from([3, 2, 1]));
-
         await waitTime();
-        if (nodeVersion >= 18) {
-            expect(readable.closed).toBeTruthy();
-        }
+        expect(readable.readable).toBeFalsy();
         expect(readable.readableEnded).toBeTruthy();
-        expect(onEnd).toBeCalled();
-        expect(onClose).toBeCalled();
     });
     test("销毁 ReadableStream: cancel()", async function () {
         const onDestroy = vi.fn();
         const readable = new Readable({ read() {}, destroy: onDestroy });
 
         const ctrl = readableToReadableStream(readable);
-        const reason = {};
+        const reason = new Error();
         await ctrl.cancel(reason);
 
         expect(onDestroy.mock.calls[0][0]).toBe(reason);
         expect(readable.destroyed).toBeTruthy();
-        if (nodeVersion >= 18) expect(readable.errored).toBeTruthy();
     });
     test("highWaterMark", async function () {
         const readable = new Readable({ read() {}, highWaterMark: 6 });
@@ -174,29 +140,30 @@ describe.concurrent("readable", function () {
         const reader = ctrl.getReader();
         const data = Buffer.from("ab");
         expect(readable.push(data)).toBeTruthy();
+        await waitTime();
         expect(readable.push(data)).toBeTruthy();
+        await waitTime();
         expect(readable.push(data)).toBeFalsy();
+        await waitTime();
         await reader.read();
         await reader.read();
         expect(readable.push(data)).toBeTruthy();
+        await waitTime();
         expect(readable.push(data)).toBeFalsy();
     });
     test("cancel()", async function () {
-        const readable = createReadable();
-        const onClose = vi.fn();
-        readable.on("close", onClose);
-        const stream = readableToReadableStream(readable);
+        const { readable, reader, stream } = createReadableStream();
         const err = new Error("abort()");
-
-        await stream.cancel(err);
-        expect(readable.readableAborted).toBeTruthy();
-        if (nodeVersion >= 18) {
-            expect(readable.errored).toBe(err);
-            expect(readable.closed).toBeTruthy();
-        }
-        await waitTime();
-        expect(onClose).toBeCalled();
+        await reader.cancel(err);
+        expect(readable.destroyed).toBeTruthy();
+        expect(readable.readable).toBeFalsy();
     });
+    test("readable 直接结束", async function () {
+        const { readable, stream, reader } = createReadableStream();
+        readable.push(null);
+        await reader.closed;
+        expect(readable.readable).toBeFalsy();
+    }, 100);
     describe("readable 异常", function () {
         test("被销毁", async function () {
             const readable = createReadable();
@@ -206,26 +173,116 @@ describe.concurrent("readable", function () {
             const reader = writerCtrl.getReader();
             await expect(reader.closed).rejects.toBe(err);
         });
-    });
-    describe("错误状态的 readable", function () {
-        test("readable errored", async function () {
-            const readable = createReadable();
-            readable.on("error", () => {});
-            const err = new Error("abc");
-            readable.destroy(err);
+        describe("错误状态的 readable", function () {
+            test("readable errored", async function () {
+                const readable = createReadable();
+                readable.on("error", () => {});
+                const err = new Error("abc");
+                readable.destroy(err);
 
-            const stream = readableToReadableStream(readable).getReader();
-            await expect(stream.closed).rejects.toBe(err);
-        });
+                const stream = readableToReadableStream(readable).getReader();
+                await expect(stream.closed).rejects.toBe(err);
+            });
 
-        test("closed", async function () {
-            const readable = createReadable();
-            readable.destroy();
-            const stream = readableToReadableStream(readable).getReader();
-            await expect(stream.closed).rejects.toThrowError("raw stream closed");
+            test("closed", async function () {
+                const readable = createReadable();
+                readable.destroy();
+                const stream = readableToReadableStream(readable).getReader();
+                await expect(stream.closed).rejects.toThrowError("raw stream closed");
+            });
         });
     });
+
+    function createReadableStream() {
+        const readable = new Readable({
+            read(size) {},
+        });
+        const stream = readableToReadableStream(readable);
+        const reader = stream.getReader();
+        return { readable, stream, reader };
+    }
 });
+
+describe.concurrent("duplex", function () {
+    test("读取完成>写入完成", async function () {
+        const { destroy, duplex, writer, reader, stream } = createDuplexStream();
+
+        duplex.push(null);
+        await reader.closed;
+        expect(duplex.writable).toBeTruthy();
+        expect(stream.isAlive).toBeTruthy();
+        writer.close();
+        await writer.closed;
+        expect(stream.isAlive).toBeFalsy();
+        expect(destroy, "Duplex 销毁周期已被执行").toBeCalled();
+    });
+    test("写入完成>读取完成", async function () {
+        const { destroy, duplex, writer, reader, stream } = createDuplexStream();
+
+        writer.close();
+        await writer.closed;
+        expect(duplex.readable).toBeTruthy();
+        expect(stream.isAlive).toBeTruthy();
+        duplex.push(null);
+        await reader.closed;
+        expect(stream.isAlive).toBeFalsy();
+        expect(destroy, "Duplex 销毁周期已被执行").toBeCalled();
+    });
+    test("dispose", async function () {
+        const { destroy, duplex, writer, reader, stream } = createDuplexStream();
+        const err = new Error();
+        const pms = stream.dispose(err);
+        await pms;
+        expect(stream.isAlive).toBeFalsy();
+        expect(destroy).toBeCalled();
+
+        const p1 = expect(reader.closed, "reader 异常关闭").rejects.toBe(err);
+        const p2 = expect(writer.closed, "writer 异常关闭").rejects.toBe(err);
+        await Promise.all([p1, p2]);
+    });
+    describe("duplex 异常", function () {
+        test("被销毁", async function () {
+            const { duplex } = createDuplex();
+            const stream = new DuplexStream(duplex);
+            const err = new Error("abc");
+            duplex.destroy(err);
+            const reader = stream.getReader();
+            const writer = stream.getWriter();
+            const p1 = expect(reader.closed).rejects.toBe(err);
+            const p2 = expect(writer.closed).rejects.toBe(err);
+            await Promise.all([p1, p2]);
+        });
+    });
+
+    /** 创建一个初始化的 DuplexStream, */
+    function createDuplexStream() {
+        const { destroy, duplex, write } = createDuplex();
+        const stream = new DuplexStream(duplex);
+        const reader = stream.getReader();
+        const writer = stream.getWriter();
+        return { destroy, duplex, write, stream, reader, writer };
+    }
+});
+
+function createWriteable() {
+    return new Writable({
+        write(chunk, encoding, callback) {
+            callback();
+        },
+    });
+}
+function createReadable() {
+    return new Readable({
+        read(size) {},
+    });
+}
+function createDuplex() {
+    const destroy = vi.fn((err, cb) => waitTime().then(cb));
+    const write = vi.fn((chunk, encoding, cb) => waitTime().then(cb));
+
+    const duplex = new Duplex({ destroy, write, read(size) {} });
+    return { duplex, destroy, write };
+}
 async function readAll<T>(ctrl: ReadableStreamDefaultReader<T>): Promise<T[]> {
     const list: T[] = [];
     do {

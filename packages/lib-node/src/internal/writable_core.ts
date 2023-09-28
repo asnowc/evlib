@@ -26,32 +26,40 @@ export class WritableCore<T> implements UnderlyingSink<T> {
         this.state = writable._writableState;
     }
     private state: WriteableState;
-    private ctrlClosed = false;
+    private errored = false;
     start(ctrl: WritableStreamDefaultController) {
         const writable = this.writable;
         if (writable.errored) {
             ctrl.error(writable.errored);
+            this.errored = true;
             return;
         } else if (writable.writableFinished) {
             ctrl.error(new Error("writable finished"));
+            this.errored = true;
             return;
         } else if (writable.closed || writable.destroyed) {
             ctrl.error(new Error("raw stream closed"));
+            this.errored = true;
             return;
         }
+        //todo: 通过其他方式拦截close
         writable.on("close", () => {
-            if (!this.ctrlClosed) ctrl.error();
+            if (!this.errored) {
+                ctrl.error(writable.errored);
+                this.errored = true;
+            }
         });
-        //初始化
+        //todo: 通过其他方式拦截error
         writable.on("error", (err) => {
             ctrl.error(err);
+            this.errored = true;
         });
     }
     abort(reason?: any): void | PromiseLike<void> {
         this.writable.destroy(reason);
     }
     close(): void | PromiseLike<void> {
-        this.ctrlClosed = true;
+        this.errored = true;
         return new Promise((resolve, reject) => {
             this.writable.end(() => resolve());
         });
