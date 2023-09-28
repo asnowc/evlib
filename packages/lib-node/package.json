@@ -16,6 +16,9 @@
         "./*": "./out/*.js",
         "./util/*": "./out/util/*"
     },
+    "imports": {
+        "#evlib": "./out/lib/evlib.js"
+    },
     "devDependencies": {
         "@types/node": "^20.5.7"
     },
