@@ -27,7 +27,7 @@ export class DuplexStream<T = unknown> {
     getReader(): ReadableStreamDefaultReader<T> {
         const reader = this.readableStream.getReader();
         this.reader = reader;
-        reader.closed.finally(() => (this.reader = null)).catch(() => {});
+        reader.closed.finally(() => (this.reader = null)).catch(voidFn);
         return reader;
     }
     pipeThrough<R>(transform: ReadableWritablePair<R, T>, options?: StreamPipeOptions) {
@@ -54,21 +54,14 @@ export class DuplexStream<T = unknown> {
     getWriter(): WritableStreamDefaultWriter<T> {
         const writer = this.writableStream.getWriter();
         this.writer = writer;
-        writer.closed.finally(() => (this.writer = null)).catch(() => {});
+        writer.closed.finally(() => (this.writer = null)).catch(voidFn);
         return writer;
     }
     /**
-     * @remarks 立即销毁流, 即使流被锁定
-     *  相当于同时调用 ReadableStream.cancel() 和 WritableStream.abort()
-     *  对于 node 的 duplex, 相当于调用 destroy()
+     * @remarks 立即销毁流
      */
-    async dispose(reason?: Error): Promise<void> {
-        const reader = this.reader;
-        const writer = this.writer;
+    dispose(reason?: Error) {
         this.duplex.destroy(reason);
-        if (reader && writer) return Promise.allSettled([reader, writer]).then(() => {});
-        else if (reader) return reader.closed.finally();
-        else if (writer) return writer.closed.finally();
     }
 
     get isAlive() {
@@ -83,3 +76,4 @@ export class DuplexStream<T = unknown> {
         return this.duplex.writable;
     }
 }
+const voidFn = function () {};

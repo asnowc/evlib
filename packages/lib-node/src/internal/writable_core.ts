@@ -1,43 +1,22 @@
 import { Writable } from "node:stream";
 import { UnderlyingSink, WritableStreamDefaultController } from "node:stream/web";
-
-interface WriteableState {
-    /**
-     * 流仍在构建中，在构建完成或失败之前不能被破坏。
-     * 异步构造是可选的，因此我们从构造开始。
-     */
-    constructed: boolean;
-    finalCalled: boolean;
-    destroyed: boolean;
-    corked: number;
-    ended: boolean;
-    errored: null | Error;
-    finished: boolean;
-    length: number;
-    objectMode: boolean;
-}
-interface InternalWritable<T> extends Writable {
-    _writableState: WriteableState;
-}
+import { InternalWritable, WritableState, getStreamError, streamIsAlive } from "./stream_core.js";
 
 export class WritableCore<T> implements UnderlyingSink<T> {
     constructor(writable: Writable);
-    constructor(private writable: InternalWritable<T>) {
+    constructor(private writable: InternalWritable) {
         this.state = writable._writableState;
     }
-    private state: WriteableState;
+    private state: WritableState;
     private errored = false;
     start(ctrl: WritableStreamDefaultController) {
         const writable = this.writable;
-        if (writable.errored) {
-            ctrl.error(writable.errored);
+        const error = getStreamError(writable); //writable.errored required node 18
+        if (error) {
+            ctrl.error(error);
             this.errored = true;
             return;
-        } else if (writable.writableFinished) {
-            ctrl.error(new Error("writable finished"));
-            this.errored = true;
-            return;
-        } else if (writable.closed || writable.destroyed) {
+        } else if (!streamIsAlive(writable)) {
             ctrl.error(new Error("raw stream closed"));
             this.errored = true;
             return;
@@ -45,7 +24,8 @@ export class WritableCore<T> implements UnderlyingSink<T> {
         //todo: 通过其他方式拦截close
         writable.on("close", () => {
             if (!this.errored) {
-                ctrl.error(writable.errored);
+                const err = getStreamError(writable) ?? new Error("raw stream closed");
+                ctrl.error(err);
                 this.errored = true;
             }
         });

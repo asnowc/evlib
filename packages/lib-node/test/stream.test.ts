@@ -3,7 +3,7 @@ import { DuplexStream } from "../src/internal/duplex_core.js";
 import { Writable, Readable, Duplex } from "node:stream";
 import { ReadableStreamDefaultReader } from "node:stream/web";
 import { test, expect, describe, vi, afterAll, Mock, beforeAll } from "vitest";
-const nodeVersion = parseInt(process.versions.node.slice(0, 2));
+
 type WritableOption = NonNullable<ConstructorParameters<typeof Writable>[0]>;
 
 describe.concurrent("writeable", function () {
@@ -87,7 +87,7 @@ describe.concurrent("writeable", function () {
                 writeable.end();
                 await waitTime();
                 const writer = writableToWritableStream(writeable).getWriter();
-                await expect(writer.closed).rejects.toThrowError("writable finished");
+                await expect(writer.closed).rejects.toThrowError("raw stream closed");
             });
             test("closed", async function () {
                 const writeable = createWriteable();
@@ -231,14 +231,13 @@ describe.concurrent("duplex", function () {
     test("dispose", async function () {
         const { destroy, duplex, writer, reader, stream } = createDuplexStream();
         const err = new Error();
-        const pms = stream.dispose(err);
-        await pms;
+        stream.dispose(err);
         expect(stream.isAlive).toBeFalsy();
         expect(destroy).toBeCalled();
+        expect(duplex.destroyed).toBeTruthy();
 
-        const p1 = expect(reader.closed, "reader 异常关闭").rejects.toBe(err);
-        const p2 = expect(writer.closed, "writer 异常关闭").rejects.toBe(err);
-        await Promise.all([p1, p2]);
+        await expect(writer.closed, "writer 应异常关闭").rejects.toBe(err);
+        await expect(reader.closed, "reader 应异常关闭").rejects.toBe(err);
     });
     describe("duplex 异常", function () {
         test("被销毁", async function () {
@@ -248,9 +247,8 @@ describe.concurrent("duplex", function () {
             duplex.destroy(err);
             const reader = stream.getReader();
             const writer = stream.getWriter();
-            const p1 = expect(reader.closed).rejects.toBe(err);
-            const p2 = expect(writer.closed).rejects.toBe(err);
-            await Promise.all([p1, p2]);
+            await expect(writer.closed, "writer 应异常关闭").rejects.toBe(err);
+            await expect(reader.closed, "reader 应异常关闭").rejects.toBe(err);
         });
     });
 
