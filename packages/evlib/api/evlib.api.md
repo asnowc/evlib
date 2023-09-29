@@ -7,6 +7,16 @@
 import * as time from './out/time.js';
 
 // @public (undocumented)
+function afterTime(time?: number): Promise<void>;
+
+// @alpha (undocumented)
+function afterTimeHandle(time?: number, timeoutReject?: Error): {
+    promise: Promise<void>;
+    resolve(): void;
+    reject(reason?: any): void;
+};
+
+// @public (undocumented)
 const checkFnFactor: {
     numberRange(min: number, max?: number): TypeCheckFn;
     instanceof(obj: Function): TypeCheckFn;
@@ -35,6 +45,11 @@ declare namespace core {
         ExceptTypeMap,
         ExceptType,
         createTimeoutHandle,
+        afterTime,
+        promiseHandle,
+        afterTimeHandle,
+        PromiseHandle,
+        PPPromiseHandle,
         Listenable
     }
 }
@@ -44,7 +59,7 @@ export { core }
 function createErrDesc(except: string, actual: string): string;
 
 // @public (undocumented)
-function createTimeoutHandle(fx: () => void, timeout: number): () => void;
+function createTimeoutHandle(fn: () => void, timeout?: number): () => void;
 
 // @public (undocumented)
 const ECMA_VERSION: number;
@@ -141,6 +156,26 @@ class ParametersError extends Error {
 class ParametersTypeError extends ParametersError {
     constructor(index: number, cause: string, name?: string);
 }
+
+// @alpha (undocumented)
+interface PPPromiseHandle<T> extends PromiseHandle<T> {
+    // (undocumented)
+    promise: Promise<T>;
+}
+
+// @public (undocumented)
+interface PromiseHandle<T> {
+    // (undocumented)
+    reject(reason?: any): void;
+    // (undocumented)
+    resolve(arg: T): void;
+}
+
+// Warning: (ae-incompatible-release-tags) The symbol "promiseHandle" is marked as @public, but its signature references "PPPromiseHandle" which is marked as @alpha
+// Warning: (ae-incompatible-release-tags) The symbol "promiseHandle" is marked as @public, but its signature references "PPPromiseHandle" which is marked as @alpha
+//
+// @public (undocumented)
+function promiseHandle<T>(): PPPromiseHandle<T>;
 
 // @public (undocumented)
 let runtimeEngine: "node" | "browser" | "deno" | "bun" | "unknown";

@@ -1,41 +1,36 @@
-import { PromiseHandle, TimeoutPromise } from "../../src/core/promise_handle.js";
+import { afterTimeHandle, promiseHandle } from "../../src/core/promise_handle.js";
 import { describe, it, vi, expect } from "vitest";
-describe("PromiseHandle", function () {
+describe("promiseHandle", function () {
     it("成功", async function () {
-        let pms = new PromiseHandle<number>();
+        let hd = promiseHandle<number>();
         const finallyCb = vi.fn();
-        pms.finally(finallyCb);
-        queueMicrotask(() => pms.resolve(3));
-        await expect(pms).resolves.toBe(3);
+        hd.promise.finally(finallyCb);
+        queueMicrotask(() => hd.resolve(3));
+        await expect(hd.promise).resolves.toBe(3);
 
         expect(finallyCb).toBeCalledTimes(1);
-        await expect(pms, "重复then").resolves.toBe(3);
+        await expect(hd.promise, "重复then").resolves.toBe(3);
     });
     it("中断", async function () {
-        let pms = new PromiseHandle<number, number>();
+        let hd = promiseHandle<number>();
 
         const then2Cb = vi.fn();
-        pms.then(undefined, then2Cb);
-        queueMicrotask(() => pms.reject(3));
-        await expect(pms).rejects.toBe(3);
+        hd.promise.then(undefined, then2Cb);
+        queueMicrotask(() => hd.reject(3));
+        await expect(hd.promise).rejects.toBe(3);
 
         expect(then2Cb).toBeCalledTimes(1);
-        await expect(pms, "重复catch").rejects.toBe(3);
+        await expect(hd.promise, "重复catch").rejects.toBe(3);
     });
 });
-describe("TimeoutPromise", function () {
+describe("afterTimeHandle", function () {
     it("超时成功", async function () {
-        let pms = new TimeoutPromise(100);
-        await expect(pms).resolves.toBeUndefined();
+        let pms = afterTimeHandle(100);
+        await expect(pms.promise).resolves.toBeUndefined();
     });
     it("超时失败", async function () {
-        let res = new TimeoutPromise(50, true);
-        let val = 0;
-        res.then(
-            () => (val = 1),
-            () => (val = 2)
-        );
-        await new TimeoutPromise(60);
-        expect(val).toEqual(2);
+        const err = new Error();
+        let hd = afterTimeHandle(0, err);
+        await expect(hd.promise).rejects.toBe(err);
     });
 });

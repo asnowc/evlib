@@ -65,20 +65,28 @@ class AfterMacroTask {
 /**
  * @public
  * @remarks 超时执行函数。返回一个取消的句柄
- * @param fx - 超时的回调
+ * @param fn - 超时的回调
  * @param timeout - 超时时间，单位毫秒。这将会被传入setTimeout
  * @returns 返回一个函数，可用取消超时执行
  */
-export function createTimeoutHandle(fx: () => void, timeout: number) {
+export function createTimeoutHandle(fn: () => void, timeout: number = 0) {
     let id: number | undefined;
-    id = setTimeout(() => {
+    id = setTimeout(function () {
         id = undefined;
-        fx();
+        fn();
     }, timeout);
     return function clear() {
         clearTimeout(id);
     };
 }
+/**
+ * @public
+ * @remarks 返回一个promise, 在指定时间后 resolve
+ */
+export function afterTime(time?: number) {
+    return new Promise<void>((resolve, reject) => setTimeout(resolve, time));
+}
+
 /**
  * @alpha
  * @remarks 超时控制器，超时将自动执行 abort()
