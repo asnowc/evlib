@@ -1,6 +1,6 @@
 {
     "name": "@eavid/lib-node",
-    "version": "0.0.1-1",
+    "version": "1.0.0",
     "description": "",
     "type": "module",
     "scripts": {
@@ -10,7 +10,8 @@
         "api:extractor-local": "pnpm api:extractor -l"
     },
     "files": [
-        "out"
+        "out/**/*.js",
+        "out/**/*.d.ts"
     ],
     "keywords": [],
     "author": "asnow",
@@ -18,6 +19,10 @@
     "exports": {
         "./*": "./out/*.js",
         "./util/*": "./out/util/*"
+    },
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org/"
     },
     "imports": {
         "#evlib": "./out/lib/evlib.js"
