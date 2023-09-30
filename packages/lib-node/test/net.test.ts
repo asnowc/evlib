@@ -14,7 +14,7 @@ describe("tcp", function () {
             const conn = await connect({ port });
             await server.close();
             expect(server.listening).toBeFalsy();
-            await afterTime();
+            await conn.$closed;
             expect(conn.closed).toBeTruthy();
         } finally {
             if (server.listening) await server.close();
