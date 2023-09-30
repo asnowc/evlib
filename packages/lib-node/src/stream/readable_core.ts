@@ -1,6 +1,7 @@
 import type { Readable } from "node:stream";
-import { UnderlyingSource, ReadableStreamController, ReadableByteStreamController } from "stream/web";
-import { InternalReadable, ReadableState, getStreamError, streamIsAlive } from "./stream_core.js";
+import type { InternalReadable, ReadableState } from "./stream_core.js";
+import type { UnderlyingSource, ReadableStreamController, ReadableByteStreamController } from "stream/web";
+import { getStreamError, streamIsAlive } from "./stream_core.js";
 
 export function fromList<T>(n: number, state: ReadableState<T>): T | undefined {
     // nothing buffered.
@@ -109,6 +110,11 @@ export class ReadableSource<T> implements UnderlyingSource {
      * todo: 处理字节流
      */
     private queue(ctrl: ReadableStreamController<T>, chunk: T) {
+        const byobRequest = (ctrl as any).byobRequest as null | DataView;
+        if (byobRequest) {
+            throw new Error("un imp");
+            //todo
+        }
         ctrl.enqueue(chunk);
     }
     private ctrlClosed = false;

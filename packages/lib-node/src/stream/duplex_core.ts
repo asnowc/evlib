@@ -1,6 +1,6 @@
 import { Duplex } from "node:stream";
 import { ReadableStream, WritableStream } from "node:stream/web";
-import { readableToReadableStream, writableToWritableStream } from "./stream.js";
+import { readableToReadableStream, writableToWritableStream } from "./stream_transform.js";
 import { getStreamError, streamIsAlive } from "./stream_core.js";
 import { Listenable } from "#evlib";
 

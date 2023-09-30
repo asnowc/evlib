@@ -11,7 +11,9 @@ import { Duplex } from 'node:stream';
 import { Listenable } from '#evlib';
 import * as net_2 from 'node:net';
 import * as node_ps from 'node:child_process';
+import type { Readable } from 'node:stream';
 import { ReadableStream as ReadableStream_2 } from 'node:stream/web';
+import { ReadableStream as ReadableStream_3 } from 'stream/web';
 import { ReadableStreamDefaultReader as ReadableStreamDefaultReader_2 } from 'node:stream/web';
 import { WritableStream as WritableStream_2 } from 'node:stream/web';
 
@@ -47,6 +49,9 @@ class Connection extends SocketStream {
 
 // @alpha (undocumented)
 function connectPipe(path: string): Promise<SocketStream>;
+
+// @public (undocumented)
+function createScannerFromReadable(readable: Readable): StreamScanner;
 
 // @alpha (undocumented)
 function fork(file: string, options?: SpawnOptions): Promise<SubProcess>;
@@ -90,6 +95,12 @@ export { process_2 as process }
 
 // @public (undocumented)
 function readAll<T>(reader: ReadableStreamDefaultReader_2<T>): Promise<T[]>;
+
+// @public (undocumented)
+interface ScannableStream<T> extends ReadableStream_3<T> {
+    // (undocumented)
+    getScanner(): StreamScanner;
+}
 
 // @public (undocumented)
 class Server<T extends SocketStream> {
@@ -177,10 +188,28 @@ interface SpawnOptions {
 
 declare namespace stream {
     export {
-        readAll
+        readAll,
+        createScannerFromReadable,
+        ScannableStream,
+        StreamScan,
+        StreamScanner
     }
 }
 export { stream }
+
+// @public (undocumented)
+interface StreamScan<T = Buffer> {
+    // (undocumented)
+    (len: number): Promise<T>;
+    // (undocumented)
+    (len: number, safe: boolean): Promise<T | null>;
+}
+
+// @public (undocumented)
+type StreamScanner<T = Buffer> = {
+    read: StreamScan<T>;
+    cancel(reason?: any): null | T;
+};
 
 // @public (undocumented)
 class SubProcess {

@@ -1,10 +1,8 @@
 import * as node_ps from "node:child_process";
 import * as net from "node:net";
 import type * as dgram from "node:dgram";
-import { readableToReadableStream, writableToWritableStream } from "../stream/stream.js";
-import { DuplexStream } from "../stream/duplex_core.js";
+import { readableToReadableStream, writableToWritableStream } from "../stream/stream_transform.js";
 import { WritableStream, ReadableStream } from "node:stream/web";
-import type { Writable, Readable, Duplex } from "node:stream";
 import { Listenable } from "#evlib";
 
 type HandleObj = net.Socket | net.Server | dgram.Socket;
