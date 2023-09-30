@@ -1,5 +1,5 @@
 import { ReadableStream } from "node:stream/web";
-import { StreamScanner } from "../stream/stream_scanner.js";
+import { StreamScanner } from "../stream/scannable_stream.js";
 
 /**
  * @public
@@ -26,7 +26,7 @@ export function createReaderFromWebStream(stream: ReadableStream<Uint8Array>): S
                 }
             }
             cache.push({ resolve, reject, size, safe: Boolean(safe) });
-            if (cache.handles.length > 1) readNext();
+            readNext();
         });
     }
 
