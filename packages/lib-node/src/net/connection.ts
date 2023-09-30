@@ -1,13 +1,35 @@
-import { Socket } from "node:net";
-import { SocketStream } from "./socket_stream.js";
+import * as net from "node:net";
 import { Listenable } from "#evlib";
+import { DuplexStream } from "../stream/duplex_core.js";
+
+export class SocketStream extends DuplexStream<Buffer> {
+    constructor(protected socket: net.Socket) {
+        super(socket);
+    }
+
+    ref() {
+        this.socket.ref();
+    }
+    unref() {
+        this.socket.unref();
+    }
+
+    /** @remarks 接收到的字节数。 */
+    get bytesRead() {
+        return this.socket.bytesRead;
+    }
+    /** @remarks 发送的字节数 */
+    get bytesWritten() {
+        return this.socket.bytesWritten;
+    }
+}
 
 /** @public */
 export type TcpFamily = "IPv4" | "IPv6";
 
 /** @public */
 export class Connection extends SocketStream {
-    constructor(socket: Socket) {
+    constructor(socket: net.Socket) {
         super(socket);
         this.localFamily = socket.localFamily! as TcpFamily;
         this.localAddress = socket.localAddress!;
@@ -72,6 +94,9 @@ export class Connection extends SocketStream {
     set timeout(time: number) {
         this.socket.setTimeout(time);
     }
+    /**
+     * @remark timeout 事件
+     */
     $timeout = new Listenable<void>();
 }
 
@@ -87,14 +112,50 @@ export interface TcpConnectOpts {
     /** @remarks 套接字应使用的本地端口。 */
     localPort?: number;
 }
+
 /**
  * @public
  * @remarks 创建TCP连接
  */
 export function connect(options: TcpConnectOpts) {
     return new Promise<Connection>((resolve, reject) => {
-        const socket = new Socket();
-        socket.connect(options, () => resolve(new Connection(socket)));
-        socket.on("error", reject);
+        const socket = new net.Socket();
+        socket.connect(options, function () {
+            socket.off("error", reject);
+            resolve(new Connection(socket));
+        });
+        socket.once("error", reject);
+    });
+}
+
+/**
+ * @alpha
+ */
+interface PipeOptions {
+    /** 允许在套接字上读取，否则将被忽略。 默认值： false */
+    readable?: boolean;
+    /** 允许在套接字上读取，否则将被忽略。 默认值： false */
+    writable?: boolean;
+}
+/**
+ * @alpha
+ * @param fd - 用给定的文件描述符封装现有的管道，否则将创建新的管道
+ * @param path - 管道路径
+ */
+// export function connectPipe(fd: number, options?: PipeOptions): Promise<SocketStream>;
+export function connectPipe(path: string): Promise<SocketStream>;
+export function connectPipe(path: string | number, options: PipeOptions = {}) {
+    return new Promise<SocketStream>((resolve, reject) => {
+        if (typeof path === "number") {
+            const socket = new net.Socket({ fd: path, readable: options.readable, writable: options.writable });
+            resolve(new SocketStream(socket));
+            return;
+        }
+        const socket = new net.Socket();
+        socket.connect(path, function () {
+            socket.off("error", reject);
+            resolve(new SocketStream(socket));
+        });
+        socket.once("error", reject);
     });
 }

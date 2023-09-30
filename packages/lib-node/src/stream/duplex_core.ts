@@ -44,4 +44,7 @@ export class DuplexStream<T = unknown> {
     get writableClosed() {
         return !this.duplex.writable;
     }
+    get [Symbol.asyncDispose]() {
+        return this.duplex[Symbol.asyncDispose];
+    }
 }
