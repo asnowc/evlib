@@ -13,7 +13,7 @@ describe.concurrent("writeable", function () {
 
         const option: WritableOption = {
             write(chunk, encoding, callback) {
-                if ((encoding as any) !== "buffer") throw new Error();
+                if ((encoding as any) !== "buffer") throw new Error("encoding must a buffer");
                 writeQueue.push(chunk);
                 setTimeout(callback, 50);
             },
@@ -25,9 +25,12 @@ describe.concurrent("writeable", function () {
         const writerCtrl = writableToWritableStream(writeable);
         const writer = writerCtrl.getWriter();
 
-        writer.write(writeContent.subarray(0, 2));
-        writer.write(writeContent.subarray(2, 4));
-        await writer.write(writeContent.subarray(4));
+        {
+            const p1 = writer.write(writeContent.subarray(0, 2));
+            const p2 = writer.write(writeContent.subarray(2, 4));
+            const p3 = writer.write(writeContent.subarray(4));
+            await Promise.all([p1, p2, p3]);
+        }
 
         expect(writeQueue.length, "写入了3个chunk").toBe(3);
         expect(Buffer.concat(writeQueue).toString(), "写入的内容一致").toBe(writeContent.toString());
