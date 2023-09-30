@@ -9,7 +9,8 @@ import {
 } from "stream/web";
 import { ReadableSource } from "./readable_core.js";
 import { WritableCore } from "./writable_core.js";
-import { ScannableStream, createScannerFromReadable } from "./scannable_stream.js";
+import { ScannableStream } from "./scannable_stream.js";
+import { createScannerFromReadable } from "./extra/mod.js";
 
 export function readableToReadableStream<T = Uint8Array>(
     readable: Readable,

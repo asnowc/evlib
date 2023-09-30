@@ -14,3 +14,4 @@ export async function readAll<T>(reader: ReadableStreamDefaultReader<T>): Promis
 }
 export * from "./stream/duplex_stream.js";
 export * from "./stream/scannable_stream.js";
+export * from "./stream/extra/mod.js"

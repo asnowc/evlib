@@ -108,19 +108,6 @@ describe("createScannerFromReadable", function () {
             expect(readable.listenerCount("end")).toBe(0);
             expect(cancel()).toBe(null);
         });
-        test.skip("缓存有剩余", async function () {
-            const { read, cancel, readable } = createMockRead();
-            readable.push(Buffer.allocUnsafe(4));
-            readable.push(null);
-            await read(2);
-
-            const val = cancel() as Buffer;
-            expect(val!.byteLength).toBe(2);
-        });
-        test.skip("缓存无剩余", async function () {
-            const { cancel } = createMockRead();
-            expect(cancel()).toBe(null);
-        });
         test("缓存推回Readable", async function () {
             const { read, cancel, readable } = createMockRead();
             const pms = read(4);
