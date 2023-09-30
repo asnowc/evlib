@@ -1,8 +1,8 @@
-import { readableToReadableStream, writableToWritableStream } from "../src/stream.js";
-import { DuplexStream } from "../src/internal/duplex_core.js";
+import { readableToReadableStream, writableToWritableStream } from "../src/stream/stream.js";
+import { DuplexStream } from "../src/stream/duplex_core.js";
 import { Writable, Readable, Duplex } from "node:stream";
 import { ReadableStreamDefaultReader } from "node:stream/web";
-import { test, expect, describe, vi, afterAll, Mock, beforeAll } from "vitest";
+import { test, expect, describe, vi } from "vitest";
 
 type WritableOption = NonNullable<ConstructorParameters<typeof Writable>[0]>;
 
@@ -210,10 +210,10 @@ describe.concurrent("duplex", function () {
         duplex.push(null);
         await reader.closed;
         expect(duplex.writable).toBeTruthy();
-        expect(stream.isAlive).toBeTruthy();
+        expect(stream.closed).toBeFalsy();
         writer.close();
         await writer.closed;
-        expect(stream.isAlive).toBeFalsy();
+        expect(stream.closed).toBeTruthy();
         expect(destroy, "Duplex 销毁周期已被执行").toBeCalled();
     });
     test("写入完成>读取完成", async function () {
@@ -222,17 +222,17 @@ describe.concurrent("duplex", function () {
         writer.close();
         await writer.closed;
         expect(duplex.readable).toBeTruthy();
-        expect(stream.isAlive).toBeTruthy();
+        expect(stream.closed).toBeFalsy();
         duplex.push(null);
         await reader.closed;
-        expect(stream.isAlive).toBeFalsy();
+        expect(stream.closed).toBeTruthy();
         expect(destroy, "Duplex 销毁周期已被执行").toBeCalled();
     });
     test("dispose", async function () {
         const { destroy, duplex, writer, reader, stream } = createDuplexStream();
         const err = new Error();
         stream.dispose(err);
-        expect(stream.isAlive).toBeFalsy();
+        expect(stream.closed).toBeTruthy();
         expect(destroy).toBeCalled();
         expect(duplex.destroyed).toBeTruthy();
 
@@ -245,8 +245,8 @@ describe.concurrent("duplex", function () {
             const stream = new DuplexStream(duplex);
             const err = new Error("abc");
             duplex.destroy(err);
-            const reader = stream.getReader();
-            const writer = stream.getWriter();
+            const reader = stream.readable.getReader();
+            const writer = stream.writable.getWriter();
             await expect(writer.closed, "writer 应异常关闭").rejects.toBe(err);
             await expect(reader.closed, "reader 应异常关闭").rejects.toBe(err);
         });
@@ -256,8 +256,8 @@ describe.concurrent("duplex", function () {
     function createDuplexStream() {
         const { destroy, duplex, write } = createDuplex();
         const stream = new DuplexStream(duplex);
-        const reader = stream.getReader();
-        const writer = stream.getWriter();
+        const reader = stream.readable.getReader();
+        const writer = stream.writable.getWriter();
         return { destroy, duplex, write, stream, reader, writer };
     }
 });

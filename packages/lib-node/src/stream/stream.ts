@@ -14,6 +14,7 @@ export function readableToReadableStream<T = Uint8Array>(
     option: { type?: "bytes" } = {}
 ): ReadableStream<T> {
     const { type } = option;
+    readable.pause();
 
     /** highWaterMark 由 readable 处理 */
     let queuingStrategy: QueuingStrategy = { highWaterMark: 0 };

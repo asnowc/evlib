@@ -10,7 +10,7 @@ export function getStreamError(stream: any) {
 export function streamIsAlive(stream: NodeStream): boolean;
 export function streamIsAlive(stream: any) {
     const state: State = stream._readableState || stream._writableState;
-    return !(state.destroyed || state.closed);
+    return !(state.destroyed || state.closed || state.errored);
 }
 
 interface StreamState {

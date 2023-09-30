@@ -3,7 +3,7 @@
     "compilerOptions": {
         "baseUrl": ".",
         "paths": {
-            "@eavid/lib-node/util/*": ["./src/util/*"],
+            "@eavid/lib-node/*": ["./src/*.js"],
             "#evlib": ["./src/lib/evlib.js"]
         },
         "lib": ["ESNext"]
