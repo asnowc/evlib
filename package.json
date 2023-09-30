@@ -5,8 +5,9 @@
         "test": "vitest",
         "test:ui": "vitest --ui",
         "test:coverage": "vitest --coverage --ui",
+        "ci:build": "pnpm -r ci:build",
+        "api:extractor": "pnpm -r api:extractor",
         "ci:test": "vitest run --coverage",
-        "ci:api-extractor": "api-extractor -vc api/api-e.jbson.json & api-extractor run -vc api/api-e.cpc.json",
         "publish:try": "pnpm -r publish --no-git-checks --dry-run"
     },
     "devDependencies": {

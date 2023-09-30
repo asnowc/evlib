@@ -11,7 +11,8 @@ import { Duplex } from 'node:stream';
 import { Listenable } from '#evlib';
 import * as net_2 from 'node:net';
 import * as node_ps from 'node:child_process';
-import type { Readable } from 'node:stream';
+import { Readable } from 'node:stream';
+import type { Readable as Readable_2 } from 'stream';
 import { ReadableStream as ReadableStream_2 } from 'node:stream/web';
 import { ReadableStreamDefaultReader as ReadableStreamDefaultReader_2 } from 'node:stream/web';
 import { WritableStream as WritableStream_2 } from 'node:stream/web';
@@ -115,6 +116,12 @@ declare namespace process_2 {
 }
 export { process_2 as process }
 
+// @alpha
+function readableRead(stream: Readable_2, len: number, abortSignal?: AbortSignal): Promise<Buffer>;
+
+// @alpha
+function readableReadAll(stream: Readable_2, abortSignal?: AbortSignal): Promise<Buffer>;
+
 // @public (undocumented)
 function readAll<T>(reader: ReadableStreamDefaultReader_2<T>): Promise<T[]>;
 
@@ -210,10 +217,12 @@ declare namespace stream {
     export {
         readAll,
         DuplexStream,
-        createScannerFromReadable,
-        ScannableStream,
         StreamScan,
-        StreamScanner
+        StreamScanner,
+        ScannableStream,
+        createScannerFromReadable,
+        readableRead,
+        readableReadAll
     }
 }
 export { stream }

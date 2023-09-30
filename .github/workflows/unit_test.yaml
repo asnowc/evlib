@@ -1,0 +1,28 @@
+name: Unit Test
+on:
+    push:
+jobs:
+    build:
+        strategy:
+            fail-fast: false
+            matrix:
+                node-version: [16, 18, 20]
+        runs-on: ubuntu-latest
+        steps:
+            - uses: ieavid/template@v1
+              with:
+                  nodev: ${{matrix.node-version}}
+                  pnpmv: 8
+                  run_install: true
+            - name: build
+              run: pnpm ci:build
+            - name: unit test
+              run: pnpm ci:test
+            - name: api check
+              if: ${{matrix.node-version==20}}
+              run: pnpm api:extractor
+            - name: deploy
+              if: ${{matrix.node-version==20 && github.ref_name=='main'}}
+              run: pnpm publish --tag beta -r
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
