@@ -2,6 +2,10 @@ import * as net from "node:net";
 import { Listenable } from "#evlib";
 import { DuplexStream } from "../stream/duplex_core.js";
 
+/**
+ * @public
+ *
+ */
 export class SocketStream extends DuplexStream<Buffer> {
     constructor(protected socket: net.Socket) {
         super(socket);

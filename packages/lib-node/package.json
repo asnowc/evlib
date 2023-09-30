@@ -4,7 +4,10 @@
     "description": "",
     "type": "module",
     "scripts": {
-        "build": "tsc -p ./tsconfig.build.json"
+        "build": "tsc -p ./tsconfig.build.json",
+        "ci:build": "pnpm build && pnpm api:extractor",
+        "api:extractor": "api-extractor run -v",
+        "api:extractor-local": "pnpm api:extractor -l"
     },
     "files": [
         "out"

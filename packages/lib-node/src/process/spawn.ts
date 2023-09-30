@@ -54,6 +54,11 @@ export async function spawn(file: string, options: SpawnOptions = {}): Promise<S
     });
 }
 
+/**
+ * @alpha
+ * @remarks 创建 node 进程
+ * @param file - js 文件的路径
+ */
 export function fork(file: string, options: SpawnOptions = {}): Promise<SubProcess> {
     const args = options.args ?? [];
     return spawn(process.execPath, { ...options, args: [file, ...args] });
