@@ -63,5 +63,3 @@ export function readableToScannableStream<T>(readable: Readable): ScannableStrea
     stream.getScanner = getScanner;
     return stream;
 }
-
-export * from "./duplex_core.js";

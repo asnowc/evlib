@@ -13,7 +13,6 @@ import * as net_2 from 'node:net';
 import * as node_ps from 'node:child_process';
 import type { Readable } from 'node:stream';
 import { ReadableStream as ReadableStream_2 } from 'node:stream/web';
-import { ReadableStream as ReadableStream_3 } from 'stream/web';
 import { ReadableStreamDefaultReader as ReadableStreamDefaultReader_2 } from 'node:stream/web';
 import { WritableStream as WritableStream_2 } from 'node:stream/web';
 
@@ -52,6 +51,29 @@ function connectPipe(path: string): Promise<SocketStream>;
 
 // @public (undocumented)
 function createScannerFromReadable(readable: Readable): StreamScanner;
+
+// @public (undocumented)
+class DuplexStream<T> {
+    // (undocumented)
+    $closed: Listenable<Error | null>;
+    // (undocumented)
+    get [Symbol.asyncDispose](): () => Promise<void>;
+    constructor(duplex: Duplex);
+    // (undocumented)
+    get closed(): boolean;
+    // (undocumented)
+    dispose(reason?: any): void;
+    // (undocumented)
+    protected duplex: Duplex;
+    // (undocumented)
+    get errored(): Error | null;
+    // (undocumented)
+    readonly readable: ScannableStream<T>;
+    get readableClosed(): boolean;
+    // (undocumented)
+    readonly writable: WritableStream_2<T>;
+    get writableClosed(): boolean;
+}
 
 // @alpha (undocumented)
 function fork(file: string, options?: SpawnOptions): Promise<SubProcess>;
@@ -97,7 +119,7 @@ export { process_2 as process }
 function readAll<T>(reader: ReadableStreamDefaultReader_2<T>): Promise<T[]>;
 
 // @public (undocumented)
-interface ScannableStream<T> extends ReadableStream_3<T> {
+interface ScannableStream<T> extends ReadableStream_2<T> {
     // (undocumented)
     getScanner(): StreamScanner;
 }
@@ -137,8 +159,6 @@ class Server<T extends SocketStream> {
     unref(): void;
 }
 
-// Warning: (ae-forgotten-export) The symbol "DuplexStream" needs to be exported by the entry point index.d.ts
-//
 // @public (undocumented)
 class SocketStream extends DuplexStream<Buffer> {
     constructor(socket: net_2.Socket);
@@ -189,6 +209,7 @@ interface SpawnOptions {
 declare namespace stream {
     export {
         readAll,
+        DuplexStream,
         createScannerFromReadable,
         ScannableStream,
         StreamScan,

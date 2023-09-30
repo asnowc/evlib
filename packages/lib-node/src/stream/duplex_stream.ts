@@ -1,20 +1,21 @@
 import { Duplex } from "node:stream";
-import { ReadableStream, WritableStream } from "node:stream/web";
-import { readableToReadableStream, writableToWritableStream } from "./stream_transform.js";
+import { WritableStream } from "node:stream/web";
+import { readableToScannableStream, writableToWritableStream } from "./stream_transform.js";
 import { getStreamError, streamIsAlive } from "./stream_core.js";
 import { Listenable } from "#evlib";
+import { ScannableStream } from "./scannable_stream.js";
 
 /**
  * @remarks node Duplex 的变种
  * @public
  */
-export class DuplexStream<T = unknown> {
+export class DuplexStream<T> {
     constructor(protected duplex: Duplex) {
-        this.readable = readableToReadableStream(duplex);
+        this.readable = readableToScannableStream(duplex);
         this.writable = writableToWritableStream(duplex);
         duplex.on("close", () => this.$closed.emit(this.errored));
     }
-    readonly readable: ReadableStream<T>;
+    readonly readable: ScannableStream<T>;
     readonly writable: WritableStream<T>;
 
     dispose(reason?: any) {

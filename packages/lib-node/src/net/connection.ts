@@ -1,6 +1,6 @@
 import * as net from "node:net";
 import { Listenable } from "#evlib";
-import { DuplexStream } from "../stream/duplex_core.js";
+import { DuplexStream } from "../stream.js";
 
 /**
  * @public
