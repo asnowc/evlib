@@ -14,14 +14,18 @@ import * as node_ps from 'node:child_process';
 import { Readable } from 'node:stream';
 import type { Readable as Readable_2 } from 'stream';
 import { ReadableStream as ReadableStream_2 } from 'node:stream/web';
+import { ReadableStream as ReadableStream_3 } from 'stream/web';
 import { ReadableStreamDefaultReader as ReadableStreamDefaultReader_2 } from 'node:stream/web';
+import type { Writable } from 'node:stream';
 import { WritableStream as WritableStream_2 } from 'node:stream/web';
+import { WritableStream as WritableStream_3 } from 'stream/web';
 
 // @public (undocumented)
 function connect(options: TcpConnectOpts): Promise<Connection>;
 
 // @public (undocumented)
 class Connection extends SocketStream {
+    // (undocumented)
     $timeout: Listenable<void>;
     constructor(socket: net_2.Socket);
     // (undocumented)
@@ -70,9 +74,11 @@ class DuplexStream<T> {
     get errored(): Error | null;
     // (undocumented)
     readonly readable: ScannableStream<T>;
+    // (undocumented)
     get readableClosed(): boolean;
     // (undocumented)
     readonly writable: WritableStream_2<T>;
+    // (undocumented)
     get writableClosed(): boolean;
 }
 
@@ -116,11 +122,17 @@ declare namespace process_2 {
 }
 export { process_2 as process }
 
-// @alpha
+// @alpha (undocumented)
 function readableRead(stream: Readable_2, len: number, abortSignal?: AbortSignal): Promise<Buffer>;
 
-// @alpha
+// @alpha (undocumented)
 function readableReadAll(stream: Readable_2, abortSignal?: AbortSignal): Promise<Buffer>;
+
+// @public (undocumented)
+function readableToReadableStream<T = Uint8Array>(readable: Readable): ReadableStream_3<T>;
+
+// @public (undocumented)
+function readableToScannableStream<T>(readable: Readable): ScannableStream<T>;
 
 // @public (undocumented)
 function readAll<T>(reader: ReadableStreamDefaultReader_2<T>): Promise<T[]>;
@@ -137,6 +149,7 @@ class Server<T extends SocketStream> {
     $close: Listenable<void>;
     // (undocumented)
     $error: Listenable<Error>;
+    // (undocumented)
     get [Symbol.asyncDispose](): () => Promise<void>;
     constructor(port: number, options?: TcpServerOpts);
     constructor(path: string, options?: IpcServerOpts);
@@ -222,7 +235,10 @@ declare namespace stream {
         ScannableStream,
         createScannerFromReadable,
         readableRead,
-        readableReadAll
+        readableReadAll,
+        readableToReadableStream,
+        writableToWritableStream,
+        readableToScannableStream
     }
 }
 export { stream }
@@ -262,6 +278,7 @@ class SubProcess {
     closedState: ClosedState | null;
     // (undocumented)
     get connected(): boolean;
+    // (undocumented)
     disconnect(): void;
     // (undocumented)
     kill(signal?: NodeJS.Signals | number): boolean;
@@ -299,6 +316,8 @@ interface TcpConnectOpts {
     localPort?: number;
     // (undocumented)
     port: number;
+    // (undocumented)
+    signal?: AbortSignal;
 }
 
 // @public (undocumented)
@@ -311,6 +330,9 @@ interface TcpServerOpts extends ServerOpts {
     // (undocumented)
     ipv6Only?: boolean;
 }
+
+// @public (undocumented)
+function writableToWritableStream<T = Uint8Array>(writable: Writable): WritableStream_3<T>;
 
 // (No @packageDocumentation comment for this package)
 

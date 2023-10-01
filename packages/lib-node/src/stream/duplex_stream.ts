@@ -1,7 +1,7 @@
 import { Duplex } from "node:stream";
 import { WritableStream } from "node:stream/web";
 import { readableToScannableStream, writableToWritableStream } from "./stream_transform.js";
-import { getStreamError, streamIsAlive } from "./stream_core.js";
+import { getStreamError, streamIsAlive } from "./transform/stream_core.js";
 import { Listenable } from "#evlib";
 import { ScannableStream } from "./scannable_stream.js";
 
@@ -37,11 +37,11 @@ export class DuplexStream<T> {
     get closed() {
         return !streamIsAlive(this.duplex);
     }
-    /** @remark readableStream 是否已关闭*/
+    /** @remarks readableStream 是否已关闭*/
     get readableClosed() {
         return !this.duplex.readable;
     }
-    /** @remark writableStream 是否已关闭*/
+    /** @remarks writableStream 是否已关闭*/
     get writableClosed() {
         return !this.duplex.writable;
     }

@@ -29,7 +29,7 @@
     ],
     "keywords": [],
     "devDependencies": {
-        "@microsoft/api-extractor": "^7.37.0",
+        "@microsoft/api-extractor": "^7.38.0",
         "typescript": "^5.2.2"
     }
 }

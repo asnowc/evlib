@@ -85,7 +85,7 @@ export class SubProcess {
             this.nodeCps.send(msg, handle as any, resolve);
         });
     }
-    /** @remark 与 node 进程断开通信 */
+    /** @remarks 与 node 进程断开通信 */
     disconnect() {
         this.nodeCps.disconnect();
     }

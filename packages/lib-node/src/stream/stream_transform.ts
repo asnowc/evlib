@@ -7,28 +7,33 @@ import {
     ByteLengthQueuingStrategy,
     ReadableStreamDefaultReader,
 } from "stream/web";
-import { ReadableSource } from "./readable_core.js";
-import { WritableCore } from "./writable_core.js";
+import { ReadableSource } from "./transform/readable_core.js";
+import { WritableCore } from "./transform/writable_core.js";
 import { ScannableStream } from "./scannable_stream.js";
 import { createScannerFromReadable } from "./extra/mod.js";
 
-export function readableToReadableStream<T = Uint8Array>(
-    readable: Readable,
-    option: { type?: "bytes" } = {}
-): ReadableStream<T> {
-    const { type } = option;
+/**
+ * @public
+ * @remarks 将 node 的 Readable 转换为 ReadableStream
+ */
+export function readableToReadableStream<T = Uint8Array>(readable: Readable): ReadableStream<T> {
     readable.pause();
 
     /** highWaterMark 由 readable 处理 */
     let queuingStrategy: QueuingStrategy = { highWaterMark: 0 };
     if (readable.readableObjectMode) {
         queuingStrategy.size = () => 1;
-    } else if (type !== "bytes") {
+    } else {
         queuingStrategy.size = (chunk: ArrayBufferLike) => chunk.byteLength;
     }
     // bytes 不需要 size 函数
-    return new ReadableStream<T>(new ReadableSource(readable, type), queuingStrategy);
+    // 另外 不支持可读字节流
+    return new ReadableStream<T>(new ReadableSource(readable), queuingStrategy);
 }
+/**
+ * @public
+ * @remarks 将 node 的 Writable 转换为 WritableStream
+ */
 export function writableToWritableStream<T = Uint8Array>(writable: Writable) {
     let queuingStrategy: QueuingStrategy;
     if (writable.writableObjectMode) {
@@ -43,7 +48,8 @@ export function writableToWritableStream<T = Uint8Array>(writable: Writable) {
 // }
 
 /**
- * @remarks 创建对 Readable 的 ScannableStream
+ * @public
+ * @remarks 将 node 的 Readable 转换为 ScannableStream
  */
 export function readableToScannableStream<T>(readable: Readable): ScannableStream<T> {
     const stream = readableToReadableStream(readable) as ScannableStream<T>;

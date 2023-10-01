@@ -144,7 +144,7 @@ export class Server<T extends SocketStream> {
     get listening() {
         return this.#server.listening;
     }
-    /** @remark 将调用close */
+    /** @remarks 将调用close */
     get [Symbol.asyncDispose]() {
         return this.#server[Symbol.asyncDispose];
     }
