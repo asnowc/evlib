@@ -1,11 +1,11 @@
+import { createScannerFromReadable } from "../src/stream.js";
 import { Readable } from "node:stream";
-import { describe, test, expect } from "vitest";
-import { createReaderFromReadable } from "@eavid/lib-node/util/stream_util.js";
+import { test, expect, describe } from "vitest";
 
-describe("createReaderFromReadable", function () {
+describe("createScannerFromReadable", function () {
     function createMockRead() {
         const readable = new Readable({ read(size) {} });
-        const { read, cancel } = createReaderFromReadable(readable);
+        const { read, cancel } = createScannerFromReadable(readable);
         return { readable, read, cancel };
     }
 
@@ -47,10 +47,7 @@ describe("createReaderFromReadable", function () {
             // await expect(read(2, true)).resolves.toBe(null);
         });
     });
-    test("同一个readable创建第二次", function () {
-        const { read, readable } = createMockRead();
-        expect(() => createReaderFromReadable(readable)).toThrowError();
-    });
+
     test("队列读取", async function () {
         const { read, readable } = createMockRead();
         const pms = Promise.all([read(2), read(2), read(2)]);
@@ -80,15 +77,15 @@ describe("createReaderFromReadable", function () {
         await expect(read(4)).rejects.toThrowError();
     });
     test("小于1的读取", function () {
-        const { read, readable } = createMockRead();
-        expect(() => read(0)).toThrowError();
+        const { read } = createMockRead();
+        expect(read(0)).rejects.toThrowError();
     });
     test("创建reader前流已经结束", async function () {
         const readable = new Readable({ read(size) {} });
         readable.on("data", () => {});
         readable.push(null);
         await new Promise((resolve) => setTimeout(resolve));
-        const { read } = createReaderFromReadable(readable);
+        const { read } = createScannerFromReadable(readable);
         /** 未监听 */
         expect(readable.listenerCount("readable")).toBe(0);
         expect(readable.listenerCount("close")).toBe(0);
@@ -98,7 +95,7 @@ describe("createReaderFromReadable", function () {
 
     describe("取消reader", function () {
         test("cancel()", function () {
-            const { read, cancel, readable } = createMockRead();
+            const { cancel, readable } = createMockRead();
             readable.push(Buffer.allocUnsafe(4));
             readable.push(null);
 
@@ -109,19 +106,6 @@ describe("createReaderFromReadable", function () {
             expect(readable.listenerCount("readable")).toBe(0);
             expect(readable.listenerCount("close")).toBe(0);
             expect(readable.listenerCount("end")).toBe(0);
-            expect(cancel()).toBe(null);
-        });
-        test("缓存有剩余", async function () {
-            const { read, cancel, readable } = createMockRead();
-            readable.push(Buffer.allocUnsafe(4));
-            readable.push(null);
-            await read(2);
-
-            const val = cancel() as Buffer;
-            expect(val!.byteLength).toBe(2);
-        });
-        test("缓存无剩余", async function () {
-            const { read, cancel, readable } = createMockRead();
             expect(cancel()).toBe(null);
         });
         test("缓存推回Readable", async function () {

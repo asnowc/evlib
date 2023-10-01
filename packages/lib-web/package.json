@@ -1,6 +1,6 @@
 {
-    "name": "@asnc/tslib",
-    "version": "1.0.0",
+    "name": "@eavid/lib-web",
+    "version": "0.0.1-1",
     "description": "",
     "type": "module",
     "scripts": {

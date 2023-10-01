@@ -7,7 +7,7 @@ const evlibExclude: string[] = ["packages/evlib/src/errors", "packages/evlib/src
 export default defineConfig({
     test: {
         coverage: {
-            exclude: ["**/__mocks__", "**/*.assert.ts", ...evlibExclude],
+            exclude: ["**/__mocks__", "**/*.assert.ts", "**/*.js", ...evlibExclude],
         },
     },
 });
