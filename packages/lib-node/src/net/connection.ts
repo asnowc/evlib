@@ -99,12 +99,15 @@ export class Connection extends SocketStream {
         this.socket.setTimeout(time);
     }
     /**
-     * @remark timeout 事件
+     * @remarks timeout 事件
      */
     $timeout = new Listenable<void>();
 }
 
-/** @public */
+/**
+ * @public
+ * @remarks 创建 tcp 连接的选项
+ */
 export interface TcpConnectOpts {
     port: number;
     /** @defaultValue - localhost */
@@ -115,6 +118,8 @@ export interface TcpConnectOpts {
     localAddress?: string;
     /** @remarks 套接字应使用的本地端口。 */
     localPort?: number;
+    /** @remarks 中断连接的信号 */
+    signal?: AbortSignal;
 }
 
 /**
@@ -124,8 +129,23 @@ export interface TcpConnectOpts {
 export function connect(options: TcpConnectOpts) {
     return new Promise<Connection>((resolve, reject) => {
         const socket = new net.Socket();
-        socket.connect(options, function () {
+        const signal = options.signal;
+        function clear() {
             socket.off("error", reject);
+            signal?.removeEventListener("abort", onAbort);
+        }
+        function onAbort(this: AbortSignal, e: Event) {
+            clear();
+            socket.destroy(this.reason);
+            reject(this.reason);
+        }
+        if (signal) {
+            signal.throwIfAborted();
+            signal.addEventListener("abort", onAbort);
+        }
+
+        socket.connect(options, function () {
+            clear();
             resolve(new Connection(socket));
         });
         socket.once("error", reject);
