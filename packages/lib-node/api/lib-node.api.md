@@ -14,8 +14,11 @@ import * as node_ps from 'node:child_process';
 import { Readable } from 'node:stream';
 import type { Readable as Readable_2 } from 'stream';
 import { ReadableStream as ReadableStream_2 } from 'node:stream/web';
+import { ReadableStream as ReadableStream_3 } from 'stream/web';
 import { ReadableStreamDefaultReader as ReadableStreamDefaultReader_2 } from 'node:stream/web';
+import type { Writable } from 'node:stream';
 import { WritableStream as WritableStream_2 } from 'node:stream/web';
+import { WritableStream as WritableStream_3 } from 'stream/web';
 
 // @public (undocumented)
 function connect(options: TcpConnectOpts): Promise<Connection>;
@@ -126,6 +129,12 @@ function readableRead(stream: Readable_2, len: number, abortSignal?: AbortSignal
 function readableReadAll(stream: Readable_2, abortSignal?: AbortSignal): Promise<Buffer>;
 
 // @public (undocumented)
+function readableToReadableStream<T = Uint8Array>(readable: Readable): ReadableStream_3<T>;
+
+// @public (undocumented)
+function readableToScannableStream<T>(readable: Readable): ScannableStream<T>;
+
+// @public (undocumented)
 function readAll<T>(reader: ReadableStreamDefaultReader_2<T>): Promise<T[]>;
 
 // @public (undocumented)
@@ -226,7 +235,10 @@ declare namespace stream {
         ScannableStream,
         createScannerFromReadable,
         readableRead,
-        readableReadAll
+        readableReadAll,
+        readableToReadableStream,
+        writableToWritableStream,
+        readableToScannableStream
     }
 }
 export { stream }
@@ -318,6 +330,9 @@ interface TcpServerOpts extends ServerOpts {
     // (undocumented)
     ipv6Only?: boolean;
 }
+
+// @public (undocumented)
+function writableToWritableStream<T = Uint8Array>(writable: Writable): WritableStream_3<T>;
 
 // (No @packageDocumentation comment for this package)
 
