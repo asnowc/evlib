@@ -1,5 +1,19 @@
 {
-	"devDependencies": {
-		"vitest": "^0.30.1"
-	}
+    "name": "libs",
+    "version": "0.0.1",
+    "scripts": {
+        "test": "vitest",
+        "test:ui": "vitest --ui",
+        "test:coverage": "vitest --coverage --ui",
+        "ci:build": "pnpm -r ci:build",
+        "api:extractor": "pnpm -r api:extractor",
+        "ci:test": "vitest run --coverage",
+        "ci:publish": "pnpm publish --tag beta -r",
+        "publish:try": "pnpm  publish --tag beta --no-git-checks --dry-run -r"
+    },
+    "devDependencies": {
+        "@vitest/coverage-v8": "^0.34.3",
+        "@vitest/ui": "^0.34.3",
+        "vitest": "^0.34.3"
+    }
 }

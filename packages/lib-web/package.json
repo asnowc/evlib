@@ -1,0 +1,19 @@
+{
+    "name": "@eavid/lib-web",
+    "version": "0.0.1-1",
+    "description": "",
+    "type": "module",
+    "scripts": {
+        "build": "tsc -p ./tsconfig.build.json"
+    },
+    "files": [
+        "out"
+    ],
+    "exports": {
+        "./*": "./out/*.js"
+    },
+    "keywords": [],
+    "author": "asnow",
+    "license": "MIT",
+    "peerDependencies": {}
+}

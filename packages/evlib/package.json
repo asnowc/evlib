@@ -1,0 +1,35 @@
+{
+    "name": "evlib",
+    "version": "0.0.3",
+    "description": "",
+    "type": "module",
+    "author": "Eavid",
+    "license": "MIT",
+    "scripts": {
+        "build": "tsc -p src/tsconfig.json",
+        "publish:try": "pnpm publish --no-git-checks --dry-run",
+        "ci:build": "pnpm build",
+        "api:extractor": "api-extractor run -v",
+        "api:extractor-local": "pnpm api:extractor -l"
+    },
+    "exports": {
+        ".": {
+            "import": "./out/core/index.js",
+            "types": "./out/core/index.d.ts"
+        },
+        "./*": "./out/*.js"
+    },
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org/"
+    },
+    "files": [
+        "out/**/*.js",
+        "out/**/*.d.ts"
+    ],
+    "keywords": [],
+    "devDependencies": {
+        "@microsoft/api-extractor": "^7.37.0",
+        "typescript": "^5.2.2"
+    }
+}

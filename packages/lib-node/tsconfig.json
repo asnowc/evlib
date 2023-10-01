@@ -1,12 +1,12 @@
 {
-    "extends": "./node_modules/@asnc/tslib/config/tsconfig.std.json",
+    "extends": "../dev-lib/config/tsconfig.std.json",
     "compilerOptions": {
-        "moduleResolution": "nodenext",
-        "types": ["node"],
-        "rootDir": "./src",
-        "outDir": "./lib",
         "baseUrl": ".",
-        "plugins": []
+        "paths": {
+            "@eavid/lib-node/*": ["./src/*.js"],
+            "#evlib": ["./src/lib/evlib.js"]
+        },
+        "lib": ["ESNext"]
     },
-    "include": ["**/*.ts"]
+    "include": ["src", "test"]
 }

@@ -1,4 +1,5 @@
-/packages/*/lib
-/packages/*/lib_cjs
+/packages/*/out
 /packages/*/types
 node_modules
+temp/
+/coverage

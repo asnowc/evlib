@@ -1,24 +1,38 @@
 {
-    "name": "@asnc/lib-node",
+    "name": "@eavid/lib-node",
     "version": "1.0.0",
     "description": "",
     "type": "module",
     "scripts": {
-        "build": "tsc -p ./tsconfig.build.json"
+        "build": "tsc -p ./tsconfig.build.json",
+        "ci:build": "pnpm build",
+        "api:extractor": "api-extractor run -v",
+        "api:extractor-local": "pnpm api:extractor -l"
     },
     "files": [
-        "lib"
+        "out/**/*.js",
+        "out/**/*.d.ts"
     ],
     "keywords": [],
     "author": "asnow",
     "license": "MIT",
     "exports": {
-        "./*": "./lib/*.js"
+        "./*": "./out/*.js",
+        "./util/*": "./out/util/*"
+    },
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org/"
+    },
+    "imports": {
+        "#evlib": "./out/lib/evlib.js"
     },
     "devDependencies": {
-        "@types/node": "^18.14.2"
+        "@types/node": "^20.5.7",
+        "typescript": "^5.2.2"
     },
-    "peerDependencies": {
-        "@asnc/tslib": "workspace:^1.0.0"
+    "dependencies": {
+        "@microsoft/api-extractor": "^7.37.0",
+        "evlib": "workspace:0.0.3"
     }
 }

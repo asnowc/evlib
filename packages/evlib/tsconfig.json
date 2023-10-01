@@ -1,0 +1,14 @@
+{
+    "extends": "../dev-lib/config/tsconfig.std.json",
+    "compilerOptions": {
+        "noEmit": true,
+        "lib": ["ESNext"],
+        "types": [],
+        "baseUrl": ".",
+        "paths": {
+            "evlib/*": ["./src/*.js"],
+            "evlib": ["./src/core/index.js"]
+        }
+    },
+    "exclude": ["node_modules", "out"]
+}
