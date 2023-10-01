@@ -3,7 +3,9 @@ import { createScannerFromReadable } from "./create_scanner.js";
 
 /**
  * @alpha
- * @remark 等待流达到len的长度时,读取流,然后返回
+ * @remarks 
+ * 等待流达到len的长度时,读取流,然后返回
+ * 
  * @throws
  */
 export async function readableRead(stream: Readable, len: number, abortSignal?: AbortSignal): Promise<Buffer> {
@@ -24,7 +26,7 @@ export async function readableRead(stream: Readable, len: number, abortSignal?: 
 
 /**
  * @alpha
- * @remark 等待流 end 事件触发后一次性读取所有数据
+ * @remarks 等待流 end 事件触发后一次性读取所有数据
  */
 export async function readableReadAll(stream: Readable, abortSignal?: AbortSignal) {
     return new Promise<Buffer>(function (resolve, reject) {

@@ -4,7 +4,7 @@ import * as fs from "node:fs";
 export { closeSync } from "node:fs";
 /**
  * @public
- * @remark 关闭资源
+ * @remarks 关闭资源
  */
 export function close(fd: number) {
     return new Promise<void>(function (resolve, reject) {

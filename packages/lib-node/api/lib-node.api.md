@@ -22,6 +22,7 @@ function connect(options: TcpConnectOpts): Promise<Connection>;
 
 // @public (undocumented)
 class Connection extends SocketStream {
+    // (undocumented)
     $timeout: Listenable<void>;
     constructor(socket: net_2.Socket);
     // (undocumented)
@@ -70,9 +71,11 @@ class DuplexStream<T> {
     get errored(): Error | null;
     // (undocumented)
     readonly readable: ScannableStream<T>;
+    // (undocumented)
     get readableClosed(): boolean;
     // (undocumented)
     readonly writable: WritableStream_2<T>;
+    // (undocumented)
     get writableClosed(): boolean;
 }
 
@@ -116,10 +119,10 @@ declare namespace process_2 {
 }
 export { process_2 as process }
 
-// @alpha
+// @alpha (undocumented)
 function readableRead(stream: Readable_2, len: number, abortSignal?: AbortSignal): Promise<Buffer>;
 
-// @alpha
+// @alpha (undocumented)
 function readableReadAll(stream: Readable_2, abortSignal?: AbortSignal): Promise<Buffer>;
 
 // @public (undocumented)
@@ -137,6 +140,7 @@ class Server<T extends SocketStream> {
     $close: Listenable<void>;
     // (undocumented)
     $error: Listenable<Error>;
+    // (undocumented)
     get [Symbol.asyncDispose](): () => Promise<void>;
     constructor(port: number, options?: TcpServerOpts);
     constructor(path: string, options?: IpcServerOpts);
@@ -262,6 +266,7 @@ class SubProcess {
     closedState: ClosedState | null;
     // (undocumented)
     get connected(): boolean;
+    // (undocumented)
     disconnect(): void;
     // (undocumented)
     kill(signal?: NodeJS.Signals | number): boolean;
@@ -299,6 +304,8 @@ interface TcpConnectOpts {
     localPort?: number;
     // (undocumented)
     port: number;
+    // (undocumented)
+    signal?: AbortSignal;
 }
 
 // @public (undocumented)

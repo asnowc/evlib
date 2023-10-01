@@ -47,10 +47,8 @@
             "default": {
                 "logLevel": "error"
                 // "addToApiReportFile": false
-            },
-            "tsdoc-undefined-tag": {
-                "logLevel": "none"
             }
+        
         }
     }
 }

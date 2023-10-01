@@ -27,7 +27,7 @@ function read(fd, length) {
 }
 /**
  * @beta
- * @remark 关闭资源
+ * @remarks 关闭资源
  */
 function close(fd) {
     return new Promise(function (resolve, reject) {

@@ -37,11 +37,11 @@ export class DuplexStream<T> {
     get closed() {
         return !streamIsAlive(this.duplex);
     }
-    /** @remark readableStream 是否已关闭*/
+    /** @remarks readableStream 是否已关闭*/
     get readableClosed() {
         return !this.duplex.readable;
     }
-    /** @remark writableStream 是否已关闭*/
+    /** @remarks writableStream 是否已关闭*/
     get writableClosed() {
         return !this.duplex.writable;
     }
