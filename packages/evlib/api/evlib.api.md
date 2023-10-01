@@ -4,8 +4,6 @@
 
 ```ts
 
-import * as time from './out/time.js';
-
 // @public (undocumented)
 function afterTime(time?: number): Promise<void>;
 
@@ -66,7 +64,7 @@ const ECMA_VERSION: number;
 
 declare namespace errors {
     export {
-        NumericalRangeException,
+        NumericalRangeError,
         TimeoutError,
         createErrDesc,
         TypeError_2 as TypeError,
@@ -143,7 +141,7 @@ class Listenable<T> {
 }
 
 // @public (undocumented)
-class NumericalRangeException extends Error {
+class NumericalRangeError extends Error {
     constructor(min?: number, max?: number, valueName?: string);
 }
 
@@ -179,8 +177,6 @@ function promiseHandle<T>(): PPPromiseHandle<T>;
 
 // @public (undocumented)
 let runtimeEngine: "node" | "browser" | "deno" | "bun" | "unknown";
-
-export { time }
 
 // @public (undocumented)
 class TimeoutError extends Error {

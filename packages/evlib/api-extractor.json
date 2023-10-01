@@ -19,7 +19,7 @@
         "enabled": true,
         // "reportFileName": "<unscopedPackageName>.api.md",
         "reportFolder": "api/",
-        "reportTempFolder": "temp/"
+        "reportTempFolder": "api/temp/"
         // "includeForgottenExports": false
     },
 

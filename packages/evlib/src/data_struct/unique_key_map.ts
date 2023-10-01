@@ -1,4 +1,4 @@
-import { NumericalRangeException } from "../errors/validation.error.js";
+import { NumericalRangeError } from "../errors/validation.error.js";
 
 /**
  * @description 自动控制key的Map
@@ -7,7 +7,7 @@ import { NumericalRangeException } from "../errors/validation.error.js";
 export class UniqueKeyMap<T = any> extends Map<number, T> {
     constructor(readonly maxSize: number) {
         if (maxSize <= 0 || isNaN(maxSize) || maxSize === Infinity || typeof maxSize !== "number")
-            throw new NumericalRangeException();
+            throw new NumericalRangeError();
         super();
     }
     #startPointer = 0;

@@ -7,12 +7,20 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "keywords": [],
-    "author": "",
+    "author": "Eavid",
     "license": "ISC",
     "devDependencies": {
         "@types/node": "^20.5.7"
     },
     "dependencies": {
         "glob": "^10.3.4"
+    },
+    "files": [
+        "out/**/*.js",
+        "out/**/*.d.ts"
+    ],
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org/"
     }
 }

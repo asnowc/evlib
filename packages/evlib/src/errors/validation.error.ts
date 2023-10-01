@@ -1,5 +1,8 @@
-/** @public */
-export class NumericalRangeException extends Error {
+/**
+ * @public
+ * @remarks 数组范围错误, 通常用于参数校验
+ */
+export class NumericalRangeError extends Error {
     constructor(min?: number, max?: number, valueName = "numerical range") {
         const invalid = valueName + " exception";
         let msg = "";

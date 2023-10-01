@@ -1,6 +1,6 @@
 {
     "name": "@eavid/lib-node",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "",
     "type": "module",
     "scripts": {
@@ -14,25 +14,25 @@
         "out/**/*.d.ts"
     ],
     "keywords": [],
-    "author": "asnow",
+    "author": "Eavid",
     "license": "MIT",
     "exports": {
         "./*": "./out/*.js",
         "./util/*": "./out/util/*"
-    },
-    "publishConfig": {
-        "access": "public",
-        "registry": "https://registry.npmjs.org/"
     },
     "imports": {
         "#evlib": "./out/lib/evlib.js"
     },
     "devDependencies": {
         "@types/node": "^20.5.7",
-        "typescript": "^5.2.2"
+        "typescript": "^5.2.2",
+        "@microsoft/api-extractor": "^7.37.0"
     },
     "dependencies": {
-        "@microsoft/api-extractor": "^7.37.0",
-        "evlib": "workspace:0.0.3"
+        "evlib": "workspace:^"
+    },
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org/"
     }
 }

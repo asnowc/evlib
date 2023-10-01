@@ -1,7 +1,7 @@
 type Obj = Record<string | number | symbol, any>;
 
 /**
- * @description 将from 覆盖到 to
+ * @remarks 将from 覆盖到 to
  */
 export function patchObject(from: Obj, to: Obj) {
     for (const [key, val] of Object.entries(from)) {
@@ -15,7 +15,7 @@ export function patchObject(from: Obj, to: Obj) {
     return from;
 }
 /**
- * @description 对数组进行分组
+ * @remarks 对对象数组进行分组
  */
 export function objectGroup<Key, T extends Obj>(data: T[], key: keyof T) {
     let res = new Map<Key, T[]>();
@@ -32,7 +32,7 @@ export function objectGroup<Key, T extends Obj>(data: T[], key: keyof T) {
 }
 
 /** 
- * @description 删除值为undefined的建
+ * @remarks 删除值为undefined的建
  */
 export function removeUndefined<T extends Obj>(obj: T, deep = true): T {
     for (const key of Object.keys(obj)) {

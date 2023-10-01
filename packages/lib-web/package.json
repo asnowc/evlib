@@ -6,14 +6,19 @@
     "scripts": {
         "build": "tsc -p ./tsconfig.build.json"
     },
-    "files": [
-        "out"
-    ],
     "exports": {
         "./*": "./out/*.js"
     },
     "keywords": [],
-    "author": "asnow",
+    "author": "Eavid",
     "license": "MIT",
-    "peerDependencies": {}
+    "peerDependencies": {},
+    "files": [
+        "out/**/*.js",
+        "out/**/*.d.ts"
+    ],
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org/"
+    }
 }
