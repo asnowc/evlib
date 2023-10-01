@@ -57,6 +57,10 @@ describe("connect", function () {
     });
 });
 class MockSocket extends Duplex {
+    _read(size: number): void {} // node 16 必须实现 _read() _write()
+    _write(chunk: any, encoding: BufferEncoding, callback: (error?: Error | null | undefined) => void): void {
+        callback();
+    }
     connect = vi.fn();
     destroy = vi.fn();
 }

@@ -21,6 +21,7 @@ export function fromList<T>(n: number, state: ReadableState<T>): T | undefined {
 
     return ret as any;
 }
+
 export class ReadableSource<T> implements UnderlyingSource {
     constructor(readable: Readable, type?: "bytes");
     constructor(private readable: InternalReadable<T>, type?: "bytes") {
@@ -106,15 +107,8 @@ export class ReadableSource<T> implements UnderlyingSource {
             return { closed: true };
         }
     }
-    /**
-     * todo: 处理字节流
-     */
+
     private queue(ctrl: ReadableStreamController<T>, chunk: T) {
-        const byobRequest = (ctrl as any).byobRequest as null | DataView;
-        if (byobRequest) {
-            throw new Error("un imp");
-            //todo
-        }
         ctrl.enqueue(chunk);
     }
     private ctrlClosed = false;
@@ -162,7 +156,11 @@ type WaitChunkRes<T> =
 
 const fastArrayBuffer = Buffer.allocUnsafe(1).buffer;
 /** 可读字节流chunk处理，避免将 node 的 Buffer 的底层 转移*/
-function bytesQueueHandler(ctrl: ReadableByteStreamController, chunk: Uint8Array) {
+function bytesQueueHandler(
+    this: ReadableSource<ArrayBufferLike>,
+    ctrl: ReadableByteStreamController,
+    chunk: Uint8Array
+) {
     if (chunk.buffer === fastArrayBuffer) {
         const buffer = new Uint8Array(chunk.byteLength);
         buffer.set(chunk);
@@ -171,6 +169,7 @@ function bytesQueueHandler(ctrl: ReadableByteStreamController, chunk: Uint8Array
     const byobRequest = ctrl.byobRequest as unknown as ReadableStreamBYOBRequest | null;
     if (byobRequest) {
         byobRequest.respondWithNewView(chunk as any);
+        byobRequest.respond(chunk.byteLength);
     } else {
         ctrl.enqueue(chunk);
     }

@@ -12,22 +12,19 @@ import { WritableCore } from "./writable_core.js";
 import { ScannableStream } from "./scannable_stream.js";
 import { createScannerFromReadable } from "./extra/mod.js";
 
-export function readableToReadableStream<T = Uint8Array>(
-    readable: Readable,
-    option: { type?: "bytes" } = {}
-): ReadableStream<T> {
-    const { type } = option;
+export function readableToReadableStream<T = Uint8Array>(readable: Readable): ReadableStream<T> {
     readable.pause();
 
     /** highWaterMark 由 readable 处理 */
     let queuingStrategy: QueuingStrategy = { highWaterMark: 0 };
     if (readable.readableObjectMode) {
         queuingStrategy.size = () => 1;
-    } else if (type !== "bytes") {
+    } else {
         queuingStrategy.size = (chunk: ArrayBufferLike) => chunk.byteLength;
     }
     // bytes 不需要 size 函数
-    return new ReadableStream<T>(new ReadableSource(readable, type), queuingStrategy);
+    // 另外 不支持可读字节流
+    return new ReadableStream<T>(new ReadableSource(readable), queuingStrategy);
 }
 export function writableToWritableStream<T = Uint8Array>(writable: Writable) {
     let queuingStrategy: QueuingStrategy;
