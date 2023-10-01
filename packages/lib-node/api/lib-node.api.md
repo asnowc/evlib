@@ -89,10 +89,12 @@ function fork(file: string, options?: SpawnOptions): Promise<SubProcess>;
 //
 // @public (undocumented)
 interface IpcServerOpts extends ServerOpts {
-    readable?: boolean;
+    // (undocumented)
+    path?: string;
     // (undocumented)
     readableAll?: boolean;
-    writable?: boolean;
+    // (undocumented)
+    type: "IPC";
     // (undocumented)
     writableAll?: boolean;
 }
@@ -144,16 +146,16 @@ interface ScannableStream<T> extends ReadableStream_2<T> {
 }
 
 // @public (undocumented)
-class Server<T extends SocketStream> {
+class Server<T = Connection> {
     // (undocumented)
     $close: Listenable<void>;
     // (undocumented)
     $error: Listenable<Error>;
     // (undocumented)
-    get [Symbol.asyncDispose](): () => Promise<void>;
-    constructor(port: number, options?: TcpServerOpts);
-    constructor(path: string, options?: IpcServerOpts);
-    constructor(port_path: string | number, options?: TcpServerOpts | IpcServerOpts);
+    [Symbol.asyncDispose](): Promise<void>;
+    constructor(options: TcpServerOpts);
+    constructor(options: IpcServerOpts);
+    constructor(options: TcpServerOpts | IpcServerOpts, toConn?: (socket: net_2.Socket) => T);
     // (undocumented)
     close(): Promise<void>;
     // (undocumented)
@@ -161,18 +163,19 @@ class Server<T extends SocketStream> {
     // @alpha (undocumented)
     get fd(): number | Object;
     // (undocumented)
-    static listen(port: number, tcpOpts?: TcpServerOpts): Promise<Server<Connection>>;
+    get keepCount(): number;
     // (undocumented)
-    static listen(path: string, ipcOpts?: IpcServerOpts): Promise<Server<SocketStream>>;
+    static listen(tcpOpts: TcpServerOpts): Promise<Server<Connection>>;
     // (undocumented)
-    listen(): Promise<void>;
+    static listen(ipcOpts: IpcServerOpts): Promise<Server<SocketStream>>;
+    // (undocumented)
+    listen(options?: Pick<TcpServerOpts, "port" | "host">): Promise<void>;
     // (undocumented)
     get listening(): boolean;
     // Warning: (ae-forgotten-export) The symbol "ConnectionHandler" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
-    get onConnection(): ConnectionHandler<T> | null;
-    set onConnection(handler: ConnectionHandler<T> | null);
+    onConnection?: ConnectionHandler<T>;
     // (undocumented)
     ref(): void;
     // (undocumented)
@@ -329,6 +332,10 @@ interface TcpServerOpts extends ServerOpts {
     host?: string;
     // (undocumented)
     ipv6Only?: boolean;
+    // (undocumented)
+    port?: number;
+    // (undocumented)
+    type?: "TCP";
 }
 
 // @public (undocumented)

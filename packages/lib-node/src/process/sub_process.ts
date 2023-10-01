@@ -97,10 +97,10 @@ export class SubProcess {
             this.$close.emit(this.closedState);
         }
         return res;
-    }
+    } /* c8 ignore next 3 */
     ref() {
         this.nodeCps.ref();
-    }
+    } /* c8 ignore next 3 */
     unref() {
         this.nodeCps.unref();
     }

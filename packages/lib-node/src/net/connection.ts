@@ -1,7 +1,7 @@
 import * as net from "node:net";
 import { Listenable } from "#evlib";
 import { DuplexStream } from "../stream.js";
-
+/* c8 ignore start */
 /**
  * @public
  *
@@ -10,7 +10,6 @@ export class SocketStream extends DuplexStream<Buffer> {
     constructor(protected socket: net.Socket) {
         super(socket);
     }
-
     ref() {
         this.socket.ref();
     }
@@ -27,7 +26,7 @@ export class SocketStream extends DuplexStream<Buffer> {
         return this.socket.bytesWritten;
     }
 }
-
+/* c8 ignore end */
 /** @public */
 export type TcpFamily = "IPv4" | "IPv6";
 

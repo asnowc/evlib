@@ -4,7 +4,7 @@ import { expect, describe, vi, test } from "vitest";
 describe("tcp", function () {
     test("listen/close", async function () {
         const port = 8889;
-        const server = await Server.listen(port);
+        const server = await Server.listen({ port });
         server.disposeQueue = true;
         server.onConnection = (conn) => {};
 
@@ -26,7 +26,7 @@ describe("ipc", function () {
     const PIPE_PATH = "\\\\.\\pipe\\" + PIPE_NAME;
 
     test("ipc server", async function () {
-        const ipcServer = await Server.listen(PIPE_PATH);
+        const ipcServer = await Server.listen({ path: PIPE_PATH, type: "IPC" });
         ipcServer.onConnection = async (pipe) => {
             await pipe.writable.close();
             pipe.dispose();
