@@ -4,8 +4,6 @@
 
 ```ts
 
-// Warning: (ae-forgotten-export) The symbol "TerminablePromise" needs to be exported by the entry point index.d.ts
-//
 // @public (undocumented)
 function afterTime(time?: number): TerminablePromise<void>;
 
@@ -22,6 +20,14 @@ const checkFnFactor: {
 //
 // @public (undocumented)
 function checkType<T = unknown>(value: any, except: ExceptType, options?: TypeCheckOptions): CheckRes<T>;
+
+// @public (undocumented)
+interface ControllablePromise<T> extends Promise<T> {
+    // (undocumented)
+    reject(reason?: any): void;
+    // (undocumented)
+    resolve(data: T): void;
+}
 
 declare namespace core {
     export {
@@ -43,7 +49,10 @@ declare namespace core {
         promiseHandle,
         PromiseHandle,
         PPPromiseHandle,
-        Listenable
+        Listenable,
+        VoidFn,
+        TerminablePromise,
+        ControllablePromise
     }
 }
 export { core }
@@ -181,10 +190,14 @@ let runtimeEngine: "node" | "browser" | "deno" | "bun" | "unknown";
 // @public (undocumented)
 function setInterval_2(fn: VoidFn, intervalTime?: number): () => void;
 
-// Warning: (ae-forgotten-export) The symbol "VoidFn" needs to be exported by the entry point index.d.ts
-//
 // @public (undocumented)
 function setTimer(fn: VoidFn, timeout?: number): () => void;
+
+// @public (undocumented)
+interface TerminablePromise<T> extends Promise<T> {
+    // (undocumented)
+    abort(reason?: Error): void;
+}
 
 // @public (undocumented)
 class TimeoutError extends Error {
@@ -214,6 +227,12 @@ class TypeError_2 extends Error {
     //
     // (undocumented)
     cause: TypeErrorDesc_2;
+}
+
+// @public (undocumented)
+interface VoidFn {
+    // (undocumented)
+    (): void;
 }
 
 // Warnings were encountered during analysis:
