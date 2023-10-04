@@ -48,29 +48,37 @@ export interface IpcServerOpts extends ServerOpts {
     type: "IPC";
     path?: string;
 }
-
-type ConnectionHandler<T> = (stream: T) => void;
+/** @public */
+export interface ServerListenOpts {
+    port?: number;
+    host?: string;
+    path?: string;
+}
+/** @public */
+export type CreateTcpServerOpts = Omit<TcpServerOpts, "port">;
+/** @public */
+export type CreateIpcServerOpts = Omit<IpcServerOpts, "path">;
 
 /** @public */
-export class Server<T = Connection> {
-    /**
-     *
-     */
-    static listen(tcpOpts: TcpServerOpts): Promise<Server<Connection>>;
-    static listen(ipcOpts: IpcServerOpts): Promise<Server<SocketStream>>;
-    static async listen(options: TcpServerOpts | IpcServerOpts): Promise<Server<any>> {
-        const server = new this(options);
+export class Server {
+    static listen(onConn: (conn: Connection) => void, options?: TcpServerOpts): Promise<Server>;
+    static listen(onConn: (conn: SocketStream) => void, options?: IpcServerOpts): Promise<Server>;
+    static async listen(onConn: (conn: any) => void, options: TcpServerOpts | IpcServerOpts = {}) {
+        const type = options.type;
+        const onSocketConnect =
+            type === "IPC"
+                ? (socket: net.Socket) => onConn(new SocketStream(socket))
+                : (socket: net.Socket) => onConn(new Connection(socket));
+        const server = new this(onSocketConnect, options);
         await server.listen();
         return server;
     }
-    /**
-     * @param toConn - 连接转换函数
-     */
-    constructor(options: TcpServerOpts);
-    constructor(options: IpcServerOpts);
-    constructor(options: TcpServerOpts | IpcServerOpts, toConn?: (socket: net.Socket) => T);
-    constructor(options: TcpServerOpts | IpcServerOpts, toConn?: (socket: net.Socket) => T) {
-        if (toConn !== undefined && typeof toConn !== "function") throw new Error("toConn must be a function");
+
+    constructor(onConn: (conn: net.Socket) => void, options?: TcpServerOpts | undefined);
+    constructor(onConn: (conn: net.Socket) => void, options?: IpcServerOpts | undefined);
+    constructor(onConn: (conn: net.Socket) => void, options?: TcpServerOpts | IpcServerOpts | undefined);
+    constructor(onConn: (conn: net.Socket) => void, options: TcpServerOpts | IpcServerOpts = {}) {
+        if (typeof onConn !== "function") throw new Error("onConnection must be a function");
         const serverOpts: net.ServerOpts = {
             keepAlive: options.keepAlive,
             keepAliveInitialDelay: options.keepAliveInitialDelay,
@@ -91,15 +99,12 @@ export class Server<T = Connection> {
                     writableAll: options.writableAll,
                     path: options.path,
                 };
-                if (!toConn) toConn = (socket) => new SocketStream(socket) as T;
             } else {
                 listenOpts = {
                     host: options.host,
                     ipv6Only: options.ipv6Only,
                     port: options.port,
                 };
-
-                if (!toConn) toConn = (socket) => new Connection(socket) as T;
             }
             Object.assign(listenOpts, {
                 exclusive: options.exclusive,
@@ -110,22 +115,13 @@ export class Server<T = Connection> {
         }
 
         server.on("connection", (socket) => {
-            if (!this.onConnection) {
-                socket.destroy();
-                return;
-            }
             if (this.disposeQueue) {
                 socket.on("close", () => this.#connections.delete(socket));
                 this.#connections.add(socket);
             }
-            const conn = toConn!(socket);
-            this.onConnection(conn);
+            onConn(socket);
         });
     }
-    /**
-     * @remarks 接收连接的函数, 如果不存在, 将会拒绝所有连接
-     */
-    onConnection?: ConnectionHandler<T>;
     #options: net.ListenOptions;
     #server = new net.Server();
     $close = new Listenable<void>();
@@ -149,7 +145,7 @@ export class Server<T = Connection> {
     get keepCount() {
         return this.#connections.size;
     }
-    listen(options?: Pick<TcpServerOpts, "port" | "host">) {
+    listen(options?: ServerListenOpts) {
         return new Promise<void>((resolve, reject) => {
             const listenOpts = this.#options;
             if (!listenOpts.path && options) {

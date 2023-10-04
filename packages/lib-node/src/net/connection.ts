@@ -107,7 +107,7 @@ export class Connection extends SocketStream {
  * @public
  * @remarks 创建 tcp 连接的选项
  */
-export interface TcpConnectOpts {
+export interface TcpConnectConfig {
     port: number;
     /** @defaultValue - localhost */
     host?: string;
@@ -117,18 +117,36 @@ export interface TcpConnectOpts {
     localAddress?: string;
     /** @remarks 套接字应使用的本地端口。 */
     localPort?: number;
+}
+/**
+ * @public
+ * @remarks 连接的其他可选选项
+ */
+export interface ConnectOptions {
     /** @remarks 中断连接的信号 */
     signal?: AbortSignal;
 }
 
 /**
- * @public
+ * @alpha
  * @remarks 创建TCP连接
  */
-export function connect(options: TcpConnectOpts) {
-    return new Promise<Connection>((resolve, reject) => {
-        const socket = new net.Socket();
-        const signal = options.signal;
+export function connect(config: TcpConnectConfig, options?: ConnectOptions) {
+    return connectSocket(config, options).then((socket) => new Connection(socket));
+}
+/**
+ * @public
+ * @remarks 创建一个已连接的 Socket
+ */
+export function connectSocket(config: TcpConnectConfig | PipeConfig, options?: ConnectOptions): Promise<net.Socket>;
+export function connectSocket(config: any, options: ConnectOptions = {}) {
+    return new Promise<net.Socket>((resolve, reject) => {
+        const { signal } = options;
+        const newOpts: net.SocketConstructorOpts =
+            typeof config.path === "string"
+                ? { fd: config.fd, readable: config.readable, writable: config.writable }
+                : {};
+        const socket = new net.Socket(newOpts);
         function clear() {
             socket.off("error", reject);
             signal?.removeEventListener("abort", onAbort);
@@ -138,47 +156,51 @@ export function connect(options: TcpConnectOpts) {
             socket.destroy(this.reason);
             reject(this.reason);
         }
+        function onReject() {
+            clear();
+            reject();
+        }
         if (signal) {
             signal.throwIfAborted();
             signal.addEventListener("abort", onAbort);
         }
 
-        socket.connect(options, function () {
-            clear();
-            resolve(new Connection(socket));
-        });
-        socket.once("error", reject);
+        socket.connect(
+            {
+                port: config.port,
+                path: config.path,
+                family: config.family,
+                host: config.host,
+                localAddress: config.localAddress,
+                localPort: config.localPort,
+            },
+            function () {
+                clear();
+                resolve(socket);
+            }
+        );
+        socket.once("error", onReject);
     });
 }
-
 /**
  * @alpha
  */
-interface PipeOptions {
-    /** 允许在套接字上读取，否则将被忽略。 默认值： false */
+export interface PipeConfig {
+    /** @remarks 管道路径 */
+    path: string;
+
+    // new Socket 参数:
+
+    /** @remarks 用给定的文件描述符封装现有的管道，否则将创建新的管道 */
+    fd?: number;
+    /** @remarks 允许在套接字上读取，否则将被忽略。 默认值： false */
     readable?: boolean;
-    /** 允许在套接字上读取，否则将被忽略。 默认值： false */
+    /** @remarks 允许在套接字上读取，否则将被忽略。 默认值： false */
     writable?: boolean;
 }
 /**
  * @alpha
- * @param fd - 用给定的文件描述符封装现有的管道，否则将创建新的管道
- * @param path - 管道路径
  */
-// export function connectPipe(fd: number, options?: PipeOptions): Promise<SocketStream>;
-export function connectPipe(path: string): Promise<SocketStream>;
-export function connectPipe(path: string | number, options: PipeOptions = {}) {
-    return new Promise<SocketStream>((resolve, reject) => {
-        if (typeof path === "number") {
-            const socket = new net.Socket({ fd: path, readable: options.readable, writable: options.writable });
-            resolve(new SocketStream(socket));
-            return;
-        }
-        const socket = new net.Socket();
-        socket.connect(path, function () {
-            socket.off("error", reject);
-            resolve(new SocketStream(socket));
-        });
-        socket.once("error", reject);
-    });
+export function connectPipe(config: PipeConfig, options: ConnectOptions = {}): Promise<SocketStream> {
+    return connectSocket(config, options).then((socket) => new SocketStream(socket));
 }
