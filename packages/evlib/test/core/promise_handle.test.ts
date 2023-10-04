@@ -1,4 +1,4 @@
-import { afterTimeHandle, promiseHandle } from "../../src/core/promise_handle.js";
+import { promiseHandle } from "../../src/core/promise_handle.js";
 import { describe, it, vi, expect } from "vitest";
 describe("promiseHandle", function () {
     it("成功", async function () {
@@ -21,16 +21,5 @@ describe("promiseHandle", function () {
 
         expect(then2Cb).toBeCalledTimes(1);
         await expect(hd.promise, "重复catch").rejects.toBe(3);
-    });
-});
-describe("afterTimeHandle", function () {
-    it("超时成功", async function () {
-        let pms = afterTimeHandle(100);
-        await expect(pms.promise).resolves.toBeUndefined();
-    });
-    it("超时失败", async function () {
-        const err = new Error();
-        let hd = afterTimeHandle(0, err);
-        await expect(hd.promise).rejects.toBe(err);
     });
 });
