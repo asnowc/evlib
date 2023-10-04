@@ -16,12 +16,31 @@ import type { Readable as Readable_2 } from 'stream';
 import { ReadableStream as ReadableStream_2 } from 'node:stream/web';
 import { ReadableStream as ReadableStream_3 } from 'stream/web';
 import { ReadableStreamDefaultReader as ReadableStreamDefaultReader_2 } from 'node:stream/web';
-import type { Writable } from 'node:stream';
+import { Writable } from 'node:stream';
 import { WritableStream as WritableStream_2 } from 'node:stream/web';
 import { WritableStream as WritableStream_3 } from 'stream/web';
 
+// @beta (undocumented)
+function bridgingDuplex<A extends Duplex, B extends Duplex>(a: A, b: B, options?: BridgingOptions): Promise<{
+    a: A;
+    b: B;
+}>;
+
 // @public (undocumented)
-function connect(options: TcpConnectOpts): Promise<Connection>;
+class BridgingError extends Error {
+    constructor(side: Duplex, cause: Error);
+    // (undocumented)
+    side: Duplex;
+}
+
+// @public (undocumented)
+interface BridgingOptions {
+    // (undocumented)
+    preventDispose?: boolean;
+}
+
+// @alpha (undocumented)
+function connect(config: TcpConnectConfig, options?: ConnectOptions): Promise<Connection>;
 
 // @public (undocumented)
 class Connection extends SocketStream {
@@ -51,14 +70,32 @@ class Connection extends SocketStream {
     set timeout(time: number);
 }
 
+// @public (undocumented)
+interface ConnectOptions {
+    // (undocumented)
+    signal?: AbortSignal;
+}
+
 // @alpha (undocumented)
-function connectPipe(path: string): Promise<SocketStream>;
+function connectPipe(config: PipeConfig, options?: ConnectOptions): Promise<SocketStream>;
+
+// Warning: (ae-incompatible-release-tags) The symbol "connectSocket" is marked as @public, but its signature references "PipeConfig" which is marked as @alpha
+// Warning: (ae-incompatible-release-tags) The symbol "connectSocket" is marked as @public, but its signature references "PipeConfig" which is marked as @alpha
+//
+// @public (undocumented)
+function connectSocket(config: TcpConnectConfig | PipeConfig, options?: ConnectOptions): Promise<net_2.Socket>;
 
 // @public (undocumented)
-function createScannerFromReadable(readable: Readable): StreamScanner;
+type CreateIpcServerOpts = Omit<IpcServerOpts, "path">;
 
 // @public (undocumented)
-class DuplexStream<T> {
+function createScannerFromReadable<T extends Uint8Array = Buffer>(readable: Readable): StreamScanner<T>;
+
+// @public (undocumented)
+type CreateTcpServerOpts = Omit<TcpServerOpts, "port">;
+
+// @beta @deprecated (undocumented)
+class DuplexStream<T extends Uint8Array> {
     // (undocumented)
     $closed: Listenable<Error | null>;
     // (undocumented)
@@ -73,13 +110,9 @@ class DuplexStream<T> {
     // (undocumented)
     get errored(): Error | null;
     // (undocumented)
-    readonly readable: ScannableStream<T>;
+    get readable(): boolean;
     // (undocumented)
-    get readableClosed(): boolean;
-    // (undocumented)
-    readonly writable: WritableStream_2<T>;
-    // (undocumented)
-    get writableClosed(): boolean;
+    get writable(): boolean;
 }
 
 // @alpha (undocumented)
@@ -102,17 +135,66 @@ interface IpcServerOpts extends ServerOpts {
 declare namespace net {
     export {
         connect,
+        connectSocket,
         connectPipe,
         SocketStream,
         TcpFamily,
         Connection,
-        TcpConnectOpts,
+        TcpConnectConfig,
+        ConnectOptions,
+        PipeConfig,
         TcpServerOpts,
         IpcServerOpts,
+        ServerListenOpts,
+        CreateTcpServerOpts,
+        CreateIpcServerOpts,
         Server
     }
 }
 export { net }
+
+// @alpha (undocumented)
+interface PipeConfig {
+    // (undocumented)
+    fd?: number;
+    // (undocumented)
+    path: string;
+    // (undocumented)
+    readable?: boolean;
+    // (undocumented)
+    writable?: boolean;
+}
+
+// @beta (undocumented)
+interface PipeOptions {
+    // (undocumented)
+    preventReadableDispose?: boolean;
+    // (undocumented)
+    preventWritableDispose?: boolean;
+    // (undocumented)
+    preventWritableEnd?: boolean;
+}
+
+// @public (undocumented)
+class PipeSourceError extends Error {
+    constructor(cause: Error);
+    // (undocumented)
+    cause: Error;
+}
+
+// @public (undocumented)
+class PipeTargetError extends Error {
+    constructor(cause: Error);
+    // (undocumented)
+    cause: Error;
+}
+
+// Warning: (ae-forgotten-export) The symbol "WithPromise" needs to be exported by the entry point index.d.ts
+//
+// @beta (undocumented)
+function pipeTo<T extends Readable, R extends Writable>(source: T, target: R, options?: PipeOptions): WithPromise<{
+    abort(reason?: Error): void;
+}, void>;
 
 declare namespace process_2 {
     export {
@@ -134,28 +216,25 @@ function readableReadAll(stream: Readable_2, abortSignal?: AbortSignal): Promise
 function readableToReadableStream<T = Uint8Array>(readable: Readable): ReadableStream_3<T>;
 
 // @public (undocumented)
-function readableToScannableStream<T>(readable: Readable): ScannableStream<T>;
-
-// @public (undocumented)
 function readAll<T>(reader: ReadableStreamDefaultReader_2<T>): Promise<T[]>;
 
 // @public (undocumented)
-interface ScannableStream<T> extends ReadableStream_2<T> {
+interface ScannableStream<T extends Uint8Array = Uint8Array> extends ReadableStream_2<T> {
     // (undocumented)
-    getScanner(): StreamScanner;
+    getScanner(): StreamScanner<T>;
 }
 
 // @public (undocumented)
-class Server<T = Connection> {
+class Server {
     // (undocumented)
     $close: Listenable<void>;
     // (undocumented)
     $error: Listenable<Error>;
     // (undocumented)
     [Symbol.asyncDispose](): Promise<void>;
-    constructor(options: TcpServerOpts);
-    constructor(options: IpcServerOpts);
-    constructor(options: TcpServerOpts | IpcServerOpts, toConn?: (socket: net_2.Socket) => T);
+    constructor(onConn: (conn: net_2.Socket) => void, options?: TcpServerOpts | undefined);
+    constructor(onConn: (conn: net_2.Socket) => void, options?: IpcServerOpts | undefined);
+    constructor(onConn: (conn: net_2.Socket) => void, options?: TcpServerOpts | IpcServerOpts | undefined);
     // (undocumented)
     close(): Promise<void>;
     // (undocumented)
@@ -165,23 +244,32 @@ class Server<T = Connection> {
     // (undocumented)
     get keepCount(): number;
     // (undocumented)
-    static listen(tcpOpts: TcpServerOpts): Promise<Server<Connection>>;
+    static listen(onConn: (conn: Connection) => void, options?: TcpServerOpts): Promise<Server>;
     // (undocumented)
-    static listen(ipcOpts: IpcServerOpts): Promise<Server<SocketStream>>;
+    static listen(onConn: (conn: SocketStream) => void, options?: IpcServerOpts): Promise<Server>;
     // (undocumented)
-    listen(options?: Pick<TcpServerOpts, "port" | "host">): Promise<void>;
+    listen(options?: ServerListenOpts): Promise<void>;
     // (undocumented)
     get listening(): boolean;
-    // Warning: (ae-forgotten-export) The symbol "ConnectionHandler" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
-    onConnection?: ConnectionHandler<T>;
     // (undocumented)
     ref(): void;
     // (undocumented)
     unref(): void;
 }
 
+// @public (undocumented)
+interface ServerListenOpts {
+    // (undocumented)
+    host?: string;
+    // (undocumented)
+    path?: string;
+    // (undocumented)
+    port?: number;
+}
+
+// Warning: (ae-incompatible-release-tags) The symbol "SocketStream" is marked as @public, but its signature references "DuplexStream" which is marked as @beta
+// Warning: (ae-incompatible-release-tags) The symbol "SocketStream" is marked as @public, but its signature references "DuplexStream" which is marked as @beta
+//
 // @public (undocumented)
 class SocketStream extends DuplexStream<Buffer> {
     constructor(socket: net_2.Socket);
@@ -234,29 +322,46 @@ declare namespace stream {
         readAll,
         DuplexStream,
         StreamScan,
+        StreamBufferViewScan,
         StreamScanner,
         ScannableStream,
         createScannerFromReadable,
         readableRead,
         readableReadAll,
+        pipeTo,
+        bridgingDuplex,
+        PipeOptions,
+        BridgingOptions,
+        PipeSourceError,
+        PipeTargetError,
+        BridgingError,
         readableToReadableStream,
-        writableToWritableStream,
-        readableToScannableStream
+        writableToWritableStream
     }
 }
 export { stream }
 
 // @public (undocumented)
-interface StreamScan<T = Buffer> {
+interface StreamBufferViewScan {
     // (undocumented)
-    (len: number): Promise<T>;
+    <P extends ArrayBufferView>(view: P): Promise<P>;
     // (undocumented)
-    (len: number, safe: boolean): Promise<T | null>;
+    <P extends ArrayBufferView>(view: P, safe?: boolean): Promise<P | null>;
 }
 
 // @public (undocumented)
-type StreamScanner<T = Buffer> = {
+interface StreamScan<T extends Uint8Array = Uint8Array> {
+    // (undocumented)
+    (len: number): Promise<T>;
+    // (undocumented)
+    (len: number, safe?: boolean): Promise<T | null>;
+}
+
+// @public (undocumented)
+type StreamScanner<T extends Uint8Array = Uint8Array> = {
     read: StreamScan<T>;
+    readTo: StreamBufferViewScan;
+    nextChunk(): Promise<T | null>;
     cancel(reason?: any): null | T;
 };
 
@@ -308,7 +413,7 @@ class SubProcess {
 }
 
 // @public (undocumented)
-interface TcpConnectOpts {
+interface TcpConnectConfig {
     // (undocumented)
     family?: 4 | 6 | 0;
     // (undocumented)
@@ -319,8 +424,6 @@ interface TcpConnectOpts {
     localPort?: number;
     // (undocumented)
     port: number;
-    // (undocumented)
-    signal?: AbortSignal;
 }
 
 // @public (undocumented)

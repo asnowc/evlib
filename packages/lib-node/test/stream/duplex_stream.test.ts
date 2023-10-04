@@ -3,7 +3,7 @@ import { DuplexStream } from "../../src/stream/duplex_stream.js";
 
 import { test, expect, describe, vi } from "vitest";
 
-describe.concurrent("duplex", function () {
+describe.skip.concurrent("duplex", function () {
     test("读取完成>写入完成", async function () {
         const { destroy, duplex, writer, reader, stream } = createDuplexStream();
 

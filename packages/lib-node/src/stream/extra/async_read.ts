@@ -3,16 +3,16 @@ import { createScannerFromReadable } from "./create_scanner.js";
 
 /**
  * @alpha
- * @remarks 
+ * @remarks
  * 等待流达到len的长度时,读取流,然后返回
- * 
+ *
  * @throws
  */
 export async function readableRead(stream: Readable, len: number, abortSignal?: AbortSignal): Promise<Buffer> {
     if (stream.readableLength >= len) return stream.read(len);
     abortSignal?.throwIfAborted();
 
-    const { read, cancel } = createScannerFromReadable(stream);
+    const { read, cancel } = createScannerFromReadable<Buffer>(stream);
     function onTimeout() {
         cancel(abortSignal!.reason);
     }

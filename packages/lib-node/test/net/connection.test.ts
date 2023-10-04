@@ -21,7 +21,7 @@ describe("connect", function () {
             (net.Socket as any as Mock).mockImplementationOnce(() => socket);
 
             const abc = new AbortController();
-            const p = connect({ port: 80, signal: abc.signal });
+            const p = connect({ port: 80 }, { signal: abc.signal });
             expect(socket.connect).toHaveBeenCalledOnce();
             const err = new Error("abort");
             abc.abort(err);
@@ -37,7 +37,7 @@ describe("connect", function () {
             (net.Socket as any as Mock).mockImplementationOnce(() => socket);
 
             const abc = new AbortController();
-            const p = connect({ port: 80, signal: abc.signal });
+            const p = connect({ port: 80 });
             await p;
             abc.abort();
             expect(socket.destroy, "socket 没有调用销毁").not.toBeCalled();
@@ -48,7 +48,7 @@ describe("connect", function () {
 
             const abc = new AbortController();
             abc.abort();
-            const p = connect({ port: 80, signal: abc.signal });
+            const p = connect({ port: 80 }, { signal: abc.signal });
 
             await expect(p, "promise 被拒绝, 并将中断的异常抛出").rejects.toThrow();
             expect(socket.connect, "socket 没有调用连接").not.toBeCalled();

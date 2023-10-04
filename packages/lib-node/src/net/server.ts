@@ -159,7 +159,7 @@ export class Server {
         return new Promise<void>((resolve, reject) => {
             const onClose = (err?: Error) => (err ? reject(err) : resolve());
             this.#server.close(onClose);
-            const err = new Error("server closed");
+            const err = new Error("The server is shut down manually");
             for (const conn of this.#connections) {
                 conn.destroy(err);
             }

@@ -5,6 +5,7 @@
     "type": "module",
     "scripts": {
         "build": "tsc -p ./tsconfig.build.json",
+        "build:local": "pnpm build && pnpm api:extractor-local",
         "ci:build": "pnpm build",
         "api:extractor": "api-extractor run -v",
         "api:extractor-local": "pnpm api:extractor -l"

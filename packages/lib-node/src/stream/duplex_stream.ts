@@ -1,23 +1,16 @@
 import { Duplex } from "node:stream";
-import { WritableStream } from "node:stream/web";
-import { readableToScannableStream, writableToWritableStream } from "./stream_transform.js";
-import { getStreamError, streamIsAlive } from "./transform/stream_core.js";
 import { Listenable } from "#evlib";
-import { ScannableStream } from "./scannable_stream.js";
 
 /**
+ * @beta
  * @remarks node Duplex 的变种
- * @public
+ * @deprecated 不建议使用
+ * todo 待完成
  */
-export class DuplexStream<T> {
+export class DuplexStream<T extends Uint8Array> {
     constructor(protected duplex: Duplex) {
-        this.readable = readableToScannableStream(duplex);
-        this.writable = writableToWritableStream(duplex);
-        duplex.on("close", () => this.$closed.emit(this.errored));
+        duplex.on("close", () => this.$closed.emit(duplex.errored));
     }
-    readonly readable: ScannableStream<T>;
-    readonly writable: WritableStream<T>;
-
     dispose(reason?: any) {
         this.duplex.destroy(reason);
     }
@@ -25,25 +18,20 @@ export class DuplexStream<T> {
      * @remarks 流的关闭事件
      */
     $closed = new Listenable<Error | null>();
-    /**
-     * @remarks 流是否已因异常关闭
-     */
-    get errored() {
-        return getStreamError(this.duplex);
-    }
-    /**
-     * @remarks 流是否已关闭
-     */
+    /** @remarks 流是否已关闭 */
     get closed() {
-        return !streamIsAlive(this.duplex);
+        return this.duplex.closed;
     }
-    /** @remarks readableStream 是否已关闭*/
-    get readableClosed() {
-        return !this.duplex.readable;
+    /** @remarks 流是否因异常关闭 */
+    get errored() {
+        return this.duplex.errored;
     }
-    /** @remarks writableStream 是否已关闭*/
-    get writableClosed() {
-        return !this.duplex.writable;
+
+    get readable() {
+        return this.duplex.readable;
+    }
+    get writable() {
+        return this.duplex.writable;
     }
     get [Symbol.asyncDispose]() {
         return this.duplex[Symbol.asyncDispose];

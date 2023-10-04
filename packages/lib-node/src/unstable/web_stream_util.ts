@@ -2,31 +2,45 @@ import { ReadableStream } from "node:stream/web";
 import { StreamScanner } from "../stream/scannable_stream.js";
 
 /**
- * @public
+ * @alpha
  * @remarks 创建对 Readable 的 StreamScanner
  */
 export function createReaderFromWebStream(stream: ReadableStream<Uint8Array>): StreamScanner<Uint8Array> {
+    type T = Uint8Array;
     const readable = stream.getReader();
 
     let ended = false;
     const cache = new Cache();
 
-    function read(size: number): Promise<Uint8Array>;
-    function read(size: number, safe: boolean): Promise<Uint8Array | null>;
-    function read(size: number, safe?: boolean) {
-        return new Promise<Uint8Array | null>(function (resolve, reject) {
-            if (size <= 0) throw new Error("size must be greater than 0");
-            if (cache.handles.length === 0) {
-                const buf = cache.tryRead(size);
-                if (buf) return resolve(buf);
-                else if (ended) {
-                    if (safe) resolve(null);
-                    else reject(new Error("Stream is ended"));
-                    return;
+    function read(size: number): Promise<T>;
+    function read(size: number, safe?: boolean): Promise<T | null>;
+    function read(size: number, safe?: boolean): Promise<T | null> {
+        return new Promise<T | null>(function (resolve, reject) {
+            if (size > 0) {
+                if (cache.handles.length === 0) {
+                    const buf = cache.tryRead(size);
+                    if (buf) return resolve(buf);
+                    else if (ended) {
+                        if (safe) resolve(null);
+                        else reject(new Error("Stream is ended"));
+                        return;
+                    }
                 }
-            }
-            cache.push({ resolve, reject, size, safe: Boolean(safe) });
-            readNext();
+                cache.push({ resolve, reject, size, safe: Boolean(safe) });
+                readNext();
+            } else throw new Error("size must be greater than 0");
+        });
+    }
+    function nextChunk(): Promise<T | null> {
+        return new Promise(function (resolve, reject) {
+            //todo
+            throw new Error("method not implemented");
+        });
+    }
+    function readTo<R extends ArrayBufferView>(view: R, safe?: boolean): Promise<T | null> {
+        return new Promise(function (resolve, reject) {
+            //todo
+            throw new Error("method not implemented");
         });
     }
 
@@ -60,22 +74,22 @@ export function createReaderFromWebStream(stream: ReadableStream<Uint8Array>): S
         cache.handles = [];
     }
 
-    function cancel(reason?: any): null | Uint8Array {
+    function cancel(reason?: any): null | T {
         onEnd(reason ?? new Error("Reader has be cancel"));
         return cache.cancelCache();
     }
 
-    return { cancel, read };
+    return { cancel, read, readTo, nextChunk };
 }
-
-class Cache<T extends Uint8Array> {
+type Q = Uint8Array;
+class Cache {
     cacheTotal = 0;
-    private cache: T[] = [];
-    handles: WaitReaderHandle<T>[] = [];
-    push(item: WaitReaderHandle<T>) {
+    private cache: Q[] = [];
+    handles: WaitReaderHandle<Q>[] = [];
+    push(item: WaitReaderHandle<Q>) {
         this.handles.push(item);
     }
-    addCache(item: T) {
+    addCache(item: Q) {
         this.cache.push(item);
         this.cacheTotal += item.byteLength;
 
@@ -101,7 +115,7 @@ class Cache<T extends Uint8Array> {
             let overlength = size - offset;
             if (overlength < chunk.byteLength) {
                 buf.set(chunk.subarray(0, overlength));
-                bufList[i] = chunk.subarray(overlength) as T;
+                bufList[i] = chunk.subarray(overlength) as Q;
                 bufList.splice(0, i - 1);
                 return buf;
             } else if (overlength === chunk.byteLength) {
@@ -124,10 +138,10 @@ class Cache<T extends Uint8Array> {
         }
         return null;
     }
-    cancelCache() {
+    cancelCache(): Q | null {
         const cache = this.cache;
         const cacheTotal = this.cacheTotal;
-        let buf: null | Uint8Array = null;
+        let buf: null | Q = null;
         if (cache.length === 1) {
             buf = cache[0];
             this.cache = [];
