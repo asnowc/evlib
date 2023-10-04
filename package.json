@@ -2,7 +2,7 @@
     "name": "libs",
     "version": "0.0.1",
     "scripts": {
-        "test": "vitest",
+        "test": "vitest run",
         "test:ui": "vitest --ui",
         "test:coverage": "vitest --coverage --ui",
         "ci:build": "pnpm -r ci:build",
