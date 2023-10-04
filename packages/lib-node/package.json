@@ -1,10 +1,11 @@
 {
     "name": "@eavid/lib-node",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "",
     "type": "module",
     "scripts": {
         "build": "tsc -p ./tsconfig.build.json",
+        "build:local": "pnpm build && pnpm api:extractor-local",
         "ci:build": "pnpm build",
         "api:extractor": "api-extractor run -v",
         "api:extractor-local": "pnpm api:extractor -l"
@@ -34,5 +35,8 @@
     "publishConfig": {
         "access": "public",
         "registry": "https://registry.npmjs.org/"
+    },
+    "engines": {
+        "node": ">=18"
     }
 }

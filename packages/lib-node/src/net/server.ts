@@ -33,106 +33,135 @@ export interface TcpServerOpts extends ServerOpts {
 
     host?: string;
     ipv6Only?: boolean;
+    type?: "TCP";
+    port?: number;
 }
 
 /** @public */
 export interface IpcServerOpts extends ServerOpts {
-    /** 允许在套接字上读取，否则将被忽略。 默认值： false */
-    readable?: boolean;
-    /** 允许在套接字上读取，否则将被忽略。 默认值： false */
-    writable?: boolean;
-
     //listen:
 
     /** @remarks 使管道对所有用户都可读 */
     readableAll?: boolean;
     /** @remarks 使管道对所有用户都可写 */
     writableAll?: boolean;
+    type: "IPC";
+    path?: string;
 }
-
-type ConnectionHandler<T> = (stream: T) => void;
+/** @public */
+export interface ServerListenOpts {
+    port?: number;
+    host?: string;
+    path?: string;
+}
+/** @public */
+export type CreateTcpServerOpts = Omit<TcpServerOpts, "port">;
+/** @public */
+export type CreateIpcServerOpts = Omit<IpcServerOpts, "path">;
 
 /** @public */
-export class Server<T extends SocketStream> {
-    /**
-     *
-     */
-    static listen(port: number, tcpOpts?: TcpServerOpts): Promise<Server<Connection>>;
-    static listen(path: string, ipcOpts?: IpcServerOpts): Promise<Server<SocketStream>>;
-    static async listen(port_path: number | string, options: TcpServerOpts | IpcServerOpts = {}): Promise<Server<any>> {
-        const server = new this(port_path, options);
+export class Server {
+    static listen(onConn: (conn: Connection) => void, options?: TcpServerOpts): Promise<Server>;
+    static listen(onConn: (conn: SocketStream) => void, options?: IpcServerOpts): Promise<Server>;
+    static async listen(onConn: (conn: any) => void, options: TcpServerOpts | IpcServerOpts = {}) {
+        const type = options.type;
+        const onSocketConnect =
+            type === "IPC"
+                ? (socket: net.Socket) => onConn(new SocketStream(socket))
+                : (socket: net.Socket) => onConn(new Connection(socket));
+        const server = new this(onSocketConnect, options);
         await server.listen();
         return server;
     }
-    constructor(port: number, options?: TcpServerOpts);
-    constructor(path: string, options?: IpcServerOpts);
-    constructor(port_path: string | number, options?: TcpServerOpts | IpcServerOpts);
-    constructor(port_path: number | string, options: TcpServerOpts | IpcServerOpts = {}) {
-        const rawOptions: net.ListenOptions = { ...options };
-        if (typeof port_path === "string") {
-            rawOptions.path = port_path;
-            this.#TransformConn = SocketStream;
-        } else {
-            rawOptions.port = port_path;
-            this.#TransformConn = Connection;
-        }
 
-        this.#options = rawOptions;
-        const server = new net.Server();
+    constructor(onConn: (conn: net.Socket) => void, options?: TcpServerOpts | undefined);
+    constructor(onConn: (conn: net.Socket) => void, options?: IpcServerOpts | undefined);
+    constructor(onConn: (conn: net.Socket) => void, options?: TcpServerOpts | IpcServerOpts | undefined);
+    constructor(onConn: (conn: net.Socket) => void, options: TcpServerOpts | IpcServerOpts = {}) {
+        if (typeof onConn !== "function") throw new Error("onConnection must be a function");
+        const serverOpts: net.ServerOpts = {
+            keepAlive: options.keepAlive,
+            keepAliveInitialDelay: options.keepAliveInitialDelay,
+            highWaterMark: options.highWaterMark,
+            noDelay: options.noDelay,
+        } as any;
+
+        const server = new net.Server(serverOpts);
         this.#server = server;
         server.on("close", () => this.$close.emit());
         server.on("error", (err: Error) => this.$error.emit(err));
-    }
-    #options;
-    #server = new net.Server();
-    #TransformConn;
-    #rawOnConnection = (socket: net.Socket) => {
-        const conn = new this.#TransformConn(socket) as T;
-        if (this.disposeQueue) {
-            socket.on("close", () => {
-                this.#connections.delete(conn);
+
+        {
+            let listenOpts: net.ListenOptions;
+            if (options.type === "IPC") {
+                listenOpts = {
+                    readableAll: options.readableAll,
+                    writableAll: options.writableAll,
+                    path: options.path,
+                };
+            } else {
+                listenOpts = {
+                    host: options.host,
+                    ipv6Only: options.ipv6Only,
+                    port: options.port,
+                };
+            }
+            Object.assign(listenOpts, {
+                exclusive: options.exclusive,
+                backlog: options.backlog,
             });
-            this.#connections.add(conn);
+
+            this.#options = listenOpts;
         }
-        this.#onConnection!(conn);
-    };
-    #onConnection: ConnectionHandler<T> | null = null;
-    get onConnection() {
-        return this.#onConnection;
+
+        server.on("connection", (socket) => {
+            if (this.disposeQueue) {
+                socket.on("close", () => this.#connections.delete(socket));
+                this.#connections.add(socket);
+            }
+            onConn(socket);
+        });
     }
-    set onConnection(handler: ConnectionHandler<T> | null) {
-        if (handler === null) {
-            this.#server.off("connection", this.#rawOnConnection);
-            this.#onConnection = null;
-        } else if (typeof handler !== "function") throw new Error("handler must be a function or null");
-        this.#onConnection = handler;
-        this.#server.on("connection", this.#rawOnConnection);
-    }
+    #options: net.ListenOptions;
+    #server = new net.Server();
     $close = new Listenable<void>();
     $error = new Listenable<Error>();
-
+    /* c8 ignore next 3 */
     ref() {
         this.#server.ref();
     }
+    /* c8 ignore next 3 */
     unref() {
         this.#server.unref();
     }
+    /**
+     * @remarks 默认情况下, 关闭服务器时, 需要等待所有连接关闭, 才能彻底关闭服务器. 如果 disposeQueue 设置为 true, 当有新链接时, 将连接保存, 在执行 close 时会将所有保持的连接销毁
+     */
     disposeQueue: boolean = false;
-    #connections = new Set<SocketStream>();
-
-    listen() {
+    #connections = new Set<net.Socket>();
+    /**
+     * @remarks disposeQueue 中保持连接的数量
+     */
+    get keepCount() {
+        return this.#connections.size;
+    }
+    listen(options?: ServerListenOpts) {
         return new Promise<void>((resolve, reject) => {
-            this.#server.listen(this.#options, resolve);
+            const listenOpts = this.#options;
+            if (!listenOpts.path && options) {
+                if (options.host) listenOpts.host = options.host;
+                if (options.port) listenOpts.port = options.port;
+            }
+            this.#server.listen(listenOpts, resolve);
         });
     }
     close() {
         return new Promise<void>((resolve, reject) => {
             const onClose = (err?: Error) => (err ? reject(err) : resolve());
             this.#server.close(onClose);
-
-            const err = new Error("server closed");
+            const err = new Error("The server is shut down manually");
             for (const conn of this.#connections) {
-                conn.dispose(err);
+                conn.destroy(err);
             }
         });
     }
@@ -145,7 +174,7 @@ export class Server<T extends SocketStream> {
         return this.#server.listening;
     }
     /** @remarks 将调用close */
-    get [Symbol.asyncDispose]() {
-        return this.#server[Symbol.asyncDispose];
+    [Symbol.asyncDispose]() {
+        return this.close();
     }
 }

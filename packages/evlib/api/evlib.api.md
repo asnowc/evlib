@@ -5,14 +5,7 @@
 ```ts
 
 // @public (undocumented)
-function afterTime(time?: number): Promise<void>;
-
-// @alpha (undocumented)
-function afterTimeHandle(time?: number, timeoutReject?: Error): {
-    promise: Promise<void>;
-    resolve(): void;
-    reject(reason?: any): void;
-};
+function afterTime(time?: number): TerminablePromise<void>;
 
 // @public (undocumented)
 const checkFnFactor: {
@@ -28,6 +21,14 @@ const checkFnFactor: {
 // @public (undocumented)
 function checkType<T = unknown>(value: any, except: ExceptType, options?: TypeCheckOptions): CheckRes<T>;
 
+// @public (undocumented)
+interface ControllablePromise<T> extends Promise<T> {
+    // (undocumented)
+    reject(reason?: any): void;
+    // (undocumented)
+    resolve(data: T): void;
+}
+
 declare namespace core {
     export {
         ECMA_VERSION,
@@ -42,22 +43,22 @@ declare namespace core {
         checkFnFactor,
         ExceptTypeMap,
         ExceptType,
-        createTimeoutHandle,
+        setTimer,
+        setInterval_2 as setInterval,
         afterTime,
         promiseHandle,
-        afterTimeHandle,
         PromiseHandle,
         PPPromiseHandle,
-        Listenable
+        Listenable,
+        VoidFn,
+        TerminablePromise,
+        ControllablePromise
     }
 }
 export { core }
 
 // @public (undocumented)
 function createErrDesc(except: string, actual: string): string;
-
-// @public (undocumented)
-function createTimeoutHandle(fn: () => void, timeout?: number): () => void;
 
 // @public (undocumented)
 const ECMA_VERSION: number;
@@ -69,7 +70,8 @@ declare namespace errors {
         createErrDesc,
         TypeError_2 as TypeError,
         ParametersError,
-        ParametersTypeError
+        ParametersTypeError,
+        NotImplementedError
     }
 }
 export { errors }
@@ -119,11 +121,15 @@ function getBasicType(val: any): BasicType;
 // @public (undocumented)
 function getClassType(val: any): string;
 
+// Warning: (ae-forgotten-export) The symbol "ListenableConstructor" needs to be exported by the entry point index.d.ts
+//
 // @public (undocumented)
-class Listenable<T> {
-    constructor(onError?: Listener<any> | undefined);
+const Listenable: ListenableConstructor;
+
+// @public (undocumented)
+interface Listenable<T> {
     // (undocumented)
-    get count(): number;
+    count: number;
     // (undocumented)
     emit(arg: T): number;
     // (undocumented)
@@ -135,9 +141,12 @@ class Listenable<T> {
     // Warning: (ae-forgotten-export) The symbol "Listener" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
-    onError?: Listener<any> | undefined;
-    // (undocumented)
     then<R extends Listener<T>>(listener: R): R;
+}
+
+// @public (undocumented)
+class NotImplementedError extends Error {
+    constructor(type?: string);
 }
 
 // @public (undocumented)
@@ -179,6 +188,18 @@ function promiseHandle<T>(): PPPromiseHandle<T>;
 let runtimeEngine: "node" | "browser" | "deno" | "bun" | "unknown";
 
 // @public (undocumented)
+function setInterval_2(fn: VoidFn, intervalTime?: number): () => void;
+
+// @public (undocumented)
+function setTimer(fn: VoidFn, timeout?: number): () => void;
+
+// @public (undocumented)
+interface TerminablePromise<T> extends Promise<T> {
+    // (undocumented)
+    abort(reason?: Error): void;
+}
+
+// @public (undocumented)
 class TimeoutError extends Error {
     constructor(time?: number);
 }
@@ -206,6 +227,12 @@ class TypeError_2 extends Error {
     //
     // (undocumented)
     cause: TypeErrorDesc_2;
+}
+
+// @public (undocumented)
+interface VoidFn {
+    // (undocumented)
+    (): void;
 }
 
 // Warnings were encountered during analysis:

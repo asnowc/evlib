@@ -88,19 +88,4 @@ describe("Listenable", function () {
             expect(listener).toBeCalledTimes(1);
         });
     });
-    test("触发事件时出现异常", function () {
-        const onError = vi.fn();
-        const err = new Error();
-        const first = () => {
-            throw err;
-        };
-        const last = vi.fn();
-        const listenable = new Listenable(onError);
-
-        listenable.on(first);
-        listenable.on(last);
-        expect(listenable.emit(null)).toBe(2);
-
-        expect(onError.mock.calls[0][0]).toBe(err);
-    });
 });

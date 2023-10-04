@@ -1,12 +1,18 @@
-import { Server, connect, connectPipe } from "@eavid/lib-node/net";
+import { Server, SocketStream, connect, connectPipe } from "@eavid/lib-node/net";
 import { expect, describe, vi, test } from "vitest";
+import { platform } from "node:os";
 
 describe("tcp", function () {
     test("listen/close", async function () {
         const port = 8889;
-        const server = await Server.listen(port);
+        const server = new Server(
+            (conn) => {
+                conn.on("error", () => {});
+            },
+            { port }
+        );
+        await server.listen();
         server.disposeQueue = true;
-        server.onConnection = (conn) => {};
 
         expect(server.listening).toBeTruthy();
 
@@ -21,17 +27,16 @@ describe("tcp", function () {
         }
     });
 });
-describe("ipc", function () {
+describe.runIf(platform() === "win32")("ipc", function () {
     const PIPE_NAME = "mypipe";
     const PIPE_PATH = "\\\\.\\pipe\\" + PIPE_NAME;
 
     test("ipc server", async function () {
-        const ipcServer = await Server.listen(PIPE_PATH);
-        ipcServer.onConnection = async (pipe) => {
-            await pipe.writable.close();
-            pipe.dispose();
-        };
-        const socketStream = await connectPipe(PIPE_PATH);
+        async function onConnection(pipe: SocketStream) {
+            await pipe.dispose();
+        }
+        const ipcServer = await Server.listen(onConnection, { path: PIPE_PATH, type: "IPC" });
+        const socketStream = await connectPipe({ path: PIPE_PATH });
     });
 });
 function afterTime(time?: number) {
