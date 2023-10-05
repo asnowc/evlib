@@ -1,6 +1,6 @@
 import type { Readable } from "node:stream";
 import type { InternalReadable, ReadableState } from "./stream_core.js";
-import type { UnderlyingSource, ReadableStreamController, ReadableByteStreamController } from "stream/web";
+import type { UnderlyingSource, ReadableStreamController, ReadableByteStreamController } from "node:stream/web";
 import { getStreamError, streamIsAlive } from "./stream_core.js";
 
 export function fromList<T>(n: number, state: ReadableState<T>): T | undefined {

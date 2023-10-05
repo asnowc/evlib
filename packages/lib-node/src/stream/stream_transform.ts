@@ -1,5 +1,5 @@
 import type { Readable, Writable } from "node:stream";
-import { ReadableStream, WritableStream, QueuingStrategy, ByteLengthQueuingStrategy } from "stream/web";
+import { ReadableStream, WritableStream, QueuingStrategy, ByteLengthQueuingStrategy } from "node:stream/web";
 import { ReadableSource } from "./transform/readable_core.js";
 import { WritableCore } from "./transform/writable_core.js";
 
