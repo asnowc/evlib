@@ -9,14 +9,24 @@ const { getDirFiles } = rollupTool
 
 
 const dir = process.cwd();
-const files = await getDirFiles(path.resolve(dir, "src"))
+let files = await getDirFiles(path.resolve(dir, "src")) //获取src目录下的入口文件
+files = files.filter((path) => path.endsWith(".ts")) //排除 src/tsconfig.json
+const corePath = path.resolve(dir, "src/core/index.ts")
+files.push(corePath)
+
 export default defineEvConfig({
-    input: files.filter((filename) => filename.endsWith(".ts")),
+    input: files,
     output: {
         dir: "dist",
         chunkFileNames: "internal/[name].js",
         minifyInternalExports: false,
-        sourcemap: true
+        sourcemap: true,
+        entryFileNames(info) {
+            let add = ""
+            if (info.facadeModuleId === corePath) add = "core/"
+            console.log(`output: ${add + info.name}.js`);
+            return add + "[name].js"
+        }
     },
 
     external: [/^evlib$/],

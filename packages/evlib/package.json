@@ -1,12 +1,12 @@
 {
     "name": "evlib",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "",
     "type": "module",
     "author": "Eavid",
     "license": "MIT",
     "scripts": {
-        "build": "tsc -p src/tsconfig.json",
+        "build": "pnpm rollup -c",
         "publish:try": "pnpm publish --no-git-checks --dry-run",
         "ci:build": "pnpm build",
         "ci:api-extractor": "api-extractor run -v",
