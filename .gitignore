@@ -1,5 +1,8 @@
-/packages/*/out
-/packages/*/types
 node_modules
 temp/
 /coverage
+
+/packages/*/dist
+/packages/*/out
+/packages/*/types
+/pkg-dev/*/out

@@ -1,7 +1,0 @@
-{
-    "extends": "../dev-lib/config/tsconfig.std.json",
-    "compilerOptions": {
-        "baseUrl": "."
-    },
-    "include": ["**/*.ts"]
-}
