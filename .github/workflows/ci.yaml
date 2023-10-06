@@ -1,6 +1,9 @@
 name: lib flow
 on:
     push:
+        branches:
+            - main
+            - develop
 jobs:
     build:
         strategy:
