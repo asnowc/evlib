@@ -9,8 +9,8 @@
         "build": "tsc -p src/tsconfig.json",
         "publish:try": "pnpm publish --no-git-checks --dry-run",
         "ci:build": "pnpm build",
-        "api:extractor": "api-extractor run -v",
-        "api:extractor-local": "pnpm api:extractor -l"
+        "ci:api-extractor": "api-extractor run -v",
+        "api:extractor-local": "pnpm ci:api-extractor -l"
     },
     "exports": {
         ".": {

@@ -7,8 +7,8 @@
         "build": "tsc -p ./tsconfig.build.json",
         "build:local": "pnpm build && pnpm api:extractor-local",
         "ci:build": "pnpm build",
-        "api:extractor": "api-extractor run -v",
-        "api:extractor-local": "pnpm api:extractor -l"
+        "ci:api-extractor": "api-extractor run -v",
+        "api:extractor-local": "pnpm ci:api-extractor -l"
     },
     "files": [
         "out/**/*.js",
@@ -25,9 +25,10 @@
         "#evlib": "./out/lib/evlib.js"
     },
     "devDependencies": {
+        "@eavid/dev-lib": "workspace:^",
+        "@microsoft/api-extractor": "^7.38.0",
         "@types/node": "^20.5.7",
-        "typescript": "^5.2.2",
-        "@microsoft/api-extractor": "^7.38.0"
+        "typescript": "^5.2.2"
     },
     "dependencies": {
         "evlib": "workspace:^"

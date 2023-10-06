@@ -20,7 +20,7 @@ jobs:
               run: pnpm ci:test
             - name: api check
               if: ${{matrix.node-version==20}}
-              run: pnpm api:extractor
+              run: pnpm ci:api-extractor
             - name: deploy
               if: ${{matrix.node-version==20 && github.ref_name=='main'}}
               run: pnpm ci:publish

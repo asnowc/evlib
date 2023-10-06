@@ -1,5 +1,5 @@
 {
-    "extends": "../dev-lib/config/tsconfig.std.json",
+    "extends": "../../tsconfig.json",
     "compilerOptions": {
         "noEmit": true,
         "lib": ["ESNext"],
