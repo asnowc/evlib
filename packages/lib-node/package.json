@@ -18,11 +18,11 @@
     "author": "Eavid",
     "license": "MIT",
     "exports": {
-        "./*": "./out/*.js",
-        "./util/*": "./out/util/*"
+        "./*": "./dist/*.js",
+        "./util/*": "./dist/util/*"
     },
     "imports": {
-        "#evlib": "./out/lib/evlib.js"
+        "#evlib": "./dist/lib/evlib.js"
     },
     "devDependencies": {
         "@eavid/lib-dev": "workspace:^",
