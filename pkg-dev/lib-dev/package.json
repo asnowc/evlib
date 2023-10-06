@@ -27,8 +27,7 @@
         "@rollup/plugin-node-resolve": "^15.2.1",
         "@rollup/plugin-typescript": "^11.1.4",
         "glob": "^10.3.4",
-        "rollup": "^3.29.4",
-        "rollup-plugin-ts-paths": "^1.0.5"
+        "rollup": "^3.29.4"
     },
     "files": [
         "out/**/*.js",

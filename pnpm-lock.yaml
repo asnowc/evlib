@@ -115,9 +115,6 @@ importers:
       rollup:
         specifier: ^3.29.4
         version: registry.npmmirror.com/rollup@3.29.4
-      rollup-plugin-ts-paths:
-        specifier: ^1.0.5
-        version: registry.npmmirror.com/rollup-plugin-ts-paths@1.0.5
       typescript:
         specifier: ^5.0.0
         version: registry.npmmirror.com/typescript@5.2.2
