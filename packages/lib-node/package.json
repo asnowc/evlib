@@ -4,15 +4,15 @@
     "description": "",
     "type": "module",
     "scripts": {
-        "build": "tsc -p ./tsconfig.build.json",
+        "build": "pnpm rollup -c",
         "build:local": "pnpm build && pnpm api:extractor-local",
         "ci:build": "pnpm build",
         "ci:api-extractor": "api-extractor run -v",
         "api:extractor-local": "pnpm ci:api-extractor -l"
     },
     "files": [
-        "out/**/*.js",
-        "out/**/*.d.ts"
+        "dist/**/*.js",
+        "dist/**/*.d.ts"
     ],
     "keywords": [],
     "author": "Eavid",
@@ -25,10 +25,11 @@
         "#evlib": "./out/lib/evlib.js"
     },
     "devDependencies": {
-        "@eavid/dev-lib": "workspace:^",
+        "@eavid/lib-dev": "workspace:^",
         "@microsoft/api-extractor": "^7.38.0",
         "@types/node": "^20.5.7",
-        "typescript": "^5.2.2"
+        "typescript": "^5.2.2",
+        "tslib": "^2.6.2"
     },
     "dependencies": {
         "evlib": "workspace:^"

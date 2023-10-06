@@ -1,5 +1,5 @@
 {
-    "extends": "../../tsconfig.std.json",
+    "extends": "../../tsconfig.json",
     "compilerOptions": {
         "baseUrl": ".",
         "paths": {
@@ -8,5 +8,5 @@
         },
         "lib": ["ESNext"]
     },
-    "include": ["src", "test"]
+    "exclude": ["node_modules", "out", "dist"]
 }

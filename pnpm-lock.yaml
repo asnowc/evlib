@@ -51,19 +51,19 @@ importers:
       evlib:
         specifier: workspace:^
         version: link:../evlib
-      tslib:
-        specifier: ^2.6.2
-        version: registry.npmmirror.com/tslib@2.6.2
     devDependencies:
-      '@eavid/dev-lib':
+      '@eavid/lib-dev':
         specifier: workspace:^
-        version: link:../../pkg-dev/dev-lib
+        version: link:../../pkg-dev/lib-dev
       '@microsoft/api-extractor':
         specifier: ^7.38.0
         version: registry.npmmirror.com/@microsoft/api-extractor@7.38.0(@types/node@20.5.7)
       '@types/node':
         specifier: ^20.5.7
         version: registry.npmmirror.com/@types/node@20.5.7
+      tslib:
+        specifier: ^2.6.2
+        version: registry.npmmirror.com/tslib@2.6.2
       typescript:
         specifier: ^5.2.2
         version: registry.npmmirror.com/typescript@5.2.2
@@ -71,6 +71,31 @@ importers:
   packages/lib-web: {}
 
   pkg-dev/dev-lib:
+    dependencies:
+      '@rollup/plugin-node-resolve':
+        specifier: ^15.2.1
+        version: registry.npmmirror.com/@rollup/plugin-node-resolve@15.2.1(rollup@3.29.4)
+      '@rollup/plugin-typescript':
+        specifier: ^11.1.4
+        version: registry.npmmirror.com/@rollup/plugin-typescript@11.1.4(rollup@3.29.4)(typescript@5.2.2)
+      glob:
+        specifier: ^10.3.4
+        version: registry.npmmirror.com/glob@10.3.4
+      rollup:
+        specifier: ^3.29.4
+        version: registry.npmmirror.com/rollup@3.29.4
+      rollup-plugin-ts-paths:
+        specifier: ^1.0.5
+        version: registry.npmmirror.com/rollup-plugin-ts-paths@1.0.5
+      typescript:
+        specifier: ^5.0.0
+        version: registry.npmmirror.com/typescript@5.2.2
+    devDependencies:
+      '@types/node':
+        specifier: ^20.5.7
+        version: registry.npmmirror.com/@types/node@20.5.7
+
+  pkg-dev/lib-dev:
     dependencies:
       '@rollup/plugin-node-resolve':
         specifier: ^15.2.1
@@ -1909,7 +1934,7 @@ packages:
     resolution: {integrity: sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/tslib/-/tslib-2.6.2.tgz}
     name: tslib
     version: 2.6.2
-    dev: false
+    dev: true
 
   registry.npmmirror.com/type-detect@4.0.8:
     resolution: {integrity: sha512-0fr/mIH1dlO+x7TlcMy+bIDqKPsw/70tVyeHW787goQjhmqaZe10uwLujubK9q9Lg6Fiho1KUKDYz0Z7k7g5/g==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/type-detect/-/type-detect-4.0.8.tgz}
