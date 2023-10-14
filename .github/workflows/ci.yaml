@@ -12,7 +12,7 @@ jobs:
                 node-version: [18, 20]
         runs-on: ubuntu-latest
         steps:
-            - uses: ieavid/template@v1
+            - uses: asnowc/template@v1
               with:
                   nodev: ${{matrix.node-version}}
                   pnpmv: 8
