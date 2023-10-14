@@ -6,10 +6,16 @@
     "mainEntryPointFilePath": "<projectFolder>/index.d.ts",
     "bundledPackages": [],
     "compiler": {
-        "tsconfigFilePath": "<projectFolder>/tsconfig.json",
         "overrideTsconfig": {
-            "$schema": "http://json.schemastore.org/tsconfig"
-        },
-        "skipLibCheck": true
+            "compilerOptions": {
+                "target": "ES2022",
+                "module": "NodeNext",
+                "moduleResolution": "nodenext",
+                "lib": ["ESNext"],
+                "skipDefaultLibCheck": true,
+                "strict": true
+            },
+            "files": ["index.d.ts"]
+        }
     }
 }

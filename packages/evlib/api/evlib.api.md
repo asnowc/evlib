@@ -44,7 +44,7 @@ declare namespace core {
         ExceptTypeMap,
         ExceptType,
         setTimer,
-        setInterval_2 as setInterval,
+        setInterval,
         afterTime,
         promiseHandle,
         PromiseHandle,
@@ -60,8 +60,22 @@ export { core }
 // @public (undocumented)
 function createErrDesc(except: string, actual: string): string;
 
+declare namespace data_struct {
+    export {
+        UniqueKeyMap,
+        Enum
+    }
+}
+export { data_struct }
+
 // @public (undocumented)
 const ECMA_VERSION: number;
+
+// @alpha (undocumented)
+class Enum {
+    // (undocumented)
+    static getKeys(enumObj: Record<string, string | number>): string[];
+}
 
 declare namespace errors {
     export {
@@ -188,7 +202,7 @@ function promiseHandle<T>(): PPPromiseHandle<T>;
 let runtimeEngine: "node" | "browser" | "deno" | "bun" | "unknown";
 
 // @public (undocumented)
-function setInterval_2(fn: VoidFn, intervalTime?: number): () => void;
+function setInterval(fn: VoidFn, intervalTime?: number): () => void;
 
 // @public (undocumented)
 function setTimer(fn: VoidFn, timeout?: number): () => void;
@@ -227,6 +241,32 @@ class TypeError_2 extends Error {
     //
     // (undocumented)
     cause: TypeErrorDesc_2;
+}
+
+// @public (undocumented)
+class UniqueKeyMap<T = any> extends Map<number, T> {
+    constructor(maxSize: number);
+    // (undocumented)
+    allowKeySet(data: T, safe?: undefined | false): number;
+    // (undocumented)
+    allowKeySet(data: T, safe: true): number | null;
+    // (undocumented)
+    clear(): void;
+    // (undocumented)
+    delete(key: number): boolean;
+    // (undocumented)
+    get freeRange(): number;
+    // (undocumented)
+    get freeSize(): number;
+    // (undocumented)
+    get lastPointer(): number;
+    // (undocumented)
+    readonly maxSize: number;
+    set(key: number, data: T): this;
+    // (undocumented)
+    get startPointer(): number;
+    take(key: number): T | undefined;
+    update(key: number, data: T): boolean;
 }
 
 // @public (undocumented)

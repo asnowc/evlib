@@ -1,3 +1,4 @@
+/** @alpha */
 export class Enum {
     static getKeys(enumObj: Record<string, string | number>): string[] {
         let keys = Object.keys(enumObj);
