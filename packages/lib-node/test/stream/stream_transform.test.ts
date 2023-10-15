@@ -1,3 +1,4 @@
+import { afterTime } from "evlib";
 import { readableToReadableStream, writableToWritableStream } from "../../src/stream/stream_transform.js";
 import { Writable, Readable } from "node:stream";
 import { ReadableStreamDefaultReader } from "node:stream/web";
@@ -123,6 +124,40 @@ describe.concurrent("readable", function () {
         await waitTime();
         expect(readable.readable).toBeFalsy();
         expect(readable.readableEnded).toBeTruthy();
+    });
+    test("_read() 触发", async function () {
+        let total = 12;
+        const read = vi.fn((size) => {
+            while (total > 0) {
+                total -= 4;
+                if (!readable.push("abcd")) return;
+            }
+            readable.push(null);
+        });
+        const readable = new Readable({
+            read,
+            highWaterMark: 8,
+        });
+
+        const ctrl = readableToReadableStream<Buffer>(readable);
+        const reader = ctrl.getReader();
+        await afterTime();
+        expect(read).toBeCalledTimes(1);
+        expect(readable.readableLength, "_read调用后添加源").toBe(8);
+        let list: Buffer[] = [];
+        {
+            const res = await reader.read();
+            list.push(res.value!); // chunk length =4
+            await afterTime();
+            expect(read).toBeCalledTimes(2);
+        }
+        do {
+            const chunk = await reader.read();
+            if (chunk.done) break;
+            list.push(chunk.value);
+        } while (true);
+        const buf = Buffer.concat(list);
+        expect(buf.toString()).toBe("abcd".repeat(3));
     });
     test("销毁 ReadableStream: cancel()", async function () {
         const onDestroy = vi.fn();

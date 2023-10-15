@@ -93,19 +93,18 @@ export class ReadableSource<T> implements UnderlyingSource {
         const readableQueue = this.readableState.buffer;
         if (this.readableState.errored) {
             return { err: this.readableState.errored };
-        } else if (readableQueue.length) {
+        }
+        let res: WaitChunkRes<T> | undefined;
+        if (readableQueue.length) {
             const chunk = readableQueue.shift()!;
             this.readableState.length -= this.objectMode ? 1 : (chunk as unknown as Uint8Array).byteLength;
-            const res = { closed: false, chunk };
-            if (readableQueue.length === 0 && this.readableState.ended) {
-                this.readable.read(); //触发readable的对应事件
-                res.closed = true;
-            }
-            return res;
+            res = { closed: false, chunk };
+            if (readableQueue.length === 0 && this.readableState.ended) res.closed = true;
         } else if (this.readableState.ended || this.readableState.closed) {
-            this.readable.read(); //触发readable的 end close 事件
-            return { closed: true };
+            res = { closed: true };
         }
+        this.readable.read(0); //触发readable的对应事件
+        return res;
     }
 
     private queue(ctrl: ReadableStreamController<T>, chunk: T) {

@@ -34,8 +34,8 @@ export function createScannerFromReadable<T extends Uint8Array = Buffer>(readabl
     }
     function nextChunk(): Promise<T | null> {
         return new Promise<unknown>(function (resolve, reject) {
-            if (closed) return reject(closed);
-            waitingQueue.push({ resolve, reject });
+            if (closed) return resolve(null);
+            waitingQueue.push({ resolve, reject, safe: true });
             onReadable();
         }) as Promise<T | null>;
     }
@@ -101,8 +101,9 @@ class ReadingQueue {
                     const chunk = state.buffer.shift() as Uint8Array | undefined;
                     if (!chunk) return state.ended || !readable.readable;
                     state.length -= state.objectMode ? 1 : chunk.byteLength;
-                    if (state.length === 0) readable.read(); //调用以检测 readable 的各种事件
-                    handle.resolve(state.buffer.shift());
+                    handle.resolve(chunk);
+                    queue.shift();
+                    if (!queue.length) readable.read(0); //调用以检测 readable 的各种事件
                 }
             } else if (state.length >= handle.size) {
                 handle.resolve(readable.read(handle.size)!);
