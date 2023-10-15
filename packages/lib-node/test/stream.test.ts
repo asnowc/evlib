@@ -1,7 +1,7 @@
 import { afterTime } from "evlib";
 import { createScannerFromReadable } from "../src/stream.js";
 import { Readable } from "node:stream";
-import { test, expect, describe } from "vitest";
+import { test, expect, describe, vi } from "vitest";
 
 describe("createScannerFromReadable", function () {
     function createMockRead() {
@@ -46,7 +46,35 @@ describe("createScannerFromReadable", function () {
             await expect(read(4).then((buf) => buf.toString())).resolves.toBe("efgh");
         });
     });
+    test("_read() 触发", async function () {
+        let total = 12;
+        const read = vi.fn((size) => {
+            while (total > 0) {
+                total -= 4;
+                if (!readable.push("abcd")) return;
+            }
+            readable.push(null);
+        });
+        const readable = new Readable({
+            read,
+            highWaterMark: 8,
+        });
 
+        const { nextChunk } = createScannerFromReadable(readable);
+        await afterTime();
+        expect(read).toBeCalledTimes(1);
+        expect(readable.readableLength, "_read调用后添加源").toBe(8);
+        let list: Buffer[] = [];
+        list.push((await nextChunk())!); // chunk length =4
+        expect(read).toBeCalledTimes(2);
+        do {
+            const chunk = await nextChunk();
+            if (chunk) list.push(chunk);
+            else break;
+        } while (true);
+        const buf = Buffer.concat(list);
+        expect(buf.toString()).toBe("abcd".repeat(3));
+    });
     test("队列读取", async function () {
         const { read, readable } = createMockRead();
         const pms = Promise.all([read(2), read(2), read(2)]);

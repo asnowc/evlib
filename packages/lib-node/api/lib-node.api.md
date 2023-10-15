@@ -13,10 +13,10 @@ import * as net_2 from 'node:net';
 import * as node_ps from 'node:child_process';
 import { Readable } from 'node:stream';
 import type { Readable as Readable_2 } from 'stream';
-import { ReadableStream as ReadableStream_2 } from 'node:stream/web';
-import { ReadableStreamDefaultReader as ReadableStreamDefaultReader_2 } from 'node:stream/web';
+import { ReadableStream } from 'node:stream/web';
+import { ReadableStreamDefaultReader } from 'node:stream/web';
 import { Writable } from 'node:stream';
-import { WritableStream as WritableStream_2 } from 'node:stream/web';
+import { WritableStream } from 'node:stream/web';
 
 // @beta (undocumented)
 function bridgingDuplex<A extends Duplex, B extends Duplex>(a: A, b: B, options?: BridgingOptions): Promise<{
@@ -211,13 +211,13 @@ function readableRead(stream: Readable_2, len: number, abortSignal?: AbortSignal
 function readableReadAll(stream: Readable_2, abortSignal?: AbortSignal): Promise<Buffer>;
 
 // @public (undocumented)
-function readableToReadableStream<T = Uint8Array>(readable: Readable): ReadableStream_2<T>;
+function readableToReadableStream<T = Uint8Array>(readable: Readable): ReadableStream<T>;
 
 // @public (undocumented)
-function readAll<T>(reader: ReadableStreamDefaultReader_2<T>): Promise<T[]>;
+function readAll<T>(reader: ReadableStreamDefaultReader<T>): Promise<T[]>;
 
 // @public (undocumented)
-interface ScannableStream<T extends Uint8Array = Uint8Array> extends ReadableStream_2<T> {
+interface ScannableStream<T extends Uint8Array = Uint8Array> extends ReadableStream<T> {
     // (undocumented)
     getScanner(): StreamScanner<T>;
 }
@@ -405,7 +405,7 @@ class SubProcess {
     // (undocumented)
     readonly spawnFile: string;
     // (undocumented)
-    readonly stdio: [WritableStream_2<Buffer> | null, ReadableStream_2<Buffer> | null, ReadableStream_2<Buffer> | null];
+    readonly stdio: [WritableStream<Buffer> | null, ReadableStream<Buffer> | null, ReadableStream<Buffer> | null];
     // (undocumented)
     unref(): void;
 }
@@ -440,7 +440,7 @@ interface TcpServerOpts extends ServerOpts {
 }
 
 // @public (undocumented)
-function writableToWritableStream<T = Uint8Array>(writable: Writable): WritableStream_2<T>;
+function writableToWritableStream<T = Uint8Array>(writable: Writable): WritableStream<T>;
 
 // (No @packageDocumentation comment for this package)
 
