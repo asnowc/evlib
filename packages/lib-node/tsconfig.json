@@ -3,10 +3,11 @@
     "compilerOptions": {
         "baseUrl": ".",
         "paths": {
-            "@eavid/lib-node/*": ["./src/*.js"],
-            "#evlib": ["./src/lib/evlib.js"]
+            "@eavid/lib-node/*": ["./src/*.js"], // 导入包名提示
+            "#evlib": ["evlib"] //方便复制模块
         },
-        "lib": ["ESNext"]
+        "lib": ["ESNext"],
+        "noEmit": true
     },
     "exclude": ["node_modules", "out", "dist"]
 }

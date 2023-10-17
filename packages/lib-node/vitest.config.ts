@@ -6,7 +6,7 @@ export default defineProject({
     test: {
         alias: [
             { find: /^@eavid\/lib-node/, replacement: path.resolve(root, "./src") },
-            { find: /^#evlib$/, replacement: path.resolve(root, "./src/lib/evlib.js") },
+            { find: /^#evlib/, replacement: "evlib" },
         ],
     },
 });

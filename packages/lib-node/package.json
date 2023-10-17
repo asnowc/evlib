@@ -22,7 +22,8 @@
         "./util/*": "./dist/util/*"
     },
     "imports": {
-        "#evlib": "./dist/lib/evlib.js"
+        "#evlib/*": "evlib/*",
+        "#evlib": "evlib"
     },
     "devDependencies": {
         "@eavid/lib-dev": "workspace:^",

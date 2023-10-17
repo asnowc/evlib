@@ -19,10 +19,10 @@ export default defineEvConfig({
         dir: "dist",
         chunkFileNames: "internal/[name].js",
         minifyInternalExports: false,
-        sourcemap: true
+        sourcemap: true,
     },
 
-    external: [/^evlib$/],
+    external: [/^evlib/],
     extra: {
         typescript: {
             tsconfig: "tsconfig.json",
@@ -34,6 +34,7 @@ export default defineEvConfig({
                 declaration: true,
                 declarationMap: true
             },
-        }
+        },
+        resolve: { resolveOnly: [/^evlib/] }
     }
 });
