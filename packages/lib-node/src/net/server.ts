@@ -84,7 +84,8 @@ export class Server {
             keepAliveInitialDelay: options.keepAliveInitialDelay,
             highWaterMark: options.highWaterMark,
             noDelay: options.noDelay,
-        } as any;
+            allowHalfOpen: true,
+        } as net.ServerOpts;
 
         const server = new net.Server(serverOpts);
         this.#server = server;
