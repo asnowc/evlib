@@ -144,8 +144,8 @@ export function connectSocket(config: any, options: ConnectOptions = {}) {
         const { signal } = options;
         const newOpts: net.SocketConstructorOpts =
             typeof config.path === "string"
-                ? { fd: config.fd, readable: config.readable, writable: config.writable }
-                : {};
+                ? { fd: config.fd, readable: config.readable, writable: config.writable, allowHalfOpen: true }
+                : { allowHalfOpen: true };
         const socket = new net.Socket(newOpts);
         function clear() {
             socket.off("error", reject);
