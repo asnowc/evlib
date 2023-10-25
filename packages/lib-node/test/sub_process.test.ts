@@ -1,9 +1,10 @@
-import { spawn } from "../src/process.js";
+import { spawn, fork, exec } from "../src/process.js";
 import { it, test, describe, vi, expect } from "vitest";
 import { ReadableStream } from "node:stream/web";
 import * as path from "node:path";
 import { open } from "node:fs/promises";
 import { readAll } from "@eavid/lib-node/stream";
+import { resolve } from "node:path";
 
 const nodeBin = process.execPath;
 const dir = __dirname;
@@ -23,7 +24,7 @@ describe("spawn", function () {
         expect(process.pid).toBeTypeOf("number");
         expect(process.spawnFile).toBe(nodeBin);
         expect(process.spawnargs).toEqual([nodeBin, ...args]);
-        await expect(res).resolves.toBe("//ab_child\nfin\n");
+        await expect(res).resolves.toBe("//ab_child\n[]\nfin\n");
         await process.$close;
         expect(process.closed).toBeTruthy();
     });
@@ -38,5 +39,13 @@ describe("spawn", function () {
             "The communication protocol is not connected"
         );
         process.kill();
+    });
+});
+const mockDir = resolve(dir, "__mocks__/child_process");
+const jsFile = resolve(mockDir, "ab_child.mjs");
+describe.skip("exec", function () {});
+describe("fork", function () {
+    test("fork", async function () {
+        const sub = await fork(jsFile, { args: ["1", "2"] });
     });
 });

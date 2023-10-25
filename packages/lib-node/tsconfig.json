@@ -4,6 +4,7 @@
         "baseUrl": ".",
         "paths": {
             "@eavid/lib-node/*": ["./src/*.js"], // 导入包名提示
+            "@src/*": ["./src/*"],
             "#evlib": ["evlib"] //方便复制模块
         },
         "lib": ["ESNext"],

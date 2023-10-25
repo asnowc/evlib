@@ -1,16 +1,15 @@
 import { expect, it, describe, test, vi } from "vitest";
 import {
     readableRead,
-    readableReadAll,
     BridgingError,
     PipeOptions,
     PipeSourceError,
     PipeTargetError,
     bridgingDuplex,
     pipeTo,
-} from "../../src/stream.js";
+} from "@eavid/lib-node/stream";
 import { Duplex, Readable, Writable } from "node:stream";
-import { Callback, DuplexOpts, ReadableOpts, WritableOpts } from "./__mocks__/mock_stream.js";
+import { Callback, DuplexOpts, ReadableOpts, WritableOpts } from "../__mocks__/mock_stream.js";
 import { afterTime } from "evlib";
 
 class TestRead extends Readable {
