@@ -1,6 +1,6 @@
 import { Readable, Duplex, Writable } from "node:stream";
 import { describe, test, vi, Mock, expect } from "vitest";
-import { Callback, createDuplex, createReadable, createWritable } from "./__mocks__/mock_stream.js";
+import { Callback, createDuplex, createReadable, createWritable } from "../stream/__mocks__/mock_stream.js";
 
 /**
  * @remarks 用于测试 node 流的生命周期

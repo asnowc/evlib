@@ -1,6 +1,6 @@
 import * as net from "node:net";
 import { Listenable } from "#evlib";
-import { DuplexStream } from "../stream.js";
+import { DuplexStream } from "../internal/byte_duplex.js";
 /* c8 ignore start */
 /**
  * @public

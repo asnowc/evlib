@@ -1,18 +1,5 @@
 import { Duplex, Readable, Transform, Writable } from "node:stream";
 
-type NodeStream = Readable | Writable | Duplex | Transform;
-type State = ReadableState<unknown> | WritableState;
-export function getStreamError(stream: NodeStream): null | Error;
-export function getStreamError(stream: any) {
-    const state: State = stream._readableState || stream._writableState;
-    return state.errored;
-}
-export function streamIsAlive(stream: NodeStream): boolean;
-export function streamIsAlive(stream: any) {
-    const state: State = stream._readableState || stream._writableState;
-    return !(state.destroyed || state.closed || state.errored);
-}
-
 interface StreamState {
     /**
      * 流仍在构建中，在构建完成或失败之前不能被破坏。

@@ -1,5 +1,5 @@
 import type { Readable } from "stream";
-import { createScannerFromReadable } from "./create_scanner.js";
+import { createByteReaderFromReadable } from "./byte_reader.js";
 
 /**
  * @alpha
@@ -12,16 +12,16 @@ export async function readableRead(stream: Readable, len: number, abortSignal?: 
     if (stream.readableLength >= len) return stream.read(len);
     abortSignal?.throwIfAborted();
 
-    const { read, cancel } = createScannerFromReadable<Buffer>(stream);
+    const { read, cancel } = createByteReaderFromReadable<Buffer>(stream);
     function onTimeout() {
         cancel(abortSignal!.reason);
     }
 
     abortSignal?.addEventListener("abort", onTimeout);
-    const buf = await read(len);
-    abortSignal?.removeEventListener("abort", onTimeout);
-    cancel();
-    return buf;
+    return read(Buffer.alloc(len)).finally(function () {
+        abortSignal?.removeEventListener("abort", onTimeout);
+        cancel();
+    });
 }
 
 /**

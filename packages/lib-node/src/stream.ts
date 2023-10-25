@@ -12,7 +12,8 @@ export async function readAll<T>(reader: ReadableStreamDefaultReader<T>): Promis
         list.push(res.value);
     } while (true);
 }
-export * from "./stream/duplex_stream.js";
-export * from "./stream/scannable_stream.js";
+
+export * from "./stream/byte_stream/mod.js";
+export * from "./stream/byte_reader.js";
 export * from "./stream/extra/mod.js";
 export * from "./stream/stream_transform.js";
