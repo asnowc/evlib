@@ -26,17 +26,17 @@ export async function readableRead(stream: Readable, len: number, abortSignal?: 
 
 /**
  * @alpha
- * @remarks 等待流 end 事件触发后一次性读取所有数据
+ * @remarks 读取所有 chunks. 等待流 end 事件触发后解决
  */
-export async function readableReadAll(stream: Readable, abortSignal?: AbortSignal) {
-    return new Promise<Buffer>(function (resolve, reject) {
-        let dataList: Buffer[] = [];
-        function onData(newData: Buffer) {
+export async function readableReadAll<T>(stream: Readable, abortSignal?: AbortSignal) {
+    return new Promise<T[]>(function (resolve, reject) {
+        let dataList: T[] = [];
+        function onData(newData: T) {
             dataList.push(newData);
         }
         function onEnd() {
             clear();
-            resolve(Buffer.concat(dataList));
+            resolve(dataList);
         }
         function onError() {
             clear();

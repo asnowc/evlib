@@ -1,31 +1,33 @@
-import { spawn, fork, exec } from "../src/process.js";
+import { spawn, fork, exec, NodeSubProcess } from "@eavid/lib-node/process";
 import { it, test, describe, vi, expect } from "vitest";
 import { ReadableStream } from "node:stream/web";
 import * as path from "node:path";
 import { open } from "node:fs/promises";
-import { readAll } from "@eavid/lib-node/stream";
+import { readAllFromStream } from "@eavid/lib-node/stream";
 import { resolve } from "node:path";
 
 const nodeBin = process.execPath;
 const dir = __dirname;
 
-const childDir = "./__mocks__/child_process";
+const mockDir = resolve(dir, "__mocks__/child_process");
+const jsFile = resolve(mockDir, "ab_child.mjs");
 describe("spawn", function () {
     test("spawn", async function () {
-        const args = [childDir + "/ab_child.mjs"];
+        const args = [jsFile];
 
         const file = await open(path.resolve(dir, args[0]));
         const process = await spawn(nodeBin, { cwd: dir, args, sharedResource: [file.fd], env: { FD_LIST: "[3]" } });
-        const stdout = process.stdio[1]!;
+        const stdout = process.stdout!;
         expect(stdout).instanceOf(ReadableStream);
 
-        const res = readAll(stdout.getReader()).then((bufList): string => Buffer.concat(bufList).toString());
+        const res = readAllFromStream(stdout).then((bufList): string => Buffer.concat(bufList).toString());
 
         expect(process.pid).toBeTypeOf("number");
         expect(process.spawnFile).toBe(nodeBin);
         expect(process.spawnargs).toEqual([nodeBin, ...args]);
-        await expect(res).resolves.toBe("//ab_child\n[]\nfin\n");
+        await expect(res).resolves.toBe("//ab_child\n[]\nfin\n"); // fd 发送成功, 读取到文件
         await process.$close;
+        expect(process.closedState).toEqual({ code: 0, signal: null });
         expect(process.closed).toBeTruthy();
     });
     test("kill", async function () {
@@ -33,19 +35,33 @@ describe("spawn", function () {
         process.kill(0);
         expect(process.closed).toBeTruthy();
     });
-    test("通信协议", async function () {
-        const process = await spawn(nodeBin, { env: {}, cwd: dir });
-        expect(process.send("aa"), "通信协议未连接").rejects.toThrowError(
-            "The communication protocol is not connected"
-        );
-        process.kill();
-    });
 });
-const mockDir = resolve(dir, "__mocks__/child_process");
-const jsFile = resolve(mockDir, "ab_child.mjs");
-describe.skip("exec", function () {});
+
+const forkMockFile = resolve(mockDir, "fork.mjs");
 describe("fork", function () {
     test("fork", async function () {
-        const sub = await fork(jsFile, { args: ["1", "2"] });
+        const sub = await fork(forkMockFile, { args: ["1", "2"] });
+
+        setTimeout(() => {
+            sub.send("123");
+            sub.send(true);
+            sub.send(1);
+            sub.send("exit");
+        });
+        const pms = readAllMessage(sub);
+        await sub.$close;
+        expect(sub.closedState).toMatchObject({ code: 0 });
+        await expect(pms).resolves.toEqual(["123", true, 1]);
     });
 });
+
+async function readAllMessage(process: NodeSubProcess) {
+    let list: unknown[] = [];
+    function onMsg(msg: any) {
+        list.push(msg);
+    }
+    process.$message.on(onMsg);
+    await process.$disconnect;
+    process.$message.off(onMsg);
+    return list;
+}

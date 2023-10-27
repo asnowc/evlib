@@ -1,10 +1,13 @@
-import type { Readable, Writable } from "node:stream";
+import { Readable, Writable } from "node:stream";
 import { ReadableStream, WritableStream, QueuingStrategy, ByteLengthQueuingStrategy } from "node:stream/web";
 import { ReadableSource } from "./transform/readable_core.js";
 import { WritableCore } from "./transform/writable_core.js";
 /**
  * @public
  * @remarks 将 node 的 Readable 转换为 ReadableStream
+ * 它的行为与 Readable.toWeb() 的行为不同.
+ * 1. read 方法总是读取下一个 chunk. 而 Readable.toWeb() 调用 read() 时如果 Readable 队列中有chunk时, 它们会被合并成一个返回. 如果是 Buffer , 还会被转成 Uint8Array
+ * 2. Readable.toWeb() 会造成 2 倍 highWaterMark. node v20 目前是这样的
  */
 export function readableToReadableStream<T = Uint8Array>(readable: Readable): ReadableStream<T> {
     readable.pause();
@@ -23,6 +26,9 @@ export function readableToReadableStream<T = Uint8Array>(readable: Readable): Re
 /**
  * @public
  * @remarks 将 node 的 Writable 转换为 WritableStream
+ * 它的行为与 Writable.toWeb() 的行为不同.
+ * 1. 当 write() 返回的 Promise 解决后, 说明数据已经被写入到底层. 而 Writable.toWeb() 的 write() 返回的 Promise 解决只是被写入到 Writable 的队列而已
+ * 2. Writable.toWeb() 会造成 2 倍 highWaterMark. node v20 目前是这样的
  */
 export function writableToWritableStream<T = Uint8Array>(writable: Writable) {
     let queuingStrategy: QueuingStrategy;

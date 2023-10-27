@@ -6,6 +6,7 @@
 
 /// <reference types="node" />
 
+import { ChildProcess } from 'node:child_process';
 import type * as dgram from 'node:dgram';
 import { Duplex } from 'node:stream';
 import { Listenable } from '#evlib';
@@ -15,7 +16,6 @@ import * as NodeStream from 'node:stream';
 import { Readable } from 'node:stream';
 import type { Readable as Readable_2 } from 'stream';
 import { ReadableStream } from 'node:stream/web';
-import { ReadableStreamDefaultReader } from 'node:stream/web';
 import { StreamPipeOptions } from 'node:stream/web';
 import { Writable } from 'node:stream';
 import { WritableStream } from 'node:stream/web';
@@ -42,13 +42,11 @@ interface BridgingOptions {
 // @public (undocumented)
 interface ByteReadable<T extends Uint8Array = Uint8Array> {
     // (undocumented)
-    $closed: Listenable<Error | null>;
+    $readableClosed: Listenable<Error | null>;
     // (undocumented)
     [Symbol.asyncIterator](): AsyncGenerator<T>;
     // (undocumented)
     cancel(reason?: any): Promise<void>;
-    // (undocumented)
-    readonly closed: boolean;
     // (undocumented)
     pipeTo(target: WritableHandle<T>, options?: StreamPipeOptions): Promise<void>;
     // (undocumented)
@@ -61,6 +59,8 @@ interface ByteReadable<T extends Uint8Array = Uint8Array> {
     read<R extends ArrayBufferView>(buffer: R): Promise<R>;
     // (undocumented)
     read<R extends ArrayBufferView>(buffer: R, safe?: boolean): Promise<R | null>;
+    // (undocumented)
+    readonly readableClosed: boolean;
 }
 
 // @public (undocumented)
@@ -75,18 +75,24 @@ interface ByteReader<T extends Uint8Array = Uint8Array> extends StreamBufferView
 // @public (undocumented)
 interface ByteWritable<T extends Uint8Array = Uint8Array> {
     // (undocumented)
-    $closed: Listenable<Error | null>;
+    $writableClosed: Listenable<Error | null>;
     // (undocumented)
     abort(reason?: Error): Promise<void>;
     // (undocumented)
     close(): Promise<void>;
     // (undocumented)
-    readonly closed: boolean;
-    // (undocumented)
     readonly desiredSize: number | null;
+    // (undocumented)
+    readonly writableClosed: boolean;
     // (undocumented)
     write(chunk: T): Promise<void>;
 }
+
+// @public (undocumented)
+type ClosedState = Readonly<{
+    code: null | number;
+    signal: NodeJS.Signals | null;
+}>;
 
 // @alpha (undocumented)
 function connect(config: TcpConnectConfig, options?: ConnectOptions): Promise<Connection>;
@@ -161,6 +167,22 @@ function createScannerFromReadable<T extends Buffer = Buffer>(readable: Readable
 // @public (undocumented)
 type CreateTcpServerOpts = Omit<TcpServerOpts, "port">;
 
+// @public (undocumented)
+function exec(command: string, options?: SpawnOptions & {
+    shell?: string;
+}): Promise<SubProcess>;
+
+// @public (undocumented)
+function execSync(command: string, options?: SpawnSyncOptions & {
+    shell?: string;
+}): SpawnSyncResult;
+
+// Warning: (ae-incompatible-release-tags) The symbol "fork" is marked as @public, but its signature references "NodeSubProcess" which is marked as @beta
+// Warning: (ae-incompatible-release-tags) The symbol "fork" is marked as @public, but its signature references "NodeSubProcess" which is marked as @beta
+//
+// @public (undocumented)
+function fork(file: string, options?: SpawnOptions): Promise<NodeSubProcess>;
+
 // Warning: (ae-forgotten-export) The symbol "ServerOpts" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
@@ -195,6 +217,23 @@ declare namespace net {
     }
 }
 export { net }
+
+// @beta (undocumented)
+class NodeSubProcess extends SubProcess {
+    // (undocumented)
+    $disconnect: Listenable<void>;
+    // (undocumented)
+    $message: Listenable<unknown>;
+    constructor(nodeCps: ChildProcess);
+    // (undocumented)
+    get connected(): boolean;
+    // (undocumented)
+    disconnect(): void;
+    // Warning: (ae-forgotten-export) The symbol "Handle" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    send(msg: any, handle?: Handle | number): Promise<unknown>;
+}
 
 // @alpha (undocumented)
 interface PipeConfig {
@@ -241,9 +280,17 @@ function pipeTo<T extends Readable, R extends Writable>(source: T, target: R, op
 
 declare namespace process_2 {
     export {
+        ClosedState,
         SubProcess,
+        SpawnOptions,
+        SpawnSyncResult,
+        SpawnSyncOptions,
         spawn,
-        SpawnOptions
+        spawnSync,
+        fork,
+        NodeSubProcess,
+        exec,
+        execSync
     }
 }
 export { process_2 as process }
@@ -252,13 +299,13 @@ export { process_2 as process }
 function readableRead(stream: Readable_2, len: number, abortSignal?: AbortSignal): Promise<Buffer>;
 
 // @alpha (undocumented)
-function readableReadAll(stream: Readable_2, abortSignal?: AbortSignal): Promise<Buffer>;
+function readableReadAll<T>(stream: Readable_2, abortSignal?: AbortSignal): Promise<T[]>;
 
 // @public (undocumented)
 function readableToReadableStream<T = Uint8Array>(readable: Readable): ReadableStream<T>;
 
 // @public (undocumented)
-function readAll<T>(reader: ReadableStreamDefaultReader<T>): Promise<T[]>;
+function readAllFromStream<T>(stream: ReadableStream<T>): Promise<T[]>;
 
 // @public (undocumented)
 class Server {
@@ -323,36 +370,42 @@ class SocketStream extends DuplexStream<Buffer> {
 // @public (undocumented)
 function spawn(exePath: string, options?: SpawnOptions): Promise<SubProcess>;
 
+// Warning: (ae-forgotten-export) The symbol "SpawnCommonOptions" needs to be exported by the entry point index.d.ts
+//
 // @public (undocumented)
-interface SpawnOptions {
-    // (undocumented)
-    args?: string[];
-    // @beta (undocumented)
-    createIPC?: boolean;
-    // (undocumented)
-    cwd?: string;
+interface SpawnOptions extends SpawnCommonOptions {
     // (undocumented)
     detached?: boolean;
+}
+
+// @public (undocumented)
+function spawnSync(exePath: string, options?: SpawnSyncOptions): SpawnSyncResult;
+
+// @public (undocumented)
+interface SpawnSyncOptions extends SpawnCommonOptions {
     // (undocumented)
-    env?: Record<string, string | number | boolean>;
+    maxBuffer?: number;
+}
+
+// @public (undocumented)
+interface SpawnSyncResult {
     // (undocumented)
-    gid?: number;
-    // Warning: (ae-forgotten-export) The symbol "Handle" needs to be exported by the entry point index.d.ts
-    //
+    error?: Error | undefined;
     // (undocumented)
-    sharedResource?: (Handle | null)[];
-    // Warning: (ae-forgotten-export) The symbol "StdioFlag" needs to be exported by the entry point index.d.ts
-    // Warning: (ae-forgotten-export) The symbol "Stdio" needs to be exported by the entry point index.d.ts
-    //
+    pid: number;
     // (undocumented)
-    stdio?: StdioFlag | [Stdio, Stdio, Stdio];
+    signal: NodeJS.Signals | null;
     // (undocumented)
-    uid?: number;
+    status: number | null;
+    // (undocumented)
+    stderr: Buffer;
+    // (undocumented)
+    stdout: Buffer;
 }
 
 declare namespace stream {
     export {
-        readAll,
+        readAllFromStream,
         WritableHandle,
         ByteReadable,
         ByteWritable,
@@ -407,46 +460,46 @@ type StreamScanner<T extends Uint8Array = Uint8Array> = {
 // @public (undocumented)
 class SubProcess {
     // @alpha (undocumented)
-    $close: Listenable<{
-        code: null | number;
+    $close: Listenable<Readonly<{
+        code: number | null;
         signal: NodeJS.Signals | null;
-        kill?: true | undefined;
-    }>;
+    }>>;
     // (undocumented)
-    $disconnect: Listenable<void>;
-    // (undocumented)
-    $message: Listenable<unknown>;
-    constructor(nodeCps: NodeRaw.ChildProcess);
+    $exit: Listenable<Readonly<{
+        code: number | null;
+        signal: NodeJS.Signals | null;
+    }>>;
+    constructor(nodeCps: node_ps.ChildProcess);
     // (undocumented)
     get closed(): boolean;
-    // Warning: (ae-forgotten-export) The symbol "ClosedState" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
     closedState: ClosedState | null;
     // (undocumented)
-    get connected(): boolean;
-    // (undocumented)
-    disconnect(): void;
-    // (undocumented)
     kill(signal?: NodeJS.Signals | number): boolean;
-    // Warning: (ae-forgotten-export) The symbol "NodeRaw" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
-    protected nodeCps: NodeRaw.ChildProcess;
+    get killed(): boolean;
+    // (undocumented)
+    protected nodeCps: node_ps.ChildProcess;
     // (undocumented)
     readonly pid: number;
     // (undocumented)
     ref(): void;
-    // Warning: (ae-forgotten-export) The symbol "HandleObj" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
-    send(msg: any, handle?: HandleObj): Promise<unknown>;
     // (undocumented)
     readonly spawnargs: readonly string[];
     // (undocumented)
     readonly spawnFile: string;
     // (undocumented)
-    readonly stdio: [WritableStream<Buffer> | null, ReadableStream<Buffer> | null, ReadableStream<Buffer> | null];
+    readonly stderr: null | ReadableStream<Buffer>;
+    // (undocumented)
+    readonly stdin: null | WritableStream<Buffer>;
+    // (undocumented)
+    readonly stdio: readonly [
+    WritableStream<Buffer> | null,
+    ReadableStream<Buffer> | null,
+    ReadableStream<Buffer> | null
+    ];
+    // (undocumented)
+    readonly stdout: null | ReadableStream<Buffer>;
     // (undocumented)
     unref(): void;
 }

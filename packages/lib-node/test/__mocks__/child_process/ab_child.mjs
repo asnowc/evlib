@@ -1,14 +1,15 @@
 //ab_child
-const argv = process.env
+const env = process.env
+const arg = process.argv.slice(2)
 
-const fdList = (argv.FD_LIST && JSON.parse(argv.FD_LIST)) ?? []
 /** 
- * @type number[]
+ * @type {number[]}
  */
-const resList = fdList.map((fd) => parseInt(fd))
+const fdList = ((env.FD_LIST && JSON.parse(env.FD_LIST)) ?? []).map((fd) => parseInt(fd))
+
 
 async function openAll() {
-    for (const fd of resList) {
+    for (const fd of fdList) {
         const buf = await read(fd, 10)
         console.log(buf.subarray(0, 10).toString());
         await close(fd)
@@ -35,5 +36,6 @@ function close(fd) {
     });
 }
 
-await openAll() 
+await openAll()
+console.log(arg);
 console.log("fin");
