@@ -117,7 +117,7 @@ export class Server {
 
         server.on("connection", (socket) => {
             if (this.disposeQueue) {
-                socket.on("close", () => this.#connections.delete(socket));
+                socket.once("close", () => this.#connections.delete(socket));
                 this.#connections.add(socket);
             }
             onConn(socket);
@@ -164,6 +164,7 @@ export class Server {
             for (const conn of this.#connections) {
                 conn.destroy(err);
             }
+            this.#connections.clear();
         });
     }
     /** @alpha */

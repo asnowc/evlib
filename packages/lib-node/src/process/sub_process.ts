@@ -1,52 +1,21 @@
 import * as node_ps from "node:child_process";
-import * as net from "node:net";
-import type * as dgram from "node:dgram";
 import { readableToReadableStream, writableToWritableStream } from "../stream/stream_transform.js";
 import { WritableStream, ReadableStream } from "node:stream/web";
 import { Listenable } from "#evlib";
 
-type HandleObj = net.Socket | net.Server | dgram.Socket;
-export type Handle = HandleObj | number | "ipc";
-export namespace NodeRaw {
-    type Stdio = undefined | null | "inherit" | "ignore" | "pipe" | "overlapped" | Handle;
-
-    export interface SpawnOptions {
-        file: string;
-        envPairs?: string[];
-        cwd?: string;
-        args?: string[];
-        detached?: boolean;
-        stdio?: Stdio | Stdio[];
-
-        gid?: number;
-        uid?: number;
-        serialization?: "json" | "advanced";
-        windowsHide: boolean;
-        windowsVerbatimArguments: boolean;
-    }
-    export interface ChildProcess extends node_ps.ChildProcess {
-        new (): ChildProcess;
-        spawn(options: SpawnOptions): void;
-    }
-}
-
-type ClosedState = Readonly<{ code: null | number; signal: NodeJS.Signals | null; kill?: true }>;
+/** @public */
+export type ClosedState = Readonly<{ code: null | number; signal: NodeJS.Signals | null }>;
 /** @public */
 export class SubProcess {
-    constructor(protected nodeCps: NodeRaw.ChildProcess) {
-        nodeCps.on("exit", (code, signal) => {
-            if (this.closedState) return;
+    constructor(protected nodeCps: node_ps.ChildProcess) {
+        nodeCps.once("exit", (code, signal) => {
             this.closedState = Object.freeze({ code, signal });
-            this.$close.emit(this.closedState);
+            this.$exit.emit(this.closedState);
         });
-        nodeCps.on("close", (code, signal) => {
-            if (this.closedState) return;
-            this.closedState = Object.freeze({ code, signal });
-            this.$close.emit(this.closedState);
+        nodeCps.once("close", (code, signal) => {
+            this.$close.emit(this.closedState!);
         });
         nodeCps.on("error", () => {});
-        nodeCps.on("message", (arg) => this.$message.emit(arg));
-        nodeCps.on("disconnect", () => this.$disconnect.emit());
         if (typeof nodeCps.send !== "function")
             nodeCps.send = () => {
                 throw new Error("The communication protocol is not connected");
@@ -54,41 +23,41 @@ export class SubProcess {
 
         this.spawnFile = nodeCps.spawnfile;
         this.spawnargs = nodeCps.spawnargs;
-        this.stdio = [
-            nodeCps.stdin ? writableToWritableStream(nodeCps.stdin) : null,
-            nodeCps.stdout ? readableToReadableStream(nodeCps.stdout) : null,
-            nodeCps.stderr ? readableToReadableStream(nodeCps.stderr) : null,
-        ];
-
+        this.stdin = nodeCps.stdin ? writableToWritableStream(nodeCps.stdin) : null;
+        this.stdout = nodeCps.stdout ? readableToReadableStream(nodeCps.stdout) : null;
+        this.stderr = nodeCps.stderr ? readableToReadableStream(nodeCps.stderr) : null;
+        this.stdio = [this.stdin, this.stdout, this.stderr];
         this.pid = nodeCps.pid!;
     }
     get closed() {
         return Boolean(this.closedState);
     }
+    get killed() {
+        return this.nodeCps.killed;
+    }
     closedState: ClosedState | null = null;
     readonly pid: number;
     readonly spawnFile: string;
     readonly spawnargs: readonly string[];
-    readonly stdio: [WritableStream<Buffer> | null, ReadableStream<Buffer> | null, ReadableStream<Buffer> | null];
+    readonly stdio: readonly [
+        WritableStream<Buffer> | null,
+        ReadableStream<Buffer> | null,
+        ReadableStream<Buffer> | null
+    ];
+    readonly stdin: null | WritableStream<Buffer>;
+    readonly stdout: null | ReadableStream<Buffer>;
+    readonly stderr: null | ReadableStream<Buffer>;
 
     /**
      * @alpha
+     * @remarks 在进程结束并且子进程的 stdio 流关闭后触发
      */
-    $close = new Listenable<{ code: null | number; signal: NodeJS.Signals | null; kill?: true }>();
-    $message = new Listenable<unknown>();
-    $disconnect = new Listenable<void>();
-    get connected() {
-        return this.nodeCps.connected;
-    }
-    send(msg: any, handle?: HandleObj) {
-        return new Promise((resolve) => {
-            this.nodeCps.send(msg, handle as any, resolve);
-        });
-    }
-    /** @remarks 与 node 进程断开通信 */
-    disconnect() {
-        this.nodeCps.disconnect();
-    }
+    $close = new Listenable<ClosedState>();
+    /**
+     * @remarks 触发 'exit' 事件时，子进程 stdio 流可能仍处于打开状态
+     */
+    $exit = new Listenable<ClosedState>();
+
     kill(signal?: NodeJS.Signals | number) {
         const res = this.nodeCps.kill(signal);
 
