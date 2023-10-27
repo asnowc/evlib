@@ -1,4 +1,4 @@
-import { spawn, fork, exec, NodeSubProcess } from "@eavid/lib-node/process";
+import { spawn, fork, exec, NodeSubProcess } from "@eavid/lib-node/sub_process";
 import { it, test, describe, vi, expect } from "vitest";
 import { ReadableStream } from "node:stream/web";
 import * as path from "node:path";
