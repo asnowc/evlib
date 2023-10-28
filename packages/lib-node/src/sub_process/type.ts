@@ -1,7 +1,7 @@
 import { Handle } from "../internal/handle.js";
 
 type StdioFlag = "pipe" | "overlapped" | "ignore";
-type Stdio = StdioFlag | Handle;
+type Stdio = StdioFlag | Handle | number;
 
 interface SpawnCommonOptions {
     env?: Record<string, string | number | boolean>;
