@@ -1,6 +1,6 @@
 {
     "name": "@eavid/lib-dev",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "type": "module",
     "scripts": {
         "ci:build": "tsc -p ./tsconfig.build.json"
@@ -24,10 +24,10 @@
         "typescript": "^5.0.0"
     },
     "dependencies": {
-        "@rollup/plugin-node-resolve": "^15.2.1",
-        "@rollup/plugin-typescript": "^11.1.4",
+        "@rollup/plugin-node-resolve": "^15.2.3",
+        "@rollup/plugin-typescript": "^11.1.5",
         "glob": "^10.3.4",
-        "rollup": "^3.29.4"
+        "rollup": "^4.1.4"
     },
     "files": [
         "out/**/*.js",
