@@ -1,6 +1,6 @@
 import { Writable } from "node:stream";
 import { UnderlyingSink, WritableStreamDefaultController } from "node:stream/web";
-import { InternalWritable, WritableState, getStreamError, streamIsAlive } from "./stream_core.js";
+import { InternalWritable, WritableState } from "./stream_core.js";
 
 export class WritableCore<T> implements UnderlyingSink<T> {
     constructor(writable: Writable);
@@ -8,38 +8,25 @@ export class WritableCore<T> implements UnderlyingSink<T> {
         this.state = writable._writableState;
     }
     private state: WritableState;
-    private errored = false;
+    private closed = false;
     start(ctrl: WritableStreamDefaultController) {
         const writable = this.writable;
-        const error = getStreamError(writable); //writable.errored required node 18
-        if (error) {
-            ctrl.error(error);
-            this.errored = true;
-            return;
-        } else if (!streamIsAlive(writable)) {
-            ctrl.error(new Error("raw stream closed"));
-            this.errored = true;
+        if (!writable.writable) {
+            ctrl.error(writable.errored ?? new Error("raw stream is ended"));
             return;
         }
-        //todo: 通过其他方式拦截close
-        writable.on("close", () => {
-            if (!this.errored) {
-                const err = getStreamError(writable) ?? new Error("raw stream closed");
-                ctrl.error(err);
-                this.errored = true;
-            }
-        });
-        //todo: 通过其他方式拦截error
-        writable.on("error", (err) => {
-            ctrl.error(err);
-            this.errored = true;
-        });
+        const onClose = () => {
+            if (!this.closed) ctrl.error(writable.errored ?? new Error("raw stream closed"));
+            this.closed = true;
+        };
+        writable.on("close", onClose);
+        writable.on("error", onClose);
     }
     abort(reason?: any): void | PromiseLike<void> {
         this.writable.destroy(reason);
     }
     close(): void | PromiseLike<void> {
-        this.errored = true;
+        this.closed = true;
         return new Promise((resolve, reject) => {
             this.writable.end(() => resolve());
         });

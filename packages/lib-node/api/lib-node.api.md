@@ -6,15 +6,17 @@
 
 /// <reference types="node" />
 
+import { ChildProcess } from 'node:child_process';
 import type * as dgram from 'node:dgram';
 import { Duplex } from 'node:stream';
 import { Listenable } from '#evlib';
 import * as net_2 from 'node:net';
 import * as node_ps from 'node:child_process';
+import * as NodeStream from 'node:stream';
 import { Readable } from 'node:stream';
 import type { Readable as Readable_2 } from 'stream';
 import { ReadableStream } from 'node:stream/web';
-import { ReadableStreamDefaultReader } from 'node:stream/web';
+import { StreamPipeOptions } from 'node:stream/web';
 import { Writable } from 'node:stream';
 import { WritableStream } from 'node:stream/web';
 
@@ -36,6 +38,61 @@ interface BridgingOptions {
     // (undocumented)
     preventDispose?: boolean;
 }
+
+// @public (undocumented)
+interface ByteReadable<T extends Uint8Array = Uint8Array> {
+    // (undocumented)
+    $readableClosed: Listenable<Error | null>;
+    // (undocumented)
+    [Symbol.asyncIterator](): AsyncGenerator<T>;
+    // (undocumented)
+    cancel(reason?: any): Promise<void>;
+    // (undocumented)
+    pipeTo(target: WritableHandle<T>, options?: StreamPipeOptions): Promise<void>;
+    // (undocumented)
+    read(): Promise<T | null>;
+    // (undocumented)
+    read(size: number): Promise<Uint8Array>;
+    // (undocumented)
+    read(size: number, safe?: boolean): Promise<Uint8Array | null>;
+    // (undocumented)
+    read<R extends ArrayBufferView>(buffer: R): Promise<R>;
+    // (undocumented)
+    read<R extends ArrayBufferView>(buffer: R, safe?: boolean): Promise<R | null>;
+    // (undocumented)
+    readonly readableClosed: boolean;
+}
+
+// @public (undocumented)
+interface ByteReader<T extends Uint8Array = Uint8Array> extends StreamBufferViewScan {
+    (): Promise<T | null>;
+    // (undocumented)
+    (len: number): Promise<Uint8Array>;
+    // (undocumented)
+    (len: number, safe?: boolean): Promise<Uint8Array | null>;
+}
+
+// @public (undocumented)
+interface ByteWritable<T extends Uint8Array = Uint8Array> {
+    // (undocumented)
+    $writableClosed: Listenable<Error | null>;
+    // (undocumented)
+    abort(reason?: Error): Promise<void>;
+    // (undocumented)
+    close(): Promise<void>;
+    // (undocumented)
+    readonly desiredSize: number | null;
+    // (undocumented)
+    readonly writableClosed: boolean;
+    // (undocumented)
+    write(chunk: T): Promise<void>;
+}
+
+// @public (undocumented)
+type ClosedState = Readonly<{
+    code: null | number;
+    signal: NodeJS.Signals | null;
+}>;
 
 // @alpha (undocumented)
 function connect(config: TcpConnectConfig, options?: ConnectOptions): Promise<Connection>;
@@ -84,37 +141,47 @@ function connectPipe(config: PipeConfig, options?: ConnectOptions): Promise<Sock
 function connectSocket(config: TcpConnectConfig | PipeConfig, options?: ConnectOptions): Promise<net_2.Socket>;
 
 // @public (undocumented)
-type CreateIpcServerOpts = Omit<IpcServerOpts, "path">;
+function createByteReadable<T extends Uint8Array = Uint8Array>(readable: ReadableStream): ByteReadable<T>;
 
 // @public (undocumented)
-function createScannerFromReadable<T extends Uint8Array = Buffer>(readable: Readable): StreamScanner<T>;
+function createByteReaderFromReadable<T extends Uint8Array = Uint8Array>(readable: Readable): {
+    read: ByteReader<T>;
+    cancel(reason?: Error): null;
+};
+
+// @alpha (undocumented)
+function createByteReaderFromWebStream<T extends Uint8Array>(stream: ReadableStream<T>): {
+    read: ByteReader<T>;
+    cancel(reason?: Error): T | null;
+};
+
+// @public (undocumented)
+function createByteWritable<T extends Uint8Array = Uint8Array>(writable: WritableStream): ByteWritable<T>;
+
+// @public (undocumented)
+type CreateIpcServerOpts = Omit<IpcServerOpts, "path">;
+
+// @public @deprecated (undocumented)
+function createScannerFromReadable<T extends Buffer = Buffer>(readable: Readable): StreamScanner<Buffer>;
 
 // @public (undocumented)
 type CreateTcpServerOpts = Omit<TcpServerOpts, "port">;
 
-// @beta @deprecated (undocumented)
-class DuplexStream<T extends Uint8Array> {
-    // (undocumented)
-    $closed: Listenable<Error | null>;
-    // (undocumented)
-    get [Symbol.asyncDispose](): () => Promise<void>;
-    constructor(duplex: Duplex);
-    // (undocumented)
-    get closed(): boolean;
-    // (undocumented)
-    dispose(reason?: any): void;
-    // (undocumented)
-    protected duplex: Duplex;
-    // (undocumented)
-    get errored(): Error | null;
-    // (undocumented)
-    get readable(): boolean;
-    // (undocumented)
-    get writable(): boolean;
-}
+// @public (undocumented)
+function exec(command: string, options?: SpawnOptions & {
+    shell?: string;
+}): Promise<SubProcess>;
 
-// @alpha (undocumented)
-function fork(file: string, options?: SpawnOptions): Promise<SubProcess>;
+// @public (undocumented)
+function execSync(command: string, options?: SpawnSyncOptions & {
+    shell?: string;
+}): SpawnSyncResult;
+
+// Warning: (ae-incompatible-release-tags) The symbol "fork" is marked as @public, but its signature references "NodeSubProcess" which is marked as @beta
+// Warning: (ae-incompatible-release-tags) The symbol "fork" is marked as @public, but its signature references "NodeSubProcess" which is marked as @beta
+//
+// @public (undocumented)
+function fork(file: string, options?: SpawnOptions): Promise<NodeSubProcess>;
 
 // Warning: (ae-forgotten-export) The symbol "ServerOpts" needs to be exported by the entry point index.d.ts
 //
@@ -150,6 +217,23 @@ declare namespace net {
     }
 }
 export { net }
+
+// @beta (undocumented)
+class NodeSubProcess extends SubProcess {
+    // (undocumented)
+    $disconnect: Listenable<void>;
+    // (undocumented)
+    $message: Listenable<unknown>;
+    constructor(nodeCps: ChildProcess);
+    // (undocumented)
+    get connected(): boolean;
+    // (undocumented)
+    disconnect(): void;
+    // Warning: (ae-forgotten-export) The symbol "Handle" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    send(msg: any, handle?: Handle | number): Promise<unknown>;
+}
 
 // @alpha (undocumented)
 interface PipeConfig {
@@ -196,10 +280,17 @@ function pipeTo<T extends Readable, R extends Writable>(source: T, target: R, op
 
 declare namespace process_2 {
     export {
-        SubProcess as ChildProcess,
+        ClosedState,
+        SubProcess,
+        SpawnOptions,
+        SpawnSyncResult,
+        SpawnSyncOptions,
         spawn,
+        spawnSync,
         fork,
-        SpawnOptions
+        NodeSubProcess,
+        exec,
+        execSync
     }
 }
 export { process_2 as process }
@@ -208,19 +299,13 @@ export { process_2 as process }
 function readableRead(stream: Readable_2, len: number, abortSignal?: AbortSignal): Promise<Buffer>;
 
 // @alpha (undocumented)
-function readableReadAll(stream: Readable_2, abortSignal?: AbortSignal): Promise<Buffer>;
+function readableReadAll<T>(stream: Readable_2, abortSignal?: AbortSignal): Promise<T[]>;
 
 // @public (undocumented)
 function readableToReadableStream<T = Uint8Array>(readable: Readable): ReadableStream<T>;
 
 // @public (undocumented)
-function readAll<T>(reader: ReadableStreamDefaultReader<T>): Promise<T[]>;
-
-// @public (undocumented)
-interface ScannableStream<T extends Uint8Array = Uint8Array> extends ReadableStream<T> {
-    // (undocumented)
-    getScanner(): StreamScanner<T>;
-}
+function readAllFromStream<T>(stream: ReadableStream<T>): Promise<T[]>;
 
 // @public (undocumented)
 class Server {
@@ -265,8 +350,7 @@ interface ServerListenOpts {
     port?: number;
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "SocketStream" is marked as @public, but its signature references "DuplexStream" which is marked as @beta
-// Warning: (ae-incompatible-release-tags) The symbol "SocketStream" is marked as @public, but its signature references "DuplexStream" which is marked as @beta
+// Warning: (ae-forgotten-export) The symbol "DuplexStream" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
 class SocketStream extends DuplexStream<Buffer> {
@@ -284,46 +368,54 @@ class SocketStream extends DuplexStream<Buffer> {
 }
 
 // @public (undocumented)
-function spawn(file: string, options?: SpawnOptions): Promise<SubProcess>;
+function spawn(exePath: string, options?: SpawnOptions): Promise<SubProcess>;
 
+// Warning: (ae-forgotten-export) The symbol "SpawnCommonOptions" needs to be exported by the entry point index.d.ts
+//
 // @public (undocumented)
-interface SpawnOptions {
-    // (undocumented)
-    args?: string[];
-    // @beta (undocumented)
-    createIPC?: boolean;
-    // (undocumented)
-    cwd?: string;
+interface SpawnOptions extends SpawnCommonOptions {
     // (undocumented)
     detached?: boolean;
+}
+
+// @public (undocumented)
+function spawnSync(exePath: string, options?: SpawnSyncOptions): SpawnSyncResult;
+
+// @public (undocumented)
+interface SpawnSyncOptions extends SpawnCommonOptions {
     // (undocumented)
-    env?: Record<string, string | number | boolean>;
+    maxBuffer?: number;
+}
+
+// @public (undocumented)
+interface SpawnSyncResult {
     // (undocumented)
-    gid?: number;
-    // Warning: (ae-forgotten-export) The symbol "Handle" needs to be exported by the entry point index.d.ts
-    //
+    error?: Error | undefined;
     // (undocumented)
-    sharedResource?: (Handle | null)[];
-    // Warning: (ae-forgotten-export) The symbol "StdioFlag" needs to be exported by the entry point index.d.ts
-    // Warning: (ae-forgotten-export) The symbol "Stdio" needs to be exported by the entry point index.d.ts
-    //
+    pid: number;
     // (undocumented)
-    stdio?: StdioFlag | [Stdio, Stdio, Stdio];
+    signal: NodeJS.Signals | null;
     // (undocumented)
-    uid?: number;
+    status: number | null;
     // (undocumented)
-    windowsRawArguments?: boolean;
+    stderr: Buffer;
+    // (undocumented)
+    stdout: Buffer;
 }
 
 declare namespace stream {
     export {
-        readAll,
-        DuplexStream,
+        readAllFromStream,
+        WritableHandle,
+        ByteReadable,
+        ByteWritable,
+        createByteReadable,
+        createByteWritable,
         StreamScan,
         StreamBufferViewScan,
-        StreamScanner,
-        ScannableStream,
+        ByteReader,
         createScannerFromReadable,
+        StreamScanner,
         readableRead,
         readableReadAll,
         pipeTo,
@@ -333,6 +425,8 @@ declare namespace stream {
         PipeSourceError,
         PipeTargetError,
         BridgingError,
+        createByteReaderFromWebStream,
+        createByteReaderFromReadable,
         readableToReadableStream,
         writableToWritableStream
     }
@@ -355,7 +449,7 @@ interface StreamScan<T extends Uint8Array = Uint8Array> {
     (len: number, safe?: boolean): Promise<T | null>;
 }
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 type StreamScanner<T extends Uint8Array = Uint8Array> = {
     read: StreamScan<T>;
     readTo: StreamBufferViewScan;
@@ -366,46 +460,46 @@ type StreamScanner<T extends Uint8Array = Uint8Array> = {
 // @public (undocumented)
 class SubProcess {
     // @alpha (undocumented)
-    $close: Listenable<{
-        code: null | number;
+    $close: Listenable<Readonly<{
+        code: number | null;
         signal: NodeJS.Signals | null;
-        kill?: true | undefined;
-    }>;
+    }>>;
     // (undocumented)
-    $disconnect: Listenable<void>;
-    // (undocumented)
-    $message: Listenable<unknown>;
-    constructor(nodeCps: NodeRaw.ChildProcess);
+    $exit: Listenable<Readonly<{
+        code: number | null;
+        signal: NodeJS.Signals | null;
+    }>>;
+    constructor(nodeCps: node_ps.ChildProcess);
     // (undocumented)
     get closed(): boolean;
-    // Warning: (ae-forgotten-export) The symbol "ClosedState" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
     closedState: ClosedState | null;
     // (undocumented)
-    get connected(): boolean;
-    // (undocumented)
-    disconnect(): void;
-    // (undocumented)
     kill(signal?: NodeJS.Signals | number): boolean;
-    // Warning: (ae-forgotten-export) The symbol "NodeRaw" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
-    protected nodeCps: NodeRaw.ChildProcess;
+    get killed(): boolean;
+    // (undocumented)
+    protected nodeCps: node_ps.ChildProcess;
     // (undocumented)
     readonly pid: number;
     // (undocumented)
     ref(): void;
-    // Warning: (ae-forgotten-export) The symbol "HandleObj" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
-    send(msg: any, handle?: HandleObj): Promise<unknown>;
     // (undocumented)
     readonly spawnargs: readonly string[];
     // (undocumented)
     readonly spawnFile: string;
     // (undocumented)
-    readonly stdio: [WritableStream<Buffer> | null, ReadableStream<Buffer> | null, ReadableStream<Buffer> | null];
+    readonly stderr: null | ReadableStream<Buffer>;
+    // (undocumented)
+    readonly stdin: null | WritableStream<Buffer>;
+    // (undocumented)
+    readonly stdio: readonly [
+    WritableStream<Buffer> | null,
+    ReadableStream<Buffer> | null,
+    ReadableStream<Buffer> | null
+    ];
+    // (undocumented)
+    readonly stdout: null | ReadableStream<Buffer>;
     // (undocumented)
     unref(): void;
 }
@@ -437,6 +531,16 @@ interface TcpServerOpts extends ServerOpts {
     port?: number;
     // (undocumented)
     type?: "TCP";
+}
+
+// @public (undocumented)
+interface WritableHandle<T> {
+    // (undocumented)
+    abort?(reason?: Error): void | Promise<void>;
+    // (undocumented)
+    close?(): void | Promise<void>;
+    // (undocumented)
+    write(chunk: T): Promise<void> | void;
 }
 
 // @public (undocumented)

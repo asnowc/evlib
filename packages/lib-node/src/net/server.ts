@@ -84,7 +84,8 @@ export class Server {
             keepAliveInitialDelay: options.keepAliveInitialDelay,
             highWaterMark: options.highWaterMark,
             noDelay: options.noDelay,
-        } as any;
+            allowHalfOpen: true,
+        } as net.ServerOpts;
 
         const server = new net.Server(serverOpts);
         this.#server = server;
@@ -116,7 +117,7 @@ export class Server {
 
         server.on("connection", (socket) => {
             if (this.disposeQueue) {
-                socket.on("close", () => this.#connections.delete(socket));
+                socket.once("close", () => this.#connections.delete(socket));
                 this.#connections.add(socket);
             }
             onConn(socket);
@@ -163,6 +164,7 @@ export class Server {
             for (const conn of this.#connections) {
                 conn.destroy(err);
             }
+            this.#connections.clear();
         });
     }
     /** @alpha */

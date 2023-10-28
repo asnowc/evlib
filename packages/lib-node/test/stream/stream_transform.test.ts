@@ -1,6 +1,6 @@
 import { afterTime } from "evlib";
 import { readableToReadableStream, writableToWritableStream } from "../../src/stream/stream_transform.js";
-import { Writable, Readable } from "node:stream";
+import { Writable, Readable, Duplex } from "node:stream";
 import { ReadableStreamDefaultReader } from "node:stream/web";
 import { test, expect, describe, vi } from "vitest";
 
@@ -90,155 +90,160 @@ describe.concurrent("writeable", function () {
                 writeable.end();
                 await waitTime();
                 const writer = writableToWritableStream(writeable).getWriter();
-                await expect(writer.closed).rejects.toThrowError("raw stream closed");
+                await expect(writer.closed).rejects.toThrowError();
             });
             test("closed", async function () {
                 const writeable = createWriteable();
                 writeable.destroy();
                 const writer = writableToWritableStream(writeable).getWriter();
-                await expect(writer.closed).rejects.toThrowError("raw stream closed");
+                await expect(writer.closed).rejects.toThrowError();
             });
         });
     });
 });
 
-describe.concurrent("readable", function () {
-    test("read chunk", async function () {
-        let total = 3;
-        const readable = new Readable({
-            read(size) {
-                if (total > 0) this.push(Buffer.from([total--]));
-                else this.push(null);
-            },
-            construct(callback) {
-                setTimeout(callback, 100);
-            },
-        });
+describe.concurrent(
+    "readable",
+    function () {
+        test("read chunk", async function () {
+            let total = 3;
+            const readable = new Readable({
+                read(size) {
+                    if (total > 0) this.push(Buffer.from([total--]));
+                    else this.push(null);
+                },
+                construct(callback) {
+                    setTimeout(callback, 100);
+                },
+            });
 
-        const ctrl = readableToReadableStream(readable);
-        const reader = ctrl.getReader();
-        const chunks = await readAll(reader);
+            const ctrl = readableToReadableStream(readable);
+            const reader = ctrl.getReader();
+            const chunks = await readAll(reader);
 
-        expect(chunks.length).toBe(3);
-        expect(Buffer.concat(chunks)).toEqual(Buffer.from([3, 2, 1]));
-        await waitTime();
-        expect(readable.readable).toBeFalsy();
-        expect(readable.readableEnded).toBeTruthy();
-    });
-    test("_read() 触发", async function () {
-        let total = 12;
-        const read = vi.fn((size) => {
-            while (total > 0) {
-                total -= 4;
-                if (!readable.push("abcd")) return;
-            }
-            readable.push(null);
+            expect(chunks.length).toBe(3);
+            expect(Buffer.concat(chunks)).toEqual(Buffer.from([3, 2, 1]));
+            await waitTime();
+            expect(readable.readable).toBeFalsy();
+            expect(readable.readableEnded).toBeTruthy();
         });
-        const readable = new Readable({
-            read,
-            highWaterMark: 8,
-        });
+        test("_read() 触发", async function () {
+            let total = 12;
+            const read = vi.fn((size) => {
+                while (total > 0) {
+                    total -= 4;
+                    if (!readable.push("abcd")) return;
+                }
+                readable.push(null);
+            });
+            const readable = new Readable({
+                read,
+                highWaterMark: 8,
+            });
 
-        const ctrl = readableToReadableStream<Buffer>(readable);
-        const reader = ctrl.getReader();
-        await afterTime();
-        expect(read).toBeCalledTimes(1);
-        expect(readable.readableLength, "_read调用后添加源").toBe(8);
-        let list: Buffer[] = [];
-        {
-            const res = await reader.read();
-            list.push(res.value!); // chunk length =4
+            const ctrl = readableToReadableStream<Buffer>(readable);
+            const reader = ctrl.getReader();
             await afterTime();
-            expect(read).toBeCalledTimes(2);
-        }
-        do {
-            const chunk = await reader.read();
-            if (chunk.done) break;
-            list.push(chunk.value);
-        } while (true);
-        const buf = Buffer.concat(list);
-        expect(buf.toString()).toBe("abcd".repeat(3));
-    });
-    test("销毁 ReadableStream: cancel()", async function () {
-        const onDestroy = vi.fn();
-        const readable = new Readable({ read() {}, destroy: onDestroy });
-
-        const ctrl = readableToReadableStream(readable);
-        const reason = new Error();
-        await ctrl.cancel(reason);
-
-        expect(onDestroy.mock.calls[0][0]).toBe(reason);
-        expect(readable.destroyed).toBeTruthy();
-    });
-    test("highWaterMark", async function () {
-        const readable = new Readable({ read() {}, highWaterMark: 6 });
-
-        const ctrl = readableToReadableStream(readable);
-        const reader = ctrl.getReader();
-        const data = Buffer.from("ab");
-        expect(readable.push(data)).toBeTruthy();
-        await waitTime();
-        expect(readable.push(data)).toBeTruthy();
-        await waitTime();
-        expect(readable.push(data)).toBeFalsy();
-        await waitTime();
-        await reader.read();
-        await reader.read();
-        expect(readable.push(data)).toBeTruthy();
-        await waitTime();
-        expect(readable.push(data)).toBeFalsy();
-    });
-    test("cancel()", async function () {
-        const { readable, reader, stream } = createReadableStream();
-        const err = new Error("abort()");
-        await reader.cancel(err);
-        expect(readable.destroyed).toBeTruthy();
-        expect(readable.readable).toBeFalsy();
-    });
-    test("readable 直接结束", async function () {
-        const { readable, stream, reader } = createReadableStream();
-        readable.push(null);
-        await reader.closed;
-        expect(readable.readable).toBeFalsy();
-    }, 100);
-    describe("readable 异常", function () {
-        test("被销毁", async function () {
-            const readable = createReadable();
-            const writerCtrl = readableToReadableStream(readable);
-            const err = new Error("abc");
-            readable.destroy(err);
-            const reader = writerCtrl.getReader();
-            await expect(reader.closed).rejects.toBe(err);
+            expect(read).toBeCalledTimes(1);
+            expect(readable.readableLength, "_read调用后添加源").toBe(8);
+            let list: Buffer[] = [];
+            {
+                const res = await reader.read();
+                list.push(res.value!); // chunk length =4
+                await afterTime();
+                expect(read).toBeCalledTimes(2);
+            }
+            do {
+                const chunk = await reader.read();
+                if (chunk.done) break;
+                list.push(chunk.value);
+            } while (true);
+            const buf = Buffer.concat(list);
+            expect(buf.toString()).toBe("abcd".repeat(3));
         });
-        describe("错误状态的 readable", function () {
-            test("readable errored", async function () {
+        test("销毁 ReadableStream: cancel()", async function () {
+            const onDestroy = vi.fn();
+            const readable = new Readable({ read() {}, destroy: onDestroy });
+
+            const ctrl = readableToReadableStream(readable);
+            const reason = new Error();
+            await ctrl.cancel(reason);
+
+            expect(onDestroy.mock.calls[0][0]).toBe(reason);
+            expect(readable.destroyed).toBeTruthy();
+        });
+        test("highWaterMark", async function () {
+            const readable = new Readable({ read() {}, highWaterMark: 6 });
+
+            const ctrl = readableToReadableStream(readable);
+            const reader = ctrl.getReader();
+            const data = Buffer.from("ab");
+            expect(readable.push(data)).toBeTruthy();
+            await waitTime();
+            expect(readable.push(data)).toBeTruthy();
+            await waitTime();
+            expect(readable.push(data)).toBeFalsy();
+            await waitTime();
+            await reader.read();
+            await reader.read();
+            expect(readable.push(data)).toBeTruthy();
+            await waitTime();
+            expect(readable.push(data)).toBeFalsy();
+        });
+        test("cancel()", async function () {
+            const { readable, reader, stream } = createReadableStream();
+            const err = new Error("abort()");
+            await reader.cancel(err);
+            expect(readable.destroyed).toBeTruthy();
+            expect(readable.readable).toBeFalsy();
+        });
+        test("readable 直接结束", async function () {
+            const { readable, stream, reader } = createReadableStream();
+            setTimeout(() => readable.push(null));
+            await reader.closed;
+            await expect(reader.read()).resolves.toMatchObject({ done: true });
+            expect(readable.readable).toBeFalsy();
+        });
+        describe("readable 异常", function () {
+            test("被销毁", async function () {
                 const readable = createReadable();
-                readable.on("error", () => {});
+                const writerCtrl = readableToReadableStream(readable);
                 const err = new Error("abc");
                 readable.destroy(err);
-
-                const stream = readableToReadableStream(readable).getReader();
-                await expect(stream.closed).rejects.toBe(err);
+                const reader = writerCtrl.getReader();
+                await expect(reader.closed).rejects.toBe(err);
             });
+            describe("错误状态的 readable", function () {
+                test("readable errored", async function () {
+                    const readable = createReadable();
+                    readable.on("error", () => {});
+                    const err = new Error("abc");
+                    readable.destroy(err);
 
-            test("closed", async function () {
-                const readable = createReadable();
-                readable.destroy();
-                const stream = readableToReadableStream(readable).getReader();
-                await expect(stream.closed).rejects.toThrowError("raw stream closed");
+                    const stream = readableToReadableStream(readable).getReader();
+                    await expect(stream.closed).rejects.toBe(err);
+                });
+
+                test("closed", async function () {
+                    const readable = createReadable();
+                    readable.destroy();
+                    const stream = readableToReadableStream(readable).getReader();
+                    await expect(stream.closed).rejects.toThrowError("raw stream is unreadable");
+                });
             });
         });
-    });
 
-    function createReadableStream() {
-        const readable = new Readable({
-            read(size) {},
-        });
-        const stream = readableToReadableStream(readable);
-        const reader = stream.getReader();
-        return { readable, stream, reader };
-    }
-});
+        function createReadableStream() {
+            const readable = new Readable({
+                read(size) {},
+            });
+            const stream = readableToReadableStream(readable);
+            const reader = stream.getReader();
+            return { readable, stream, reader };
+        }
+    },
+    1000
+);
 
 function createWriteable() {
     return new Writable({

@@ -1,12 +1,60 @@
-import { afterTime } from "evlib";
-import { createScannerFromReadable } from "../src/stream.js";
+import { createByteReaderFromReadable, createByteReaderFromWebStream } from "@eavid/lib-node/stream";
+import { describe, test, expect, vi } from "vitest";
+import {
+    ReadableStream,
+    UnderlyingSource,
+    ReadableStreamDefaultController,
+    ByteLengthQueuingStrategy,
+} from "node:stream/web";
 import { Readable } from "node:stream";
-import { test, expect, describe, vi } from "vitest";
+import { afterTime } from "evlib";
+describe("createReaderFromWebStream", function () {
+    describe("取消reader", function () {
+        test("cancel()", function () {
+            const { cancel, read, stream, ctrl } = createMockRead();
+            ctrl.enqueue(Buffer.allocUnsafe(4));
+            ctrl.close();
+            cancel();
+            expect(cancel()).toBe(null);
+        });
+        test("缓存有剩余", async function () {
+            const { read, cancel, ctrl } = createMockRead();
+            ctrl.enqueue(Buffer.allocUnsafe(4));
+            ctrl.close();
+            await read(2);
 
-describe("createScannerFromReadable", function () {
+            const val = cancel() as Buffer;
+            expect(val!.byteLength).toBe(2);
+        });
+        test("缓存无剩余", async function () {
+            const { cancel, read, ctrl } = createMockRead();
+            ctrl.enqueue(Buffer.allocUnsafe(4));
+            await read(4);
+            expect(cancel()).toBe(null);
+        });
+    });
+    function createMockRead() {
+        const source = new MockSource();
+        const stream = new ReadableStream<Uint8Array>(source, new ByteLengthQueuingStrategy({ highWaterMark: 0 }));
+        const { read, cancel } = createByteReaderFromWebStream(stream);
+        return {
+            stream,
+            ctrl: source.ctrl,
+            read,
+            cancel,
+        };
+    }
+    class MockSource implements UnderlyingSource {
+        ctrl!: ReadableStreamDefaultController;
+        start(ctrl: ReadableStreamDefaultController) {
+            this.ctrl = ctrl;
+        }
+    }
+});
+describe("createByteReaderFromReadable", function () {
     function createMockRead() {
         const readable = new Readable({ read(size) {} });
-        const { read, cancel } = createScannerFromReadable(readable);
+        const { read, cancel } = createByteReaderFromReadable(readable);
         return { readable, read, cancel };
     }
 
@@ -15,16 +63,15 @@ describe("createScannerFromReadable", function () {
             const { read, readable } = createMockRead();
             readable.push(Buffer.from("abcdefghij"));
             readable.push(null);
-            await expect(read(4).then((buf) => buf.toString())).resolves.toBe("abcd");
-            await expect(read(2).then((buf) => buf.toString())).resolves.toBe("ef");
-            await expect(read(2).then((buf) => buf.toString())).resolves.toBe("gh");
-            await expect(read(2).then((buf) => buf.toString())).resolves.toBe("ij");
-            await expect(read(2, true)).resolves.toBe(null);
+            await expect(read(Buffer.alloc(4)).then((buf) => buf.toString())).resolves.toBe("abcd");
+            await expect(read(Buffer.alloc(2)).then((buf) => buf.toString())).resolves.toBe("ef");
+            await expect(read(Buffer.alloc(2)).then((buf) => buf.toString())).resolves.toBe("gh");
+            await expect(read(Buffer.alloc(2)).then((buf) => buf.toString())).resolves.toBe("ij");
+            await expect(read(Buffer.alloc(2), true)).resolves.toBe(null);
         });
         test("需要等待多个chunk", async function () {
             const { read, readable } = createMockRead();
-            let pms = read(4);
-            expect(pms.then((buf) => buf.toString())).resolves.toBe("abcd");
+            let pms = read(Buffer.alloc(4));
             {
                 //mock
                 readable.push(Buffer.from("ab"));
@@ -32,18 +79,18 @@ describe("createScannerFromReadable", function () {
                 readable.push(Buffer.from("cd"));
                 readable.push(null);
             }
-            await pms;
+            await expect(pms.then((buf) => buf.toString())).resolves.toBe("abcd");
             await expect(read(2, true)).resolves.toBe(null);
         });
         test("等待的chunk足够下一个分段", async function () {
             const { read, readable } = createMockRead();
-            const p1 = expect(read(4).then((buf) => buf.toString())).resolves.toBe("abcd");
+            const p1 = expect(read(Buffer.alloc(4)).then((buf) => buf.toString())).resolves.toBe("abcd");
             readable.push(Buffer.from("ab"));
             await afterTime();
             readable.push(Buffer.from("cdefgh"));
             readable.push(null);
             await p1;
-            await expect(read(4).then((buf) => buf.toString())).resolves.toBe("efgh");
+            await expect(read(Buffer.alloc(4)).then((buf) => buf.toString())).resolves.toBe("efgh");
         });
     });
     test("_read() 触发", async function () {
@@ -60,11 +107,11 @@ describe("createScannerFromReadable", function () {
             highWaterMark: 8,
         });
 
-        const { nextChunk } = createScannerFromReadable(readable);
+        const { read: nextChunk } = createByteReaderFromReadable(readable);
         await afterTime();
         expect(read).toBeCalledTimes(1);
         expect(readable.readableLength, "_read调用后添加源").toBe(8);
-        let list: Buffer[] = [];
+        let list: Uint8Array[] = [];
         list.push((await nextChunk())!); // chunk length =4
         expect(read).toBeCalledTimes(2);
         do {
@@ -81,7 +128,7 @@ describe("createScannerFromReadable", function () {
         const buf = Buffer.from([0, 1, 0, 2, 0, 3]);
         readable.push(buf);
         readable.push(null);
-        const arr = (await pms).map((buf) => buf.readUint16BE());
+        const arr = (await pms).map((buf) => Buffer.from(buf).readUint16BE());
         expect(arr).toEqual(arr);
     });
     test("不安全读取", async function () {
@@ -114,7 +161,7 @@ describe("createScannerFromReadable", function () {
             readable.on("data", () => {});
             readable.push(null);
             await afterTime();
-            const { read } = createScannerFromReadable(readable);
+            const { read } = createByteReaderFromReadable(readable);
             /** 未监听 */
             expect(readable.listenerCount("readable")).toBe(0);
             expect(readable.listenerCount("close")).toBe(0);
@@ -124,7 +171,7 @@ describe("createScannerFromReadable", function () {
         test("没有autoDestroy 的流", async function () {
             const readable = new Readable({ read(size) {}, autoDestroy: false });
             readable.on("readable", () => {});
-            const { cancel, read } = createScannerFromReadable(readable);
+            const { cancel, read } = createByteReaderFromReadable(readable);
             readable.push("ab", "utf-8");
             setTimeout(() => readable.push(null));
             await expect(read(4)).rejects.toThrow();

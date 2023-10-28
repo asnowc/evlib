@@ -1,26 +1,70 @@
 import type { Readable } from "node:stream";
 import type { InternalReadable, ReadableState } from "./stream_core.js";
 import type { UnderlyingSource, ReadableStreamController, ReadableByteStreamController } from "node:stream/web";
-import { getStreamError, streamIsAlive } from "./stream_core.js";
-
-export function fromList<T>(n: number, state: ReadableState<T>): T | undefined {
-    // nothing buffered.
-    if (state.length === 0) return;
-
-    let ret: T | Buffer | undefined;
-    if (state.objectMode) ret = state.buffer.shift();
-    else if (!n || n >= state.length) {
-        // Read it all, truncate the list.
-        if (state.buffer.length === 1) ret = state.buffer.first();
-        else ret = state.buffer.concat(state.length);
-        state.buffer.clear();
-    } else {
-        // read part of list.
-        ret = state.buffer.consume(n);
+/**
+ * @remarks 读取流的一个chunk
+ * @returns null: 流不会再有更多数据 undefined 没有 chunk
+ */
+export function takeChunkFromReadableState<T>(readableState: ReadableState<T>): T | undefined | null {
+    const readableQueue = readableState.buffer;
+    if (readableQueue.length) {
+        const chunk = readableQueue.shift()!;
+        readableState.length -= readableState.objectMode ? 1 : (chunk as unknown as Uint8Array).byteLength;
+        return chunk;
     }
 
-    return ret as any;
+    return readableState.ended ? null : undefined;
 }
+/**
+ * 将 readableState 中的数据移动到 info 中的缓冲区, 并移动偏移量.
+ * 返回 undefined: 说明没有读取到chunk. view 没有发生变化
+ * 返回 number: 填充满视图的缓冲区所需的字节长度
+ */
+export function setToBufferFromReadableState(
+    info: BufferViewInfo,
+    state: ReadableState<Uint8Array>
+): number | undefined {
+    const list = state.buffer;
+    let node = list.head;
+    if (!node) return;
+
+    const buf = info.buf;
+
+    do {
+        let nodeSize = node.data.byteLength;
+        if (nodeSize > info.size) {
+            buf.set(node.data.subarray(0, info.size), info.offset);
+
+            node.data = node.data.subarray(info.size);
+
+            state.length -= info.size;
+            info.offset += info.size;
+            info.size = 0;
+
+            break;
+        } else {
+            buf.set(node.data, info.offset);
+
+            info.offset += nodeSize;
+            info.size -= nodeSize;
+            state.length -= nodeSize;
+            node = node.next;
+            list.length--;
+        }
+    } while (node);
+
+    list.head = node;
+    return buf.byteLength - info.offset;
+}
+
+export type BufferViewInfo = {
+    view: ArrayBufferView;
+    buf: Uint8Array;
+    /** 偏移 */
+    offset: number;
+    /** 剩余长度 */
+    size: number;
+};
 
 export class ReadableSource<T> implements UnderlyingSource {
     constructor(readable: Readable, type?: "bytes");
@@ -30,42 +74,33 @@ export class ReadableSource<T> implements UnderlyingSource {
             this.queue = bytesQueueHandler as any;
         }
         this.readableState = readable._readableState;
-        this.objectMode = readable.readableObjectMode;
     }
-    private readonly objectMode;
     private readableState: ReadableState<T>;
-
     start(ctrl: ReadableStreamController<T>) {
         const readable = this.readable;
         if (readable.readableEnded) {
             ctrl.close();
-            this.ctrlClosed = true;
             return;
         }
-        const error = getStreamError(readable); //readable.errored required node 18
-        if (error) {
-            ctrl.error(error);
-            return;
-        } else if (!streamIsAlive(readable)) {
-            ctrl.error(new Error("raw stream closed"));
+        if (!readable.readable) {
+            ctrl.error(readable.errored ?? new Error("raw stream is unreadable"));
             return;
         }
+        let closed = false;
         const tryClose = (error?: Error | null) => {
             //没有进行读取，但是流已经关闭
-            if (!this.ctrlClosed) {
+            if (!closed) {
                 if (error) ctrl.error(error);
                 else ctrl.close();
-                this.ctrlClosed = true;
+                closed = true;
             }
         };
         readable.on("close", () => {
-            const errored = getStreamError(readable);
             if (this.waiting) {
-                if (errored) this.waiting.reject(errored);
-                else this.waiting.resolve(undefined); //触发 close
+                this.waiting.reject();
                 this.waiting = undefined;
-                return true;
-            } else tryClose(errored);
+            }
+            tryClose(readable.errored);
         });
         readable.on("end", tryClose);
 
@@ -77,64 +112,31 @@ export class ReadableSource<T> implements UnderlyingSource {
         readable.on("readable", () => {
             if (this.waiting) {
                 //理论上至少命中 readableState.length 或 readableState.ended
-                const res = this.takeChunkFromReadableState()!;
-                if (res.chunk) this.waiting.resolve(res.chunk);
-                else if (res.err) this.waiting.reject(res.err);
-                else this.waiting.resolve(undefined);
-                this.waiting = undefined;
-            } else if (this.readableState.length === 0) readable.read(); //触发更新
+                const chunk = takeChunkFromReadableState(this.readableState);
+                if (chunk) {
+                    ctrl.enqueue(chunk);
+                    this.waiting.resolve();
+                    this.waiting = undefined;
+                    this.readable.read(0);
+                } else if (chunk === null) readable.read(0);
+            } else if (readable.readableLength === 0) readable.read(0);
         });
-    }
-    /**
-     * @remarks 如果流可以读取、或已关闭、或已出错，则返回信息
-     * @returns undefined: 需要等待流读取
-     */
-    private takeChunkFromReadableState(): WaitChunkRes<T> | undefined {
-        const readableQueue = this.readableState.buffer;
-        if (this.readableState.errored) {
-            return { err: this.readableState.errored };
-        }
-        let res: WaitChunkRes<T> | undefined;
-        if (readableQueue.length) {
-            const chunk = readableQueue.shift()!;
-            this.readableState.length -= this.objectMode ? 1 : (chunk as unknown as Uint8Array).byteLength;
-            res = { closed: false, chunk };
-            if (readableQueue.length === 0 && this.readableState.ended) res.closed = true;
-        } else if (this.readableState.ended || this.readableState.closed) {
-            res = { closed: true };
-        }
-        this.readable.read(0); //触发readable的对应事件
-        return res;
     }
 
     private queue(ctrl: ReadableStreamController<T>, chunk: T) {
         ctrl.enqueue(chunk);
     }
-    private ctrlClosed = false;
-    private waiting?: { resolve(chunk: T | undefined): void; reject(reason?: any): void };
+    private waiting?: { resolve(): void; reject(reason?: any): void };
     pull(ctrl: ReadableStreamController<T>) {
-        const res = this.takeChunkFromReadableState();
-        if (res) {
-            if (res.chunk) this.queue(ctrl, res.chunk);
-
-            if (res.err) ctrl.error(res.err);
-            else if (res.closed) {
-                ctrl.close();
-                this.ctrlClosed = true;
-            }
+        const chunk = takeChunkFromReadableState(this.readableState);
+        if (chunk) {
+            this.queue(ctrl, chunk);
+            this.readable.read(0);
         } else {
-            return new Promise<T | undefined>((resolve, reject) => {
+            if (chunk === null) this.readable.read(0);
+            return new Promise<void>((resolve, reject) => {
                 this.waiting = { resolve, reject };
-            }).then(
-                (chunk) => {
-                    if (chunk) this.queue(ctrl, chunk);
-                    else {
-                        ctrl.close();
-                        this.ctrlClosed = true;
-                    }
-                },
-                (err) => ctrl.error(err)
-            );
+            });
         }
     }
     /** cancel将销毁可读流 */
@@ -148,10 +150,6 @@ interface ReadableStreamBYOBRequest {
     respond(bytesWritten: number): void;
     respondWithNewView(view: ArrayBufferView): void;
 }
-
-type WaitChunkRes<T> =
-    | { err: unknown; closed?: undefined; chunk?: undefined }
-    | { err?: undefined; closed: boolean; chunk?: T };
 
 const fastArrayBuffer = Buffer.allocUnsafe(1).buffer;
 /** 可读字节流chunk处理，避免将 node 的 Buffer 的底层 转移*/

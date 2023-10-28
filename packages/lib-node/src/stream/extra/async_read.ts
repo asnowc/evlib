@@ -1,5 +1,5 @@
 import type { Readable } from "stream";
-import { createScannerFromReadable } from "./create_scanner.js";
+import { createByteReaderFromReadable } from "./byte_reader.js";
 
 /**
  * @alpha
@@ -12,31 +12,31 @@ export async function readableRead(stream: Readable, len: number, abortSignal?: 
     if (stream.readableLength >= len) return stream.read(len);
     abortSignal?.throwIfAborted();
 
-    const { read, cancel } = createScannerFromReadable<Buffer>(stream);
+    const { read, cancel } = createByteReaderFromReadable<Buffer>(stream);
     function onTimeout() {
         cancel(abortSignal!.reason);
     }
 
     abortSignal?.addEventListener("abort", onTimeout);
-    const buf = await read(len);
-    abortSignal?.removeEventListener("abort", onTimeout);
-    cancel();
-    return buf;
+    return read(Buffer.alloc(len)).finally(function () {
+        abortSignal?.removeEventListener("abort", onTimeout);
+        cancel();
+    });
 }
 
 /**
  * @alpha
- * @remarks 等待流 end 事件触发后一次性读取所有数据
+ * @remarks 读取所有 chunks. 等待流 end 事件触发后解决
  */
-export async function readableReadAll(stream: Readable, abortSignal?: AbortSignal) {
-    return new Promise<Buffer>(function (resolve, reject) {
-        let dataList: Buffer[] = [];
-        function onData(newData: Buffer) {
+export async function readableReadAll<T>(stream: Readable, abortSignal?: AbortSignal) {
+    return new Promise<T[]>(function (resolve, reject) {
+        let dataList: T[] = [];
+        function onData(newData: T) {
             dataList.push(newData);
         }
         function onEnd() {
             clear();
-            resolve(Buffer.concat(dataList));
+            resolve(dataList);
         }
         function onError() {
             clear();
