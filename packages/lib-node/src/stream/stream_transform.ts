@@ -5,9 +5,7 @@ import { WritableCore } from "./transform/writable_core.js";
 /**
  * @public
  * @remarks 将 node 的 Readable 转换为 ReadableStream
- * 它的行为与 Readable.toWeb() 的行为不同.
- * 1. read 方法总是读取下一个 chunk. 而 Readable.toWeb() 调用 read() 时如果 Readable 队列中有chunk时, 它们会被合并成一个返回. 如果是 Buffer , 还会被转成 Uint8Array
- * 2. Readable.toWeb() 会造成 2 倍 highWaterMark. node v20 目前是这样的
+ * 它的行为与 Readable.toWeb() 的行为不同. Readable.toWeb() 会造成 扩大 highWaterMark 的问题. node v20 目前是这样的
  */
 export function readableToReadableStream<T = Uint8Array>(readable: Readable): ReadableStream<T> {
     readable.pause();
