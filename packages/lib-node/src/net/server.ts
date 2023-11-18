@@ -100,12 +100,14 @@ export class Server {
                     writableAll: options.writableAll,
                     path: options.path,
                 };
+                this.type = "IPC";
             } else {
                 listenOpts = {
                     host: options.host,
                     ipv6Only: options.ipv6Only,
                     port: options.port,
                 };
+                this.type = "TCP";
             }
             Object.assign(listenOpts, {
                 exclusive: options.exclusive,
@@ -123,6 +125,7 @@ export class Server {
             onConn(socket);
         });
     }
+    readonly type: "IPC" | "TCP";
     #options: net.ListenOptions;
     #server = new net.Server();
     $close = new Listenable<void>();
@@ -146,14 +149,17 @@ export class Server {
     get keepCount() {
         return this.#connections.size;
     }
-    listen(options?: ServerListenOpts) {
+    listen(options: ServerListenOpts = {}) {
         return new Promise<void>((resolve, reject) => {
-            const listenOpts = this.#options;
-            if (!listenOpts.path && options) {
-                if (options.host) listenOpts.host = options.host;
-                if (options.port) listenOpts.port = options.port;
+            const defaultOpts = this.#options;
+            const { host = defaultOpts.host, port = defaultOpts.port, path = defaultOpts.path } = options;
+            if (this.type === "TCP") {
+                if (typeof port !== "number") throw new Error("TCP Server 必须指定 port");
+                this.#server.listen({ ...this.#options, host, port }, resolve);
+            } else {
+                if (typeof path !== "string") throw new Error("IPC Server 必须指定 path");
+                this.#server.listen({ ...this.#options, path }, resolve);
             }
-            this.#server.listen(listenOpts, resolve);
         });
     }
     close() {

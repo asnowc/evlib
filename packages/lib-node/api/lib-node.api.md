@@ -337,6 +337,8 @@ class Server {
     // (undocumented)
     ref(): void;
     // (undocumented)
+    readonly type: "IPC" | "TCP";
+    // (undocumented)
     unref(): void;
 }
 
