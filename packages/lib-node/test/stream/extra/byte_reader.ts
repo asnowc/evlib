@@ -76,11 +76,11 @@ describe("createByteReaderFromReadable", function () {
                 //mock
                 readable.push(Buffer.from("ab"));
                 await new Promise<void>((resolve) => setTimeout(resolve));
-                readable.push(Buffer.from("cd"));
+                readable.push(Buffer.from("cdee"));
                 readable.push(null);
             }
             await expect(pms.then((buf) => buf.toString())).resolves.toBe("abcd");
-            await expect(read(2, true)).resolves.toBe(null);
+            await expect(read(Buffer.alloc(4)).then((buf) => buf.toString())).resolves.toBe("ee");
         });
         test("等待的chunk足够下一个分段", async function () {
             const { read, readable } = createMockRead();

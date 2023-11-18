@@ -1,6 +1,6 @@
 import { Readable } from "node:stream";
 import type { ByteReader } from "../byte_reader.js";
-import { setToBufferFromReadableState, takeChunkFromReadableState } from "../transform/readable_core.js";
+import { takeChunkFromReadableState } from "../transform/readable_core.js";
 import { ReadableStream, ReadableStreamDefaultReadResult } from "node:stream/web";
 import { resolveChunk, WaitingQueue } from "../byte_stream/abstract_byte_stream.js";
 
@@ -236,16 +236,21 @@ function checkQueue(queue: WaitingQueue[], readable: Readable) {
         const viewInfo = handle.viewInfo;
         if (!viewInfo) {
             const chunk = takeChunkFromReadableState(state);
-            if (chunk) handle.resolve(chunk);
-            else return chunk === null;
+            if (chunk) {
+                handle.resolve(chunk);
+                queue.shift();
+            } else return chunk === null;
         } else {
-            const stillNeedLen = setToBufferFromReadableState(viewInfo, state);
-            if (stillNeedLen === undefined) return state.ended || state.closed;
-            readable.read(0);
-            if (stillNeedLen > 0) return state.ended || state.closed;
+            const buf = readable.read(viewInfo.size) as Uint8Array | null;
+            if (!buf) return state.ended || state.closed;
+            viewInfo.buf.set(buf, viewInfo.offset);
+            viewInfo.offset += buf.byteLength;
+            viewInfo.size -= buf.byteLength;
+
+            if (viewInfo.size > 0) return state.ended || state.closed;
             handle.resolve(viewInfo.view);
+            queue.shift();
         }
-        queue.shift();
     }
     readable.read(0); //调用以检测 readable 的各种事件
 }

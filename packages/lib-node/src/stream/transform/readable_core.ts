@@ -15,47 +15,6 @@ export function takeChunkFromReadableState<T>(readableState: ReadableState<T>): 
 
     return readableState.ended ? null : undefined;
 }
-/**
- * 将 readableState 中的数据移动到 info 中的缓冲区, 并移动偏移量.
- * 返回 undefined: 说明没有读取到chunk. view 没有发生变化
- * 返回 number: 填充满视图的缓冲区所需的字节长度
- */
-export function setToBufferFromReadableState(
-    info: BufferViewInfo,
-    state: ReadableState<Uint8Array>
-): number | undefined {
-    const list = state.buffer;
-    let node = list.head;
-    if (!node) return;
-
-    const buf = info.buf;
-
-    do {
-        let nodeSize = node.data.byteLength;
-        if (nodeSize > info.size) {
-            buf.set(node.data.subarray(0, info.size), info.offset);
-
-            node.data = node.data.subarray(info.size);
-
-            state.length -= info.size;
-            info.offset += info.size;
-            info.size = 0;
-
-            break;
-        } else {
-            buf.set(node.data, info.offset);
-
-            info.offset += nodeSize;
-            info.size -= nodeSize;
-            state.length -= nodeSize;
-            node = node.next;
-            list.length--;
-        }
-    } while (node);
-
-    list.head = node;
-    return buf.byteLength - info.offset;
-}
 
 export type BufferViewInfo = {
     view: ArrayBufferView;
