@@ -1,4 +1,4 @@
-name: lib flow
+name: ci
 on:
     push:
         branches:
@@ -26,6 +26,6 @@ jobs:
               run: pnpm ci:api-extractor
             - name: deploy
               if: ${{matrix.node-version==20 && github.ref_name=='main'}}
-              run: pnpm ci:publish
+              run: pnpm publish -r
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
