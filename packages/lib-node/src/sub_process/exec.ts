@@ -35,6 +35,13 @@ function toSpawnOptions(command: string, options: SpawnOptions & { shell?: strin
  * @public
  * @remarks 在shell上执行命令
  * 如果不没有指定 shell 在 windows 上默认为 process.env.ComSpec, 在 unix 上默认为 /bin/sh
+ * @param command - 要执行的命令.
+ * @example
+ * ```js
+ * exec("node a.js")
+ * exec("node a.js arg1". { args:["arg2"] })
+ * exec("node a.js",  { args:["arg1", "arg2"] })
+ * ```
  */
 export function exec(command: string, options: SpawnOptions & { shell?: string } = {}): Promise<SubProcess> {
     const [shell, opts] = toSpawnOptions(command, options);

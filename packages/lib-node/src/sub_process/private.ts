@@ -31,6 +31,7 @@ export function rawSpawnSync(exePath: string, options: SpawnSyncOptions = {}, sh
         maxBuffer: options.maxBuffer,
         encoding: "buffer",
         windowsHide: true,
+        stdio: initStdio(options.stdio),
         shell,
     } as cps.SpawnSyncOptionsWithBufferEncoding);
     Reflect.deleteProperty(result, "output");
@@ -111,25 +112,12 @@ function intiOptions<T extends SpawnOptions>(
     }
 ): NodeRaw.SpawnOptions & { stdio: NodeRaw.Stdio[] } {
     const { nodeIPC, shell } = internalOptions;
-    const stdio: NodeRaw.Stdio[] = [];
-    {
-        const rawStdio = options.stdio;
-        if (Array.isArray(rawStdio)) {
-            stdio[0] = rawStdio[0];
-            stdio[1] = rawStdio[1];
-            stdio[2] = rawStdio[2];
-        } else {
-            const rep = typeof rawStdio === "string" ? rawStdio : undefined;
-            stdio[0] = rep;
-            stdio[1] = rep;
-            stdio[2] = rep;
-        }
-    }
     const args = [file];
     for (let i = 0, rawArgs = options.args ?? []; i < rawArgs.length; i++) {
         args[i + 1] = rawArgs[i];
     }
 
+    const stdio: NodeRaw.Stdio[] = initStdio(options.stdio);
     if (options.sharedResource?.length) stdio.push(...options.sharedResource);
     if (nodeIPC) stdio!.push("ipc");
     return {
@@ -146,6 +134,20 @@ function intiOptions<T extends SpawnOptions>(
         uid: options.uid,
         stdio,
     };
+}
+function initStdio(rawStdio?: SpawnOptions["stdio"]) {
+    const stdio: NodeRaw.Stdio[] = [];
+    if (Array.isArray(rawStdio)) {
+        stdio[0] = rawStdio[0];
+        stdio[1] = rawStdio[1];
+        stdio[2] = rawStdio[2];
+    } else {
+        const rep = typeof rawStdio === "string" ? rawStdio : undefined;
+        stdio[0] = rep;
+        stdio[1] = rep;
+        stdio[2] = rep;
+    }
+    return stdio;
 }
 
 namespace NodeRaw {
