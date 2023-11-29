@@ -178,11 +178,11 @@ describe.concurrent(
             const ctrl = readableToReadableStream(readable);
             const reader = ctrl.getReader();
             const data = Buffer.from("ab");
-            expect(readable.push(data)).toBeTruthy();
+            expect(readable.push(data)).toBeTruthy(); //2
             await waitTime();
-            expect(readable.push(data)).toBeTruthy();
+            expect(readable.push(data)).toBeTruthy(); //4
             await waitTime();
-            expect(readable.push(data)).toBeFalsy();
+            expect(readable.push(data)).toBeFalsy(); //6
             await waitTime();
             await reader.read();
             await reader.read();
@@ -203,6 +203,16 @@ describe.concurrent(
             await reader.closed;
             await expect(reader.read()).resolves.toMatchObject({ done: true });
             expect(readable.readable).toBeFalsy();
+        });
+        test("不阻止readable的end 和close 事件", async function () {
+            const { readable, stream, reader } = createReadableStream();
+            readable.push("ab");
+            setTimeout(() => {
+                readable.push(null);
+            });
+            const endEvent = new Promise((resolve) => readable.on("end", resolve));
+            const closeEvent = new Promise((resolve) => readable.on("close", resolve));
+            await Promise.all([endEvent, closeEvent]);
         });
         describe("readable 异常", function () {
             test("被销毁", async function () {

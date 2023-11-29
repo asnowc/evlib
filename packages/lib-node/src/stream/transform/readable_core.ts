@@ -15,7 +15,12 @@ export function takeChunkFromReadableState<T>(readableState: ReadableState<T>): 
 
     return readableState.ended ? null : undefined;
 }
-
+function concatAllFromReadableState<T>(readableState: ReadableState<T>): T[] {
+    const list = Array.from(readableState.buffer);
+    readableState.buffer.clear();
+    readableState.length = 0;
+    return list;
+}
 export type BufferViewInfo = {
     view: ArrayBufferView;
     buf: Uint8Array;
@@ -69,6 +74,20 @@ export class ReadableSource<T> implements UnderlyingSource {
 
         //确保触发底层读取
         readable.on("readable", () => {
+            const isNoMore = this.readableState.ended;
+            if (isNoMore) {
+                const list = concatAllFromReadableState(this.readableState);
+
+                for (const chunk of list) {
+                    this.queue(ctrl, chunk);
+                }
+                if (this.waiting && list.length > 0) {
+                    this.waiting.resolve();
+                    this.waiting = undefined;
+                }
+                readable.read(0);
+                return;
+            }
             if (this.waiting) {
                 //理论上至少命中 readableState.length 或 readableState.ended
                 const chunk = takeChunkFromReadableState(this.readableState);
@@ -77,8 +96,8 @@ export class ReadableSource<T> implements UnderlyingSource {
                     this.waiting.resolve();
                     this.waiting = undefined;
                     this.readable.read(0);
-                } else if (chunk === null) readable.read(0);
-            } else if (readable.readableLength === 0) readable.read(0);
+                }
+            }
         });
     }
 
