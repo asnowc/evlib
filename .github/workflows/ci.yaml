@@ -12,10 +12,11 @@ jobs:
                 node-version: [18, 20]
         runs-on: ubuntu-latest
         steps:
-            - uses: asnowc/template@v1
+            - name: prepare
+              uses: asnowc/actions@setup-node/v1
               with:
-                  nodev: ${{matrix.node-version}}
-                  pnpmv: 8
+                  node_v: ${{matrix.node-version}}
+                  pnpm_v: 8
                   run_install: true
             - name: build
               run: pnpm ci:build
