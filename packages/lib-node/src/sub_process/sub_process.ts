@@ -13,6 +13,7 @@ export class SubProcess {
             this.$exit.emit(this.closedState);
         });
         nodeCps.once("close", (code, signal) => {
+            (this as any).closed = true;
             this.$close.emit(this.closedState!);
         });
         nodeCps.on("error", () => {});
@@ -29,9 +30,8 @@ export class SubProcess {
         this.stdio = [this.stdin, this.stdout, this.stderr];
         this.pid = nodeCps.pid!;
     }
-    get closed() {
-        return Boolean(this.closedState);
-    }
+
+    readonly closed: boolean = false;
     get killed() {
         return this.nodeCps.killed;
     }
@@ -58,14 +58,8 @@ export class SubProcess {
      */
     $exit = new Listenable<ClosedState>();
 
-    kill(signal?: NodeJS.Signals | number) {
-        const res = this.nodeCps.kill(signal);
-
-        if (res) {
-            this.closedState = Object.freeze({ kill: true, code: null, signal: null });
-            this.$close.emit(this.closedState);
-        }
-        return res;
+    kill(signal?: NodeJS.Signals | number): void {
+        this.nodeCps.kill(signal);
     } /* c8 ignore next 3 */
     ref() {
         this.nodeCps.ref();

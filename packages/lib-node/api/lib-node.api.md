@@ -473,11 +473,11 @@ class SubProcess {
     }>>;
     constructor(nodeCps: node_ps.ChildProcess);
     // (undocumented)
-    get closed(): boolean;
+    readonly closed: boolean;
     // (undocumented)
     closedState: ClosedState | null;
     // (undocumented)
-    kill(signal?: NodeJS.Signals | number): boolean;
+    kill(signal?: NodeJS.Signals | number): void;
     // (undocumented)
     get killed(): boolean;
     // (undocumented)

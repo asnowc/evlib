@@ -33,7 +33,7 @@ describe("spawn", function () {
     test("kill", async function () {
         const process = await spawn(nodeBin, { env: {}, cwd: dir });
         process.kill(0);
-        expect(process.closed).toBeTruthy();
+        expect(process.killed).toBeTruthy();
     });
 });
 
