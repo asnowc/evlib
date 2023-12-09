@@ -1,32 +1,41 @@
 name: ci
 on:
-    push:
-        branches:
-            - main
-            - develop
+  push:
+    branches:
+      - main
+      - develop
 jobs:
-    build:
-        strategy:
-            fail-fast: false
-            matrix:
-                node-version: [18, 20]
-        runs-on: ubuntu-latest
-        steps:
-            - name: prepare
-              uses: asnowc/actions@setup-node/v1
-              with:
-                  node_v: ${{matrix.node-version}}
-                  pnpm_v: 8
-                  run_install: true
-            - name: build
-              run: pnpm ci:build
-            - name: unit test
-              run: pnpm ci:test
-            - name: api check
-              if: ${{matrix.node-version==20}}
-              run: pnpm ci:api-extractor
-            - name: deploy
-              if: ${{matrix.node-version==20 && github.ref_name=='main'}}
-              run: pnpm publish -r
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [18, 20]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{secrets.CI_GITHUB_TOKEN}}
+      - name: Setup NodeJS
+        uses: asnowc/actions@setup-node/v2
+        with:
+          node_v: ${{matrix.node-version}}
+          pnpm_v: 8
+          run_install: true
+      - name: Build
+        run: pnpm ci:build
+      - name: Unit test
+        run: pnpm ci:test
+      - name: Check api
+        if: ${{matrix.node-version==20}}
+        run: pnpm ci:api-extractor
+      - name: Setup Deno
+        if: ${{matrix.node-version==20 && github.ref_name=='main'}}
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
+      - name: Publish
+        if: ${{matrix.node-version==20 && github.ref_name=='main'}}
+        run: deno run -A .github/scripts/publish.ts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
