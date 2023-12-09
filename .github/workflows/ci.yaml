@@ -4,6 +4,7 @@ on:
     branches:
       - main
       - develop
+
 jobs:
   build:
     strategy:
@@ -11,11 +12,11 @@ jobs:
       matrix:
         node-version: [18, 20]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          token: ${{secrets.CI_GITHUB_TOKEN}}
       - name: Setup NodeJS
         uses: asnowc/actions@setup-node/v2
         with:
