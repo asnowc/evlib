@@ -1,37 +1,34 @@
 {
-    "name": "evlib",
-    "version": "1.1.0",
-    "description": "",
-    "type": "module",
-    "author": "Eavid",
-    "license": "MIT",
-    "scripts": {
-        "build": "pnpm rollup -c",
-        "publish:try": "pnpm publish --no-git-checks --dry-run",
-        "ci:build": "pnpm build",
-        "ci:api-extractor": "api-extractor run -v",
-        "api:extractor-local": "pnpm ci:api-extractor -l"
+  "name": "evlib",
+  "version": "1.1.0",
+  "description": "",
+  "type": "module",
+  "author": "Eavid",
+  "license": "MIT",
+  "scripts": {
+    "build": "pnpm rollup -c",
+    "publish:try": "pnpm publish --no-git-checks --dry-run",
+    "ci:build": "pnpm build",
+    "ci:api-extractor": "api-extractor run -v",
+    "api:extractor-local": "pnpm ci:api-extractor -l"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/core/index.js",
+      "types": "./dist/core/index.d.ts"
     },
-    "exports": {
-        ".": {
-            "import": "./dist/core/index.js",
-            "types": "./dist/core/index.d.ts"
-        },
-        "./*": "./dist/*.js"
-    },
-    "publishConfig": {
-        "access": "public",
-        "registry": "https://registry.npmjs.org/"
-    },
-    "files": [
-        "dist/**/*.js",
-        "dist/**/*.d.ts"
-    ],
-    "keywords": [],
-    "devDependencies": {
-        "@eavid/lib-dev": "workspace:^",
-        "@microsoft/api-extractor": "^7.38.0",
-        "tslib": "^2.6.2",
-        "typescript": "^5.2.2"
-    }
+    "./*": "./dist/*.js"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts"
+  ],
+  "keywords": [],
+  "devDependencies": {
+    "@eavid/lib-dev": "workspace:^"
+  }
 }

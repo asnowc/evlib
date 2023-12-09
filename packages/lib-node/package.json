@@ -1,45 +1,42 @@
 {
-    "name": "@eavid/lib-node",
-    "version": "1.2.4",
-    "description": "",
-    "type": "module",
-    "scripts": {
-        "build": "pnpm rollup -c",
-        "build:local": "pnpm build && pnpm api:extractor-local",
-        "ci:build": "pnpm build",
-        "ci:api-extractor": "api-extractor run -v",
-        "api:extractor-local": "pnpm ci:api-extractor -l"
-    },
-    "files": [
-        "dist/**/*.js",
-        "dist/**/*.d.ts"
-    ],
-    "keywords": [],
-    "author": "Eavid",
-    "license": "MIT",
-    "exports": {
-        "./*": "./dist/*.js",
-        "./util/*": "./dist/util/*"
-    },
-    "imports": {
-        "#evlib/*": "evlib/*",
-        "#evlib": "evlib"
-    },
-    "devDependencies": {
-        "@eavid/lib-dev": "workspace:^",
-        "@microsoft/api-extractor": "^7.38.0",
-        "@types/node": "^20.5.7",
-        "typescript": "^5.2.2",
-        "tslib": "^2.6.2"
-    },
-    "dependencies": {
-        "evlib": "workspace:^"
-    },
-    "publishConfig": {
-        "access": "public",
-        "registry": "https://registry.npmjs.org/"
-    },
-    "engines": {
-        "node": ">=18"
-    }
+  "name": "@eavid/lib-node",
+  "version": "1.2.4",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm rollup -c",
+    "build:local": "pnpm build && pnpm api:extractor-local",
+    "ci:build": "pnpm build",
+    "ci:api-extractor": "api-extractor run -v",
+    "api:extractor-local": "pnpm ci:api-extractor -l"
+  },
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts"
+  ],
+  "keywords": [],
+  "author": "Eavid",
+  "license": "MIT",
+  "exports": {
+    "./*": "./dist/*.js",
+    "./util/*": "./dist/util/*"
+  },
+  "imports": {
+    "#evlib/*": "evlib/*",
+    "#evlib": "evlib"
+  },
+  "devDependencies": {
+    "@eavid/lib-dev": "workspace:^",
+    "@types/node": "^20.5.7"
+  },
+  "dependencies": {
+    "evlib": "workspace:^"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "engines": {
+    "node": ">=18"
+  }
 }
