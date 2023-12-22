@@ -1,14 +1,15 @@
 {
-    "extends": "../../tsconfig.json",
-    "compilerOptions": {
-        "baseUrl": ".",
-        "paths": {
-            "@eavid/lib-node/*": ["./src/*.js"], // 导入包名提示
-            "@src/*": ["./src/*"],
-            "#evlib": ["evlib"] //方便复制模块
-        },
-        "lib": ["ESNext"],
-        "noEmit": true
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@eavid/lib-node/*": ["./src/*.js"], // 导入包名提示
+      "@src/*": ["./src/*"],
+      "#evlib": ["evlib"] //方便复制模块
     },
-    "exclude": ["node_modules", "out", "dist"]
+    "lib": ["ESNext"],
+    "allowJs": true,
+    "noEmit": true
+  },
+  "exclude": ["node_modules", "out", "dist"]
 }

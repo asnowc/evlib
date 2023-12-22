@@ -1,3 +1,4 @@
 {
-    "cSpell.words": ["evlib"]
+  "cSpell.words": ["evlib"],
+  "deno.enablePaths": ["./.github/scripts"]
 }
