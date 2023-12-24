@@ -7,7 +7,7 @@
     "baseUrl": ".",
     "paths": {
       "evlib/*": ["./src/*.js"],
-      "evlib": ["./src/core/index.js"]
+      "evlib": ["./src/core/mod.js"]
     },
     "allowJs": true
   },

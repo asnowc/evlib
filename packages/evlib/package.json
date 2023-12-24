@@ -13,10 +13,7 @@
     "api:extractor-local": "pnpm ci:api-extractor -l"
   },
   "exports": {
-    ".": {
-      "import": "./dist/core/index.js",
-      "types": "./dist/core/index.d.ts"
-    },
+    ".": "./dist/core/mod.js",
     "./*": "./dist/*.js"
   },
   "publishConfig": {

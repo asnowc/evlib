@@ -47,12 +47,20 @@ declare namespace core {
         setInterval,
         afterTime,
         promiseHandle,
-        PromiseHandle,
+        dePromise,
         PPPromiseHandle,
         Listenable,
         VoidFn,
         TerminablePromise,
-        ControllablePromise
+        PromiseHandle,
+        ControllablePromise,
+        Enum,
+        patchObject,
+        objectGroup,
+        removeUndefinedKey,
+        pickObject,
+        deepClone,
+        toErrorStr
     }
 }
 export { core }
@@ -62,11 +70,16 @@ function createErrDesc(except: string, actual: string): string;
 
 declare namespace data_struct {
     export {
-        UniqueKeyMap,
-        Enum
+        UniqueKeyMap
     }
 }
 export { data_struct }
+
+// @beta (undocumented)
+function deepClone<T>(obj: T, cloned?: Map<any, any>): T;
+
+// @public (undocumented)
+function dePromise<T, R>(val: T | Promise<T>, fn: (val: T) => R): R | Promise<R>;
 
 // @public (undocumented)
 const ECMA_VERSION: number;
@@ -168,6 +181,9 @@ class NumericalRangeError extends Error {
     constructor(min?: number, max?: number, valueName?: string);
 }
 
+// @beta (undocumented)
+function objectGroup<Key, T extends Obj>(data: T[], key: keyof T): Map<Key, T[]>;
+
 // @public (undocumented)
 class ParametersError extends Error {
     constructor(index: number, desc: string, name?: string);
@@ -178,18 +194,28 @@ class ParametersTypeError extends ParametersError {
     constructor(index: number, cause: string, name?: string);
 }
 
+// Warning: (ae-forgotten-export) The symbol "Obj" needs to be exported by the entry point index.d.ts
+//
+// @beta (undocumented)
+function patchObject(from: Obj, to: Obj): Obj;
+
+// @beta (undocumented)
+function pickObject<P extends {}>(obj: P, keys: (keyof P)[] | Set<any>, target?: Object): P;
+
+// @beta (undocumented)
+function pickObject<P extends {}>(obj: P, keys: string[] | Set<any>, target?: Object): P;
+
 // @alpha (undocumented)
-interface PPPromiseHandle<T> extends PromiseHandle<T> {
-    // (undocumented)
+type PPPromiseHandle<T> = PromiseHandle<T> & {
     promise: Promise<T>;
-}
+};
 
 // @public (undocumented)
 interface PromiseHandle<T> {
     // (undocumented)
     reject(reason?: any): void;
     // (undocumented)
-    resolve(arg: T): void;
+    resolve(data: T): void;
 }
 
 // Warning: (ae-incompatible-release-tags) The symbol "promiseHandle" is marked as @public, but its signature references "PPPromiseHandle" which is marked as @alpha
@@ -197,6 +223,9 @@ interface PromiseHandle<T> {
 //
 // @public (undocumented)
 function promiseHandle<T>(): PPPromiseHandle<T>;
+
+// @beta (undocumented)
+function removeUndefinedKey<T extends Obj>(obj: T, deep?: boolean): T;
 
 // @public (undocumented)
 let runtimeEngine: "node" | "browser" | "deno" | "bun" | "unknown";
@@ -217,6 +246,9 @@ interface TerminablePromise<T> extends Promise<T> {
 class TimeoutError extends Error {
     constructor(time?: number);
 }
+
+// @public (undocumented)
+function toErrorStr(err?: any): string;
 
 // @public (undocumented)
 interface TypeCheckFn {

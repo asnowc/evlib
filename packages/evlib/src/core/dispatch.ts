@@ -1,5 +1,5 @@
 import * as timer from "./internal.js";
-import type { VoidFn, TerminablePromise } from "./types.type.js";
+import type { VoidFn, TerminablePromise } from "./type.js";
 
 /**
  * @public
