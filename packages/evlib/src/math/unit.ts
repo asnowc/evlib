@@ -1,39 +1,87 @@
-//TODO: 待优化
-//TODO: 待导出
+import { ParameterError, NumericalRangeError, ParameterTypeError } from "evlib/errors";
+import { retainDecimalsFloor } from "./float.js";
 
+/** @public */
+export type ExponentFormat = {
+  int: number;
+  decimals: number;
+  exponent: number;
+};
 /**
- * @alpha
- * @remarks 标准化单位
+ * @public
+ * @remarks 标准化数字  (int + decimals) * carry ^ exponent
+ * @param carry - 进位值
+ * @param maxExponent - 指数上限，默认无上限（直到 int 小于 carry）
+ * @returns
+ * int: 整数部分
+ * decimals: 小数部分
+ * exponent: 指数
  */
-export function initUnit(num: number, carry: number, max: number = Infinity) {
-  if (isNaN(num) || num === Infinity) throw new Error("Invalid num");
-  if (carry < 0) throw new Error("Invalid carry");
-
-  let bit = 0;
-  let decimals: number = 0;
-  while (num >= carry && bit < max) {
-    decimals = (num % carry) / carry + Math.floor(decimals / carry);
-    num = Math.floor(num / carry);
-    bit++;
-  }
-  return { num, decimals, bit };
-}
+export function paseExponentNum(num: number, carry: number, maxExponent?: number): ExponentFormat;
 /**
- * @alpha
- * @remarks 标准化字节单位
+ * @public
+ * @remarks 使用动态进位值标准化数字  (int + decimals) * carry ^ exponent
+ * @param carry - 一个数组（每次进位的数值）
+ * @param maxExponent - 指数上限，默认无上限（直到 int 小于 carry）
+ * @returns
+ * int: 整数部分
+ * decimals: 小数部分
+ * exponent: 指数
  */
-export function byteInit(byte: number, raids: number = 2) {
-  const unit = ["B", "KB", "MB", "GB", "TB", "PB"];
-  let { bit, decimals, num } = initUnit(byte, 1024, unit.length);
+export function paseExponentNum(num: number, carry: number[]): ExponentFormat;
+export function paseExponentNum(num: number, carry: number | number[], maxExponent: number = Infinity): ExponentFormat {
+  if (isNaN(num) || num === Infinity) throw new ParameterError(0, `Invalid number (${num}) `, "num");
 
-  if (decimals > 0) {
-    num += Math.round(decimals * 10 ** raids) / 10 ** raids;
-  }
-  return num + unit[bit];
+  let exponent = 0;
+  let decimals: number = num % 1;
+  const negative = num < 0;
+  if (negative) num = -1 * num;
+
+  if (decimals !== 0) num = Math.floor(num);
+
+  if (typeof carry === "number") {
+    if (carry < 0) throw new NumericalRangeError(1, undefined, "carry");
+
+    while (num >= carry && exponent < maxExponent) {
+      decimals = ((num % carry) + decimals) / carry;
+      num = Math.floor(num / carry);
+      exponent++;
+    }
+  } else if (carry instanceof Array) {
+    if (carry.length === 0) throw new ParameterError(1, `Array length cannot be 0`, "carry");
+
+    const carryList = carry;
+    for (let i = 0; i < carryList.length && exponent < maxExponent; i++) {
+      carry = carryList[i];
+      decimals = (num % carry) / carry + Math.floor(decimals / carry);
+      num = Math.floor(num / carry);
+      exponent++;
+    }
+  } else throw new ParameterTypeError(1, "number | number[]", typeof carry);
+
+  return { int: negative ? -1 * num : num, decimals, exponent };
 }
 
-// console.log(byteInit(512));
-// console.log(byteInit(1024));
-// console.log(byteInit(2099));
-byteInit(1024 + 512);
-byteInit(1999);
+/** @public */
+export const autoUnit = {
+  /**
+   * @remarks 标准化字节单位
+   * @param number - 字节数值
+   * @param raids - 保留小数位数。
+   * @param unit - number 的单位
+   */
+  byte(number: number, raids: number = 2, unit?: "B" | "KB" | "MB" | "GB" | "TB" | "PB") {
+    const unitList = ["B", "KB", "MB", "GB", "TB", "PB"];
+    let startIndex = 0;
+    if (unit) {
+      let index = unitList.findIndex((item) => item === unit);
+      if (index > 0) startIndex += index;
+    }
+    let { exponent, decimals, int } = paseExponentNum(number, 1024, unitList.length - startIndex);
+    exponent += startIndex;
+
+    if (decimals > 0) int += retainDecimalsFloor(decimals, raids);
+
+    return int + unitList[exponent];
+  },
+};
