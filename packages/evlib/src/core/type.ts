@@ -25,3 +25,5 @@ export interface ControllablePromise<T> extends Promise<T> {
   resolve(data: T): void;
   reject(reason?: any): void;
 }
+/** @public */
+export type ObjectKey = string | number | symbol;
