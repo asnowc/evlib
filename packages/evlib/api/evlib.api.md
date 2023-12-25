@@ -54,11 +54,12 @@ declare namespace core {
         TerminablePromise,
         PromiseHandle,
         ControllablePromise,
+        ObjectKey,
         Enum,
         patchObject,
-        objectGroup,
+        groupObject,
         removeUndefinedKey,
-        pickObject,
+        pickObjectKey,
         deepClone,
         toErrorStr
     }
@@ -75,7 +76,7 @@ declare namespace data_struct {
 }
 export { data_struct }
 
-// @beta (undocumented)
+// @public (undocumented)
 function deepClone<T>(obj: T, cloned?: Map<any, any>): T;
 
 // @public (undocumented)
@@ -85,10 +86,9 @@ function dePromise<T, R>(val: T | Promise<T>, fn: (val: T) => R): R | Promise<R>
 const ECMA_VERSION: number;
 
 // @alpha (undocumented)
-class Enum {
-    // (undocumented)
-    static getKeys(enumObj: Record<string, string | number>): string[];
-}
+const Enum: {
+    getKeys(enumObj: Record<string, string | number>): string[];
+};
 
 declare namespace errors {
     export {
@@ -96,6 +96,8 @@ declare namespace errors {
         TimeoutError,
         createErrDesc,
         TypeError_2 as TypeError,
+        ParameterError,
+        ParameterTypeError,
         ParametersError,
         ParametersTypeError,
         NotImplementedError
@@ -148,6 +150,9 @@ function getBasicType(val: any): BasicType;
 // @public (undocumented)
 function getClassType(val: any): string;
 
+// @beta (undocumented)
+function groupObject<T extends {}>(data: T[], key: keyof T): Obj<T>;
+
 // Warning: (ae-forgotten-export) The symbol "ListenableConstructor" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
@@ -181,29 +186,35 @@ class NumericalRangeError extends Error {
     constructor(min?: number, max?: number, valueName?: string);
 }
 
-// @beta (undocumented)
-function objectGroup<Key, T extends Obj>(data: T[], key: keyof T): Map<Key, T[]>;
+// @public (undocumented)
+type ObjectKey = string | number | symbol;
 
 // @public (undocumented)
-class ParametersError extends Error {
-    constructor(index: number, desc: string, name?: string);
+class ParameterError extends Error {
+    constructor(index: number, cause: string, name?: string);
 }
 
+// @public @deprecated (undocumented)
+const ParametersError: typeof ParameterError;
+
+// @public @deprecated (undocumented)
+const ParametersTypeError: typeof ParameterTypeError;
+
 // @public (undocumented)
-class ParametersTypeError extends ParametersError {
-    constructor(index: number, cause: string, name?: string);
+class ParameterTypeError extends ParameterError {
+    constructor(index: number, except: string, actual: string, name?: string);
 }
 
 // Warning: (ae-forgotten-export) The symbol "Obj" needs to be exported by the entry point index.d.ts
 //
-// @beta (undocumented)
-function patchObject(from: Obj, to: Obj): Obj;
+// @public (undocumented)
+function patchObject(from: Obj, to: Obj): Obj<any>;
 
-// @beta (undocumented)
-function pickObject<P extends {}>(obj: P, keys: (keyof P)[] | Set<any>, target?: Object): P;
+// @public (undocumented)
+function pickObjectKey<P extends {}>(obj: Object, keys: (keyof P)[] | Set<keyof P>, target?: Object): P;
 
-// @beta (undocumented)
-function pickObject<P extends {}>(obj: P, keys: string[] | Set<any>, target?: Object): P;
+// @public (undocumented)
+function pickObjectKey(obj: Object, keys: string[] | Set<any>, target?: Object): Record<string, unknown>;
 
 // @alpha (undocumented)
 type PPPromiseHandle<T> = PromiseHandle<T> & {
@@ -224,7 +235,7 @@ interface PromiseHandle<T> {
 // @public (undocumented)
 function promiseHandle<T>(): PPPromiseHandle<T>;
 
-// @beta (undocumented)
+// @public (undocumented)
 function removeUndefinedKey<T extends Obj>(obj: T, deep?: boolean): T;
 
 // @public (undocumented)
@@ -309,7 +320,7 @@ interface VoidFn {
 
 // Warnings were encountered during analysis:
 //
-// src/core/type_check.ts:200:5 - (ae-forgotten-export) The symbol "optional" needs to be exported by the entry point index.d.ts
+// src/core/type_check.ts:199:3 - (ae-forgotten-export) The symbol "optional" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 
