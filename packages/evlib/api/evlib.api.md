@@ -8,6 +8,11 @@
 function afterTime(time?: number): TerminablePromise<void>;
 
 // @public (undocumented)
+const autoUnit: {
+    byte(number: number, raids?: number, unit?: "B" | "KB" | "MB" | "GB" | "TB" | "PB"): string;
+};
+
+// @public (undocumented)
 const checkFnFactor: {
     numberRange(min: number, max?: number): TypeCheckFn;
     instanceof(obj: Function): TypeCheckFn;
@@ -66,8 +71,11 @@ declare namespace core {
 }
 export { core }
 
+// @public @deprecated (undocumented)
+const createErrDesc: typeof createTypeErrorDesc;
+
 // @public (undocumented)
-function createErrDesc(except: string, actual: string): string;
+function createTypeErrorDesc(except: string, actual: string): string;
 
 declare namespace data_struct {
     export {
@@ -94,6 +102,7 @@ declare namespace errors {
     export {
         NumericalRangeError,
         TimeoutError,
+        createTypeErrorDesc,
         createErrDesc,
         TypeError_2 as TypeError,
         ParameterError,
@@ -142,6 +151,13 @@ type ExceptTypeMap = {
     [key: string | number]: ExceptType;
 };
 
+// @public (undocumented)
+type ExponentFormat = {
+    int: number;
+    decimals: number;
+    exponent: number;
+};
+
 // Warning: (ae-forgotten-export) The symbol "BasicType" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
@@ -176,6 +192,17 @@ interface Listenable<T> {
     then<R extends Listener<T>>(listener: R): R;
 }
 
+declare namespace math {
+    export {
+        retainDecimalsFloor,
+        retainDecimalsRound,
+        paseExponentNum,
+        ExponentFormat,
+        autoUnit
+    }
+}
+export { math }
+
 // @public (undocumented)
 class NotImplementedError extends Error {
     constructor(type?: string);
@@ -204,6 +231,12 @@ const ParametersTypeError: typeof ParameterTypeError;
 class ParameterTypeError extends ParameterError {
     constructor(index: number, except: string, actual: string, name?: string);
 }
+
+// @public (undocumented)
+function paseExponentNum(num: number, carry: number, maxExponent?: number): ExponentFormat;
+
+// @public (undocumented)
+function paseExponentNum(num: number, carry: number[]): ExponentFormat;
 
 // Warning: (ae-forgotten-export) The symbol "Obj" needs to be exported by the entry point index.d.ts
 //
@@ -237,6 +270,12 @@ function promiseHandle<T>(): PPPromiseHandle<T>;
 
 // @public (undocumented)
 function removeUndefinedKey<T extends Obj>(obj: T, deep?: boolean): T;
+
+// @public (undocumented)
+function retainDecimalsFloor(num: number, raids?: number): number;
+
+// @public (undocumented)
+function retainDecimalsRound(num: number, raids?: number): number;
 
 // @public (undocumented)
 let runtimeEngine: "node" | "browser" | "deno" | "bun" | "unknown";
