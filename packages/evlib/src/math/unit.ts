@@ -80,7 +80,7 @@ export const autoUnit = {
     let { exponent, decimals, int } = paseExponentNum(number, 1024, unitList.length - startIndex);
     exponent += startIndex;
 
-    if (decimals > 0) int += retainDecimalsFloor(decimals, raids);
+    if (decimals > 0) int = retainDecimalsFloor(int + decimals, raids);
 
     return int + unitList[exponent];
   },

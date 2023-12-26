@@ -4,11 +4,14 @@ describe("autoUnit", function () {
   describe("byte", function () {
     const KB = 1024;
     const MB = 1024 * KB;
-    test("byte", function () {
+    test("基础解析", function () {
       expect(autoUnit.byte(512)).toBe("512B");
       expect(autoUnit.byte(1024)).toBe("1KB");
       expect(autoUnit.byte(1024 + 512)).toBe("1.5KB");
       expect(autoUnit.byte(-1024)).toBe("-1KB");
+    });
+    test("解析小数", function () {
+      expect(autoUnit.byte(1651.2003780718337)).toBe("1.61KB");
     });
     test("指定小数位数", function () {
       expect(autoUnit.byte(1.25 * MB, 1)).toBe("1.2MB");
