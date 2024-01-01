@@ -1,30 +1,16 @@
-import {
-  setPnpmWorkspaceTags,
-  deleteMatchFromRemote,
-} from "https://esm.sh/gh/dnpack/action-script@0.0.7/cmd/set_git_tag.ts?raw";
-import { execCmdSync, git } from "https://esm.sh/gh/dnpack/action-script@0.0.7/cmd/mod.ts";
-import * as action from "npm:@actions/core@1.10.x";
-const gitCmd = git as any;
-action.startGroup("deno output");
+import { githubRepo, publishFlow } from "https://cdn.jsdelivr.net/gh/dnpack/action-script@0.2.2/cmd/github_repo.ts";
+import { getWorkspaceTagMap } from "https://cdn.jsdelivr.net/gh/dnpack/action-script@0.2.2/cmd/package.ts";
+import { execCmdSync } from "https://cdn.jsdelivr.net/gh/dnpack/action-script@0.2.2/lib.ts";
+console.log("::endgroup::");
 
-const allTags: Set<string> = new Set(await gitCmd.tag.getRemoteTags());
+const allTags = new Set(await githubRepo.listTags());
+const tags = await getWorkspaceTagMap();
 
-const isCI = Deno.env.get("CI") === "true";
-if (isCI) await gitCmd.setCIUser();
-
-const addedTags = await setPnpmWorkspaceTags(allTags, { dryRun: !isCI });
-
-if (addedTags.length === 0 || !isCI) {
-  console.log("skin publish");
-  Deno.exit(0);
-} else {
-  execCmdSync("pnpm", ["publish", "-r"], { exitIfFail: true });
-
-  let code = execCmdSync("git", ["push", "--tag"], {
-    onFial: () => action.error("标签推送失败: " + addedTags.join(", ")),
-  }).code;
-  if (code == 0)
-    await deleteMatchFromRemote(allTags, addedTags, "patch").catch((e) => action.error("删除标签失败: " + e?.message));
-}
-
-action.endGroup();
+const updateTags = await publishFlow(Object.keys(tags), {
+  allTags,
+  publish(needUpdate) {
+    execCmdSync("pnpm", ["publish", "-r"], { exitIfFail: true });
+    return needUpdate;
+  },
+});
+if (updateTags.size) await githubRepo.deleteMatchVersionTag(allTags, Array.from(updateTags!), "minor");
