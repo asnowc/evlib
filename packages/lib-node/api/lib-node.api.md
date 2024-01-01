@@ -144,8 +144,8 @@ function connectSocket(config: TcpConnectConfig | PipeConfig, options?: ConnectO
 function createByteReadable<T extends Uint8Array = Uint8Array>(readable: ReadableStream): ByteReadable<T>;
 
 // @public (undocumented)
-function createByteReaderFromReadable<T extends Uint8Array = Uint8Array>(readable: Readable): {
-    read: ByteReader<T>;
+function createByteReaderFromReadable(readable: Readable): {
+    read: BufferReader;
     cancel(reason?: Error): null;
 };
 
@@ -547,6 +547,10 @@ interface WritableHandle<T> {
 
 // @public (undocumented)
 function writableToWritableStream<T = Uint8Array>(writable: Writable): WritableStream<T>;
+
+// Warnings were encountered during analysis:
+//
+// src/stream/extra/byte_reader.ts:102:3 - (ae-forgotten-export) The symbol "BufferReader" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 
