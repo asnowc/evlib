@@ -12,7 +12,7 @@ const autoUnit: {
     byte(number: number, raids?: number, unit?: "B" | "KB" | "MB" | "GB" | "TB" | "PB"): string;
 };
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 const checkFnFactor: {
     numberRange(min: number, max?: number): TypeCheckFn;
     instanceof(obj: Function): TypeCheckFn;
@@ -36,8 +36,10 @@ interface ControllablePromise<T> extends Promise<T> {
 
 declare namespace core {
     export {
+        paseModMeta,
         ECMA_VERSION,
         runtimeEngine,
+        ModuleMeta,
         EventEmitter,
         EventList,
         checkType,
@@ -45,6 +47,7 @@ declare namespace core {
         getClassType,
         TypeCheckOptions,
         TypeCheckFn,
+        typeChecker,
         checkFnFactor,
         ExceptTypeMap,
         ExceptType,
@@ -66,6 +69,7 @@ declare namespace core {
         removeUndefinedKey,
         pickObjectKey,
         deepClone,
+        PatchObjectOpts,
         toErrorStr
     }
 }
@@ -204,6 +208,12 @@ declare namespace math {
 export { math }
 
 // @public (undocumented)
+interface ModuleMeta {
+    dirname: string;
+    filename: string;
+}
+
+// @public (undocumented)
 class NotImplementedError extends Error {
     constructor(type?: string);
 }
@@ -238,10 +248,21 @@ function paseExponentNum(num: number, carry: number, maxExponent?: number): Expo
 // @public (undocumented)
 function paseExponentNum(num: number, carry: number[]): ExponentFormat;
 
+// @public (undocumented)
+function paseModMeta(meta: {
+    url: string;
+}): ModuleMeta;
+
 // Warning: (ae-forgotten-export) The symbol "Obj" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-function patchObject(from: Obj, to: Obj): Obj<any>;
+function patchObject<T = unknown>(from: Obj, to: Obj, opts?: PatchObjectOpts): T;
+
+// @public (undocumented)
+type PatchObjectOpts = {
+    skipUndefined?: boolean;
+    arrayStrategy?: "unshift" | "push" | "replace";
+};
 
 // @public (undocumented)
 function pickObjectKey<P extends {}>(obj: Object, keys: (keyof P)[] | Set<keyof P>, target?: Object): P;
@@ -278,7 +299,7 @@ function retainDecimalsFloor(num: number, raids?: number): number;
 function retainDecimalsRound(num: number, raids?: number): number;
 
 // @public (undocumented)
-let runtimeEngine: "node" | "browser" | "deno" | "bun" | "unknown";
+const runtimeEngine: "node" | "browser" | "deno" | "bun" | "unknown";
 
 // @public (undocumented)
 function setInterval(fn: VoidFn, intervalTime?: number): () => void;
@@ -299,6 +320,15 @@ class TimeoutError extends Error {
 
 // @public (undocumented)
 function toErrorStr(err?: any): string;
+
+// @public (undocumented)
+const typeChecker: {
+    numberRange(min: number, max?: number): TypeCheckFn;
+    instanceof(obj: Function): TypeCheckFn;
+    unionType(types: ExceptType[]): TypeCheckFn;
+    optional: typeof optional;
+    arrayType(type: ExceptType, length?: number): TypeCheckFn;
+};
 
 // @public (undocumented)
 interface TypeCheckFn {
@@ -359,7 +389,7 @@ interface VoidFn {
 
 // Warnings were encountered during analysis:
 //
-// src/core/type_check.ts:199:3 - (ae-forgotten-export) The symbol "optional" needs to be exported by the entry point index.d.ts
+// src/core/type_check.ts:201:3 - (ae-forgotten-export) The symbol "optional" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 
