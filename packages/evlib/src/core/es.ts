@@ -54,3 +54,42 @@ function getEngine(): "node" | "browser" | "deno" | "bun" | "unknown" {
   }
   return "unknown";
 }
+
+export interface ModuleMeta {
+  /** 模块文件夹 */
+  dirname: string;
+  /** 模块路径。对应 URL 的 pathname */
+  filename: string;
+}
+export function paseModMeta(meta: { url: string }): ModuleMeta {
+  const url = paseURL(meta.url);
+  const filename = url.pathname;
+  const index = filename.lastIndexOf("/");
+  const dirname = index === 0 ? "/" : filename.slice(0, index);
+
+  return {
+    dirname,
+    filename,
+  };
+}
+function paseURL(url: string) {
+  const res = url.match(/^(?<proto>\w+:)\/\/(?<host>[^\/]*)(?<tail>\/.*)?$/)?.groups;
+  if (!res) throw new Error("无效的URL");
+  const { proto: protocol, host } = res;
+  const path = res.tail ?? "/";
+  let pathname = "/",
+    query = "",
+    hash = "";
+  if (path !== "/") {
+    const res = path.match(/(?<pathname>[^?]*)(?<query>[^\#]*)(?<hash>.*)$/)?.groups!;
+    query = res.query;
+    hash = res.hash;
+  }
+  return {
+    protocol,
+    host,
+    pathname,
+    query,
+    hash,
+  };
+}
