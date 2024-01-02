@@ -1,53 +1,56 @@
 declare const window: any;
-
+declare const Deno: any;
 /**
  * @public
  * @remarks ECMA年份版本
  */
-export const ECMA_VERSION = getESVersion(true);
+export const ECMA_VERSION = getESVersion();
 
-/** @param useYear 使用年份版本（2015、2016 ...）*/
-function getESVersion(useYear?: boolean): number {
-    let version: number;
-    if (!Array.isArray) {
-        version = 3;
-    } else {
-        try {
-            Promise.prototype;
-        } catch (error) {
-            version = 5;
-        }
+function getESVersion(): number {
+  let version: number;
+  if (!Array.isArray) {
+    version = 2013;
+  } else {
+    try {
+      Promise.prototype;
+    } catch (error) {
+      version = 2014;
     }
-    if (!Array.prototype.includes) {
-        version = 6; //2015
-    } else if (!String.prototype.padStart) {
-        version = 7;
-    } else if (!Promise.prototype.finally) {
-        version = 8;
-    } else if (!globalThis.BigInt) {
-        version = 9;
-    } else if (!Promise.allSettled) {
-        version = 10;
-    } else if (!String.prototype.replaceAll) {
-        version = 11;
-    } else if (!Array.prototype.at) {
-        version = 12;
-    } else {
-        version = 13; //ES2022
-    }
-    return useYear ? version + 9 : version;
+  }
+  if (!Array.prototype.includes) {
+    version = 2015; //2015
+  } else if (!String.prototype.padStart) {
+    version = 2016;
+  } else if (!Promise.prototype.finally) {
+    version = 2017;
+  } else if (!globalThis.BigInt) {
+    version = 2018;
+  } else if (!Promise.allSettled) {
+    version = 2019;
+  } else if (!String.prototype.replaceAll) {
+    version = 2020;
+  } else if (!Array.prototype.at) {
+    version = 2021;
+  } else {
+    version = 2022; //ES2022
+  }
+  return version;
 }
 /**
  * @public
  * @remarks JS运行时
  */
-export let runtimeEngine: "node" | "browser" | "deno" | "bun" | "unknown" = "unknown";
-
-try {
+export const runtimeEngine = getEngine();
+function getEngine(): "node" | "browser" | "deno" | "bun" | "unknown" {
+  try {
+    if (typeof Deno.version.deno === "string") return "deno";
+  } catch (error) {}
+  try {
     window.window.window;
-    runtimeEngine = "browser";
-} catch (error) {
-    if (typeof (globalThis as any).process?.version === "string") {
-        runtimeEngine = "node";
-    }
+    return "browser";
+  } catch (error) {}
+  if (typeof (globalThis as any).process?.version === "string") {
+    return "node";
+  }
+  return "unknown";
 }
