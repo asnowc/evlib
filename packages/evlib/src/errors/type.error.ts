@@ -27,6 +27,9 @@ type TypeErrorDesc = string | { [key: string]: TypeErrorDesc };
  */
 export class ParameterError extends Error {
   private static readonly msg = "错误";
+  /**
+   * @param index 异常参数的索引 （从 1 开始）
+   */
   constructor(index: number, cause: string, name?: string) {
     const msg = name ? `${index}(${name})` : index.toString();
     super(`参数 ${msg} 错误: ${cause}`);

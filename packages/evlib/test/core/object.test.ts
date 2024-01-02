@@ -71,17 +71,46 @@ describe("patchObject", function () {
     expect((to as any).extra, "").not.toBe(form.extra);
   });
   test("对象替换值", function () {
-    const form = { a: "form", extra: { a: "form" } },
-      to = { a: "to", extra: undefined };
+    const form = { a: "form", b: undefined, extra: { a: "form" } },
+      to = { a: "to", b: 8, extra: undefined };
 
     patchObject(form, to);
-    expect(to).toEqual({ a: "form", extra: { a: "form" } });
+    expect(to).toEqual({ a: "form", b: undefined, extra: { a: "form" } });
+    expect(to.extra, "整个对象覆盖时深度克隆").not.toBe(form.extra);
+  });
+  test("skipUndefined", function () {
+    const form = { a: "form", b: undefined, extra: { a: "form" } },
+      to = { a: "to", b: 8, extra: undefined };
+
+    patchObject(form, to, { skipUndefined: true });
+    expect(to).toEqual({ a: "form", b: 8, extra: { a: "form" } });
     expect(to.extra, "整个对象覆盖时深度克隆").not.toBe(form.extra);
   });
   test("值替换对象", function () {
     const form = { a: "form", extra: "e" },
       to = { a: "to", extra: { a: "form" } };
     expect(patchObject(form, to)).toEqual(form);
+  });
+  describe("合并数组", function () {
+    const from = { arr: [1, 2, 3] };
+    test("push", function () {
+      const to = { arr: [4, 5] };
+      const res = patchObject<typeof from>(from, to, { arrayStrategy: "push" });
+      expect(res.arr).toEqual([4, 5, 1, 2, 3]);
+      expect(res.arr).toBe(to.arr);
+    });
+    test("unshift", function () {
+      const to = { arr: [4, 5] };
+      const res = patchObject<typeof from>(from, to, { arrayStrategy: "unshift" });
+      expect(res.arr).toEqual([1, 2, 3, 4, 5]);
+      expect(res.arr).toBe(to.arr);
+    });
+    test("replace", function () {
+      const to = { arr: [4, 5] };
+      const res = patchObject<typeof from>(from, to);
+      expect(res.arr).toBe(from.arr);
+      expect(res.arr).toEqual([1, 2, 3]);
+    });
   });
 
   test("仅覆盖可枚举键", function () {

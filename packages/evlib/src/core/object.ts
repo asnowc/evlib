@@ -1,18 +1,29 @@
-import { ParameterTypeError } from "evlib/errors";
+import { ParameterTypeError, ParameterError } from "evlib/errors";
 import { getBasicType } from "./type_check.js";
 import { ObjectKey } from "./type.js";
 
 type Obj<V = any> = Record<ObjectKey, V>;
+export type PatchObjectOpts = {
+  /** 跳过 undefined 的值 */
+  skipUndefined?: boolean;
+  /** 数组合并策略  */
+  arrayStrategy?: "unshift" | "push" | "replace";
+};
 /**
  * @remarks 将 from 的可枚举键深度覆盖到 to
  * @public
  */
-export function patchObject(from: Obj, to: Obj) {
+export function patchObject<T = unknown>(from: Obj, to: Obj, opts: PatchObjectOpts = {}): T {
   for (const [key, val] of Object.entries(from)) {
-    if (typeof val === "object" && val !== null) {
+    if (val === undefined && opts.skipUndefined) continue;
+    if (getBasicType(val) === "object") {
       let toObj = to[key];
-      if (typeof toObj !== "object" || toObj === null) to[key] = deepClone(val);
-      else patchObject(val, toObj);
+      if (getBasicType(toObj) !== "object") to[key] = deepClone(val);
+      else if (val instanceof Array && toObj instanceof Array) {
+        if (opts.arrayStrategy === "push") toObj.push(...val);
+        else if (opts.arrayStrategy === "unshift") toObj.unshift(...val);
+        else to[key] = val;
+      } else patchObject(val, toObj, opts);
     } else to[key] = val;
   }
   return to;
