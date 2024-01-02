@@ -35,8 +35,8 @@ jobs:
         with:
           name: ${{env.ARTIFACT_NAME}}
           path: |
-            !**/node_modules/**
             **/dist
+            !**/node_modules/**
 
   publish:
     if: ${{github.ref_name=='main'}}
