@@ -1,7 +1,7 @@
 import { it, expect, describe } from "vitest";
-import { checkType, checkFnFactor } from "evlib";
+import { checkType, typeChecker } from "evlib";
 import "./assests/type_check.assert.js";
-const optional = checkFnFactor.optional;
+const optional = typeChecker.optional;
 describe("基本", function () {
   describe("基础类型检测", function () {
     it("null", function () {
@@ -123,12 +123,12 @@ describe("内置测试函数", function () {
       checkType(
         { s: 3, i: null },
         {
-          s: checkFnFactor.unionType(["number", "string"]),
-          i: checkFnFactor.unionType(["string", (a) => undefined]),
+          s: typeChecker.unionType(["number", "string"]),
+          i: typeChecker.unionType(["string", (a) => undefined]),
         }
       )
     ).toCheckPass();
-    expect(checkType({ s: 3 }, { s: checkFnFactor.unionType(["bigint", "string"]) })).toCheckFailWithField(["s"]);
+    expect(checkType({ s: 3 }, { s: typeChecker.unionType(["bigint", "string"]) })).toCheckFailWithField(["s"]);
   });
   describe("可选", function () {
     describe("自定义可选", function () {
@@ -158,7 +158,7 @@ describe("内置测试函数", function () {
     });
   });
   it("数字范围", function () {
-    let towToFour = checkFnFactor.numberRange(2, 4);
+    let towToFour = typeChecker.numberRange(2, 4);
     expect(checkType({ a: 2 }, { a: towToFour })).toCheckPass();
     expect(checkType({ a: 3 }, { a: towToFour })).toCheckPass();
     expect(checkType({ a: 4 }, { a: towToFour })).toCheckPass();
@@ -169,7 +169,7 @@ describe("内置测试函数", function () {
     expect(checkType({ a: new Set() }, { a: towToFour })).toCheckFailWithField(["a"]);
   });
   it("实例类型", function () {
-    let mapIns = checkFnFactor.instanceof(Map);
+    let mapIns = typeChecker.instanceof(Map);
     expect(checkType({ a: new Map() }, { a: mapIns })).toCheckPass();
     expect(checkType({ a: null }, { a: mapIns })).toCheckFailWithField(["a"]);
     expect(checkType({ a: NaN }, { a: mapIns })).toCheckFailWithField(["a"]);
@@ -178,24 +178,24 @@ describe("内置测试函数", function () {
   });
   describe("数组类型判断", function () {
     it("数组类型判断", function () {
-      let res = checkType([2, 4, 56, 78], checkFnFactor.arrayType("number"));
+      let res = checkType([2, 4, 56, 78], typeChecker.arrayType("number"));
       expect(res).toCheckPass();
 
-      res = checkType([2, 4, "d", 78], checkFnFactor.arrayType("number"));
+      res = checkType([2, 4, "d", 78], typeChecker.arrayType("number"));
       expect(res).toCheckFailWithField(["2"]);
     });
     it("数组长度限制", function () {
       let res = checkType(
         { a: [2, 4, 56, 78] },
-        { a: checkFnFactor.arrayType("number", 2) },
+        { a: typeChecker.arrayType("number", 2) },
         { redundantFieldPolicy: "delete" }
       );
       expect(res).toCheckPass();
 
-      res = checkType([2, 4, 56, 78], checkFnFactor.arrayType("number", 2));
+      res = checkType([2, 4, 56, 78], typeChecker.arrayType("number", 2));
       expect(res).toCheckFailWithField(["length"]);
 
-      res = checkType([2, 4, "d", 78], checkFnFactor.arrayType("number", 3), { checkAll: true });
+      res = checkType([2, 4, "d", 78], typeChecker.arrayType("number", 3), { checkAll: true });
       expect(res).toCheckFailWithField(["2", "length"]);
     });
   });

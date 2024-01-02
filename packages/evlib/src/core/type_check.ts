@@ -168,12 +168,14 @@ function optional(type: ExceptType) {
 
 optional.number = new OptionalKey("number");
 optional.string = new OptionalKey("string");
+optional.boolean = new OptionalKey("boolean");
+optional.bigint = new OptionalKey("bigint");
 
 /**
  * @public
  * @remarks 预定义的检测函数工厂
  */
-export const checkFnFactor = {
+export const typeChecker = {
   /** @remarks 生成数字范围检测函数 */
   numberRange(min: number, max = Infinity): TypeCheckFn {
     const checkFn: TypeCheckFn = function checkFn(val: number, option) {
@@ -240,6 +242,13 @@ export const checkFnFactor = {
     return checkFn;
   },
 };
+
+/**
+ * @public
+ * @remarks 预定义的检测函数工厂
+ * @deprecated typeChecker的别名，改用 typeChecker
+ */
+export const checkFnFactor = typeChecker;
 
 type BasicType = "string" | "number" | "bigint" | "boolean" | "symbol" | "undefined" | "object" | "function" | "null";
 /** @remarks 元组项检测 */
