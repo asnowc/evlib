@@ -3,6 +3,7 @@ import { getBasicType } from "./type_check.js";
 import { ObjectKey } from "./type.js";
 
 type Obj<V = any> = Record<ObjectKey, V>;
+/** @public */
 export type PatchObjectOpts = {
   /** 跳过 undefined 的值 */
   skipUndefined?: boolean;

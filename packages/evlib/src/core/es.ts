@@ -55,12 +55,17 @@ function getEngine(): "node" | "browser" | "deno" | "bun" | "unknown" {
   return "unknown";
 }
 
+/** @public */
 export interface ModuleMeta {
   /** 模块文件夹 */
   dirname: string;
   /** 模块路径。对应 URL 的 pathname */
   filename: string;
 }
+/**
+ * @public
+ * @remarks 解析模块信息
+ */
 export function paseModMeta(meta: { url: string }): ModuleMeta {
   const url = paseURL(meta.url);
   const filename = url.pathname;
