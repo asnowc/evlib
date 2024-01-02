@@ -10,8 +10,8 @@
   },
   "exports": {
     "./rollup": {
-      "import": "./out/rollup/mod.js",
-      "types": "./out/rollup/mod.d.ts"
+      "import": "./dist/rollup/mod.js",
+      "types": "./dist/rollup/mod.d.ts"
     }
   },
   "author": "Eavid",
@@ -29,8 +29,8 @@
     "rollup": "^4.1.4"
   },
   "files": [
-    "out/**/*.js",
-    "out/**/*.d.ts"
+    "dist/**/*.js",
+    "dist/**/*.d.ts"
   ],
   "publishConfig": {
     "access": "public",

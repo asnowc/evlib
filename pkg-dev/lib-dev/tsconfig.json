@@ -1,11 +1,9 @@
 {
-    "extends": "../../tsconfig.json",
-    "compilerOptions": {
-        "baseUrl": ".",
-        "target": "ES2022",
-        "outDir": "out",
-        "declaration": true,
-        "noEmit": true
-    },
-    "exclude": ["node_modules", "out"]
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "target": "ES2022",
+    "noEmit": true
+  },
+  "exclude": ["node_modules", "out"]
 }
