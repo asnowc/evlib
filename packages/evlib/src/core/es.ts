@@ -82,13 +82,14 @@ function paseURL(url: string) {
   if (!res) throw new Error("无效的URL");
   const { proto: protocol, host } = res;
   const path = res.tail ?? "/";
-  let pathname = "/",
+  let pathname = path,
     query = "",
     hash = "";
   if (path !== "/") {
     const res = path.match(/(?<pathname>[^?]*)(?<query>[^\#]*)(?<hash>.*)$/)?.groups!;
     query = res.query;
     hash = res.hash;
+    pathname = res.pathname;
   }
   return {
     protocol,
