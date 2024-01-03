@@ -6,11 +6,10 @@ console.log("::endgroup::");
 const allTags = new Set(await githubRepo.listTags());
 const tags = await getWorkspaceTagMap();
 
-const updateTags = await publishFlow(Object.keys(tags), {
+await publishFlow(Object.keys(tags), {
   allTags,
   publish(needUpdate) {
     execCmdSync("pnpm", ["publish", "-r"], { exitIfFail: true });
     return needUpdate;
   },
 });
-if (updateTags.size) await githubRepo.deleteMatchVersionTag(allTags, Array.from(updateTags!), "minor");
