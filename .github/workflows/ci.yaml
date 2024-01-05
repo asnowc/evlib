@@ -34,11 +34,31 @@ jobs:
         uses: denoland/setup-deno@v1
         with:
           deno-version: v1.x
-      - name: Publish
+      - name: Check tags
         if: ${{matrix.node-version==20 && github.ref_name=='main'}}
-        run: |
-          echo ::group::Deno cache
-          deno run -A ./.github/scripts/publish.ts
+        uses: asnowc/actions@deno-script/v1
+        id: check_tags
+        with:
+          script: |
+            import { writeNewTagsToOutput } from "https://cdn.jsdelivr.net/gh/dnpack/action-script@0.3.x/cmd/github_repo.ts";
+            import { getWorkspaceTagMap } from "https://cdn.jsdelivr.net/gh/dnpack/action-script@0.3.x/cmd/package.ts";
+
+            const tagMap = await getWorkspaceTagMap();
+            const tags = Object.keys(tagMap);
+            await writeNewTagsToOutput(tags, "return");
+          args: -A
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish
+        if: ${{steps.check_tags.outputs.return}}
+        uses: asnowc/actions@deno-script/v1
+        with:
+          script: |
+            import { tagsPublishFlow } from "https://cdn.jsdelivr.net/gh/dnpack/action-script@0.3.x/cmd/github_repo.ts";
+            import { execCmdSync } from "https://cdn.jsdelivr.net/gh/dnpack/action-script@0.3.x/lib.ts";
+
+            await tagsPublishFlow("NEW_TAGS", () => execCmdSync("pnpm", ["publish", "-r"], { exitIfFail: true }));
+          args: -A
         env:
           GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
