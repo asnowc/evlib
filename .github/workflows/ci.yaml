@@ -60,5 +60,6 @@ jobs:
             await tagsPublishFlow("NEW_TAGS", () => execCmdSync("pnpm", ["publish", "-r"], { exitIfFail: true }));
           args: -A
         env:
+          NEW_TAGS: ${{steps.check_tags.outputs.return}}
           GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
