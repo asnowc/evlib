@@ -197,6 +197,23 @@ interface IpcServerOpts extends ServerOpts {
     writableAll?: boolean;
 }
 
+declare namespace module_2 {
+    export {
+        paseModMeta,
+        ModuleMeta
+    }
+}
+export { module_2 as module }
+
+// @public (undocumented)
+interface ModuleMeta {
+    dirname: string;
+    filename: string;
+    pathname: string;
+    // (undocumented)
+    protocol: string;
+}
+
 declare namespace net {
     export {
         connect,
@@ -234,6 +251,11 @@ class NodeSubProcess extends SubProcess {
     // (undocumented)
     send(msg: any, handle?: Handle | number): Promise<unknown>;
 }
+
+// @public (undocumented)
+function paseModMeta(meta: {
+    url: string;
+}): ModuleMeta;
 
 // @alpha (undocumented)
 interface PipeConfig {
