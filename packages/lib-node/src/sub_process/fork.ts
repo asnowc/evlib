@@ -1,6 +1,6 @@
 import { rawSpawn } from "./private.js";
 import { SpawnOptions } from "./type.js";
-import { Listenable } from "#evlib";
+import { Listenable } from "evlib";
 import { Handle } from "../internal/handle.js";
 import { SubProcess } from "./sub_process.js";
 import { ChildProcess } from "node:child_process";

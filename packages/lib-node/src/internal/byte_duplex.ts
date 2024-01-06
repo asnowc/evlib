@@ -2,7 +2,7 @@ import { ByteWritable } from "../stream/byte_stream/mod.js";
 import { ByteWebReadable } from "../stream/byte_stream/byte_web_stream.js";
 import * as NodeStream from "node:stream";
 import { readableToReadableStream } from "../stream/stream_transform.js";
-import { Listenable } from "#evlib";
+import { Listenable } from "evlib";
 
 /**
  * @private

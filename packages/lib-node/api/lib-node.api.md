@@ -9,7 +9,7 @@
 import { ChildProcess } from 'node:child_process';
 import type * as dgram from 'node:dgram';
 import { Duplex } from 'node:stream';
-import { Listenable } from '#evlib';
+import { Listenable } from 'evlib';
 import * as net_2 from 'node:net';
 import * as node_ps from 'node:child_process';
 import * as NodeStream from 'node:stream';

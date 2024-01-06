@@ -1,4 +1,4 @@
-import { Listenable } from "#evlib";
+import { Listenable } from "evlib";
 import { StreamPipeOptions } from "node:stream/web";
 
 /** @public */

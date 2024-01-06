@@ -1,7 +1,7 @@
 import * as node_ps from "node:child_process";
 import { readableToReadableStream, writableToWritableStream } from "../stream/stream_transform.js";
 import { WritableStream, ReadableStream } from "node:stream/web";
-import { Listenable } from "#evlib";
+import { Listenable } from "evlib";
 
 /** @public */
 export type ClosedState = Readonly<{ code: null | number; signal: NodeJS.Signals | null }>;

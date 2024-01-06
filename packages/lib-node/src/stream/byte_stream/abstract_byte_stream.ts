@@ -1,5 +1,5 @@
 import { WritableHandle, ByteReadable } from "./byte_stream.type.js";
-import { Listenable } from "#evlib";
+import { Listenable } from "evlib";
 import { BufferViewInfo } from "../transform/readable_core.js";
 
 interface StreamPipeOptions {

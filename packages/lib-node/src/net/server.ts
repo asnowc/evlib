@@ -1,5 +1,5 @@
 import * as net from "node:net";
-import { Listenable } from "#evlib";
+import { Listenable } from "evlib";
 import { Connection, SocketStream } from "./connection.js";
 
 interface ServerOpts {
