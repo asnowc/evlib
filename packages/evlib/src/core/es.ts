@@ -55,14 +55,17 @@ function getEngine(): "node" | "browser" | "deno" | "bun" | "unknown" {
   return "unknown";
 }
 
-/** @public */
+/**
+ * @public
+ * @deprecated 已废弃 */
 export interface ModuleMeta {
-  /** 模块文件夹 */
+  /** 模块目录. 对应 URL 的 pathname 的上一级*/
   dirname: string;
-  /** 模块路径。对应 URL 的 pathname */
+  /** 模块路径. 对应 URL 的 pathname */
   filename: string;
 }
 /**
+ * @deprecated 已废弃
  * @public
  * @remarks 解析模块信息
  */
@@ -81,7 +84,7 @@ function paseURL(url: string) {
   const res = url.match(/^(?<proto>\w+:)\/\/(?<host>[^\/]*)(?<tail>\/.*)?$/)?.groups;
   if (!res) throw new Error("无效的URL");
   const { proto: protocol, host } = res;
-  const path = res.tail ?? "/";
+  const path = res.tail ? decodeURI(res.tail) : "/";
   let pathname = path,
     query = "",
     hash = "";

@@ -207,7 +207,7 @@ declare namespace math {
 }
 export { math }
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 interface ModuleMeta {
     dirname: string;
     filename: string;
@@ -248,7 +248,7 @@ function paseExponentNum(num: number, carry: number, maxExponent?: number): Expo
 // @public (undocumented)
 function paseExponentNum(num: number, carry: number[]): ExponentFormat;
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 function paseModMeta(meta: {
     url: string;
 }): ModuleMeta;
