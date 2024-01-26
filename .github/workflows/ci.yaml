@@ -13,6 +13,8 @@ jobs:
       matrix:
         node-version: [18, 20]
     runs-on: ubuntu-latest
+    outputs:
+      publish: ${{steps.check_tag.outputs.tags}}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,7 +39,7 @@ jobs:
       - name: Check tags
         if: ${{matrix.node-version==20 && github.ref_name=='main'}}
         uses: asnowc/actions@deno-script/v1
-        id: check_tags
+        id: check_tag
         with:
           script: |
             import { writeNewTagsToOutput } from "https://cdn.jsdelivr.net/gh/dnpack/action-script@0.3.x/cmd/github_repo.ts";
@@ -49,8 +51,27 @@ jobs:
           args: -A
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  publish:
+    needs: build
+    if: ${{needs.build.outputs.publish&&github.ref_name=='main'}}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup NodeJS
+        uses: asnowc/actions@setup-node/v2
+        with:
+          node_v: 20
+          pnpm_v: 8
+          run_install: true
+      - name: Build
+        run: pnpm ci:build
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
       - name: Publish
-        if: ${{steps.check_tags.outputs.return}}
         uses: asnowc/actions@deno-script/v1
         with:
           script: |
@@ -58,8 +79,8 @@ jobs:
             import { execCmdSync } from "https://cdn.jsdelivr.net/gh/dnpack/action-script@0.3.x/lib.ts";
 
             await tagsPublishFlow("NEW_TAGS", () => execCmdSync("pnpm", ["publish", "-r"], { exitIfFail: true }));
-          args: -A
+          args: -A --no-lock
         env:
-          NEW_TAGS: ${{steps.check_tags.outputs.return}}
-          GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
+          NEW_TAGS: ${{needs.build.outputs.publish}}
+          GITHUB_TOKEN: ${{secrets.CI_GITHUB_TOKEN}}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
