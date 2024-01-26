@@ -6,6 +6,7 @@ declare const Deno: any;
  */
 export const ECMA_VERSION = getESVersion();
 
+/*@__NO_SIDE_EFFECTS__*/
 function getESVersion(): number {
   let version: number;
   if (!Array.isArray) {
@@ -41,6 +42,8 @@ function getESVersion(): number {
  * @remarks JS运行时
  */
 export const runtimeEngine = getEngine();
+
+/*@__NO_SIDE_EFFECTS__*/
 function getEngine(): "node" | "browser" | "deno" | "bun" | "unknown" {
   try {
     if (typeof Deno.version.deno === "string") return "deno";

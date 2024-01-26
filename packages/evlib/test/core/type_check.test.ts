@@ -23,13 +23,13 @@ describe("基本", function () {
     });
     it("移除多余", function () {
       let obj = { s: 3, i: "s", q: undefined };
-      let checkRes = checkType(obj, { s: "number", i: "string" }, { redundantFieldPolicy: "delete" });
+      let checkRes = checkType(obj, { s: "number", i: "string" }, { policy: "delete" });
       expect(checkRes).toCheckPass();
       expect(obj).toEqual({ s: 3, i: "s" });
     });
     it("仅匹配", function () {
       let obj = { s: 3, i: "s", q: undefined };
-      let checkRes = checkType(obj, { s: "number", i: "string" }, { redundantFieldPolicy: "delete" });
+      let checkRes = checkType(obj, { s: "number", i: "string" }, { policy: "delete" });
       expect(checkRes).toCheckPass();
       expect(obj).toEqual({ s: 3, i: "s", q: undefined });
     });
@@ -93,12 +93,12 @@ describe("基本", function () {
     });
     it("仅匹配预期提供字段", function () {
       let val = [1, "d", null];
-      expect(checkType(val, ["number", "string"], { redundantFieldPolicy: "pass" })).toCheckPass();
+      expect(checkType(val, ["number", "string"], { policy: "pass" })).toCheckPass();
       expect(val).toEqual([1, "d", null]);
     });
     it("移除多余", function () {
       let val = [1, "d", null];
-      expect(checkType(val, ["number", "string"], { redundantFieldPolicy: "delete" })).toCheckPass();
+      expect(checkType(val, ["number", "string"], { policy: "delete" })).toCheckPass();
       expect(val).toEqual([1, "d"]);
     });
   });
@@ -110,7 +110,7 @@ describe("嵌套", function () {
   });
   it("删除多余", function () {
     let obj = { s: 3, i: { q: "s", y: null, c: undefined }, b: 6 };
-    let res = checkType(obj, { s: "number", i: { q: "string", c: "undefined" } }, { redundantFieldPolicy: "delete" });
+    let res = checkType(obj, { s: "number", i: { q: "string", c: "undefined" } }, { policy: "delete" });
     expect(res).toCheckPass();
     expect(obj).toEqual({ s: 3, i: { q: "s", c: undefined } });
   });
@@ -144,9 +144,7 @@ describe("内置测试函数", function () {
     });
     it("删除值为undefined且预期为可选类型的字段", function () {
       let object = { s: 3, q: undefined };
-      expect(
-        checkType(object, { s: "number", q: optional("string") }, { redundantFieldPolicy: "delete" })
-      ).toCheckPass();
+      expect(checkType(object, { s: "number", q: optional("string") }, { policy: "delete" })).toCheckPass();
       expect(object, "q应该被删除").not.has.key("q");
     });
     it("快捷可选", function () {
@@ -177,6 +175,13 @@ describe("内置测试函数", function () {
     expect(checkType({}, { a: mapIns })).toCheckFailWithField(["a"]);
   });
   describe("数组类型判断", function () {
+    it("数组array检测", function () {
+      let res: CheckRes = checkType([2, 4, 56, 78], typeChecker.array.number);
+      expect(res).toCheckPass();
+
+      res = checkType([2, 4, "d", 78], typeChecker.array.number);
+      expect(res).toCheckFailWithField(["2"]);
+    });
     it("数组类型判断", function () {
       let res = checkType([2, 4, 56, 78], typeChecker.arrayType("number"));
       expect(res).toCheckPass();
@@ -185,10 +190,10 @@ describe("内置测试函数", function () {
       expect(res).toCheckFailWithField(["2"]);
     });
     it("数组长度限制", function () {
-      let res = checkType(
+      let res: CheckRes = checkType(
         { a: [2, 4, 56, 78] },
         { a: typeChecker.arrayType("number", 2) },
-        { redundantFieldPolicy: "delete" }
+        { policy: "delete" }
       );
       expect(res).toCheckPass();
 
@@ -200,3 +205,8 @@ describe("内置测试函数", function () {
     });
   });
 });
+type CheckRes<T = any> = {
+  error?: any;
+  /** 要替换的值 */
+  value: T;
+};

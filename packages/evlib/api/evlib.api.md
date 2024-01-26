@@ -14,17 +14,21 @@ const autoUnit: {
 
 // @public @deprecated (undocumented)
 const checkFnFactor: {
-    numberRange(min: number, max?: number): TypeCheckFn;
-    instanceof(obj: Function): TypeCheckFn;
-    unionType(types: ExceptType[]): TypeCheckFn;
+    create<T extends ExceptType>(expect: T, opts: Pick<TypeCheckOptions, "checkAll" | "policy">): TypeChecker<T>;
+    numberRange(min: number, max?: number): TypeCheckFn<number>;
+    instanceof<T_1 extends new (...args: any[]) => any>(obj: T_1): TypeCheckFn<InstanceType<T_1>>;
+    union: typeof union;
+    unionType: typeof union;
     optional: typeof optional;
-    arrayType(type: ExceptType, length?: number): TypeCheckFn;
+    array: typeof array;
+    record: typeof record;
+    arrayType<T_2 extends ExceptType>(type: T_2, length?: number): TypeCheckFn<InferExcept<T_2>>;
 };
 
 // Warning: (ae-forgotten-export) The symbol "CheckRes" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-function checkType<T = unknown>(value: any, except: ExceptType, options?: TypeCheckOptions): CheckRes<T>;
+function checkType<T extends ExceptType>(value: any, except: T, options?: TypeCheckOptions): CheckRes<InferExcept<T>>;
 
 // @public (undocumented)
 interface ControllablePromise<T> extends Promise<T> {
@@ -49,8 +53,8 @@ declare namespace core {
         TypeCheckFn,
         typeChecker,
         checkFnFactor,
-        ExceptTypeMap,
         ExceptType,
+        InferExcept,
         setTimer,
         setInterval,
         afterTime,
@@ -144,16 +148,12 @@ type EventList = {
     [key: EventName]: any[];
 };
 
-// Warning: (ae-forgotten-export) The symbol "OptionalKey" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "ExceptTypeMap" needs to be exported by the entry point index.d.ts
 // Warning: (ae-forgotten-export) The symbol "ExceptTypeTuple" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "InternalExceptType" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-type ExceptType = TypeCheckFn | OptionalKey | BasicType | ExceptTypeMap | ExceptTypeTuple | boolean;
-
-// @public (undocumented)
-type ExceptTypeMap = {
-    [key: string | number]: ExceptType;
-};
+type ExceptType = TypeCheckFn | BasicType | ExceptTypeMap | ExceptTypeTuple | InternalExceptType;
 
 // @public (undocumented)
 type ExponentFormat = {
@@ -172,6 +172,16 @@ function getClassType(val: any): string;
 
 // @beta (undocumented)
 function groupObject<T extends {}>(data: T[], key: keyof T): Obj<T>;
+
+// Warning: (ae-forgotten-export) The symbol "InferBaseMap" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "InferTuple" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "Fn" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "InferChecker" needs to be exported by the entry point index.d.ts
+//
+// @public (undocumented)
+type InferExcept<T> = T extends string ? InferBaseMap[T] : T extends any[] ? InferTuple<T> : T extends Fn ? InferChecker<T> : T extends InternalExceptType<infer E> ? E : T extends object ? {
+    [key in keyof T]: InferExcept<T[key]>;
+} : unknown;
 
 // Warning: (ae-forgotten-export) The symbol "ListenableConstructor" needs to be exported by the entry point index.d.ts
 //
@@ -323,17 +333,21 @@ function toErrorStr(err?: any): string;
 
 // @public (undocumented)
 const typeChecker: {
-    numberRange(min: number, max?: number): TypeCheckFn;
-    instanceof(obj: Function): TypeCheckFn;
-    unionType(types: ExceptType[]): TypeCheckFn;
+    create<T extends ExceptType>(expect: T, opts: Pick<TypeCheckOptions, "checkAll" | "policy">): TypeChecker<T>;
+    numberRange(min: number, max?: number): TypeCheckFn<number>;
+    instanceof<T_1 extends new (...args: any[]) => any>(obj: T_1): TypeCheckFn<InstanceType<T_1>>;
+    union: typeof union;
+    unionType: typeof union;
     optional: typeof optional;
-    arrayType(type: ExceptType, length?: number): TypeCheckFn;
+    array: typeof array;
+    record: typeof record;
+    arrayType<T_2 extends ExceptType>(type: T_2, length?: number): TypeCheckFn<InferExcept<T_2>>;
 };
 
 // @public (undocumented)
-interface TypeCheckFn {
+interface TypeCheckFn<T = any> {
     // (undocumented)
-    (val: any, option: Readonly<TypeCheckOptions>): Partial<CheckRes> | undefined;
+    (val: any, option: Readonly<TypeCheckOptions>): Partial<CheckRes<T>> | undefined;
     // (undocumented)
     baseType?: BasicType;
 }
@@ -343,6 +357,8 @@ interface TypeCheckOptions {
     // (undocumented)
     checkAll?: boolean;
     // (undocumented)
+    policy?: "pass" | "delete" | "error";
+    // @deprecated (undocumented)
     redundantFieldPolicy?: "pass" | "delete" | "error";
 }
 
@@ -389,7 +405,11 @@ interface VoidFn {
 
 // Warnings were encountered during analysis:
 //
-// src/core/type_check.ts:201:3 - (ae-forgotten-export) The symbol "optional" needs to be exported by the entry point index.d.ts
+// src/core/type_check.ts:321:3 - (ae-forgotten-export) The symbol "union" needs to be exported by the entry point index.d.ts
+// src/core/type_check.ts:324:3 - (ae-forgotten-export) The symbol "optional" needs to be exported by the entry point index.d.ts
+// src/core/type_check.ts:325:3 - (ae-forgotten-export) The symbol "array" needs to be exported by the entry point index.d.ts
+// src/core/type_check.ts:326:3 - (ae-forgotten-export) The symbol "record" needs to be exported by the entry point index.d.ts
+// src/core/type_check.ts:365:27 - (ae-forgotten-export) The symbol "TypeChecker" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 
