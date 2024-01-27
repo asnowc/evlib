@@ -17,6 +17,7 @@ export interface PromiseHandle<T> {
   resolve(data: T): void;
   reject(reason?: any): void;
 }
+
 /**
  * @public
  * @remarks 可控制的 Promise

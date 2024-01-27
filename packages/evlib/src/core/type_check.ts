@@ -225,6 +225,7 @@ export interface TypeCheckFn<T = any> {
   baseType?: BasicType;
 }
 /**
+ * @__NO_SIDE_EFFECTS__
  * @public
  * @remarks 生成可选类型检测器
  */
@@ -239,6 +240,7 @@ optional.symbol = optional("symbol");
 optional.object = optional("object");
 optional.function = optional("function");
 /**
+ * @__NO_SIDE_EFFECTS__
  * @public
  * @remarks 生成可同类数组检测器
  */
@@ -253,6 +255,7 @@ array.symbol = array("symbol");
 array.object = array("object");
 array.function = array("function");
 /**
+ * @__NO_SIDE_EFFECTS__
  * @public
  * @remarks 生成可同类属性检测器
  */
@@ -276,7 +279,9 @@ class TypeChecker<T extends ExceptType> {
     return internalCheckType(value, this.expect, this.config);
   }
 }
-/** @remarks 生成联合类型检测函数 */
+/**
+ * @__NO_SIDE_EFFECTS__
+ * @remarks 生成联合类型检测函数 */
 function union<T extends ExceptType[]>(types: ExceptType[]): TypeCheckFn<InferExcept<T>> {
   const checkFn: TypeCheckFn = function testFx(val: any, option) {
     let errors: TypeErrorDesc[] = [];

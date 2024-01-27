@@ -45,24 +45,32 @@ export const Listenable: ListenableConstructor = class Listenable<T> {
 };
 
 interface ListenableConstructor {
-  new <T>(): Listenable<T>;
+  new <T>(): Listenable<T> & ListenableCtrl<T>;
+}
+interface ListenableCtrl<T> {
+  /**
+   * @deprecated
+   * @remarks 订阅者的数量 */
+  count: number;
+  /**
+   * @deprecated
+   * @remarks 触发事件
+   * @returns 返回监听器的数量
+   */
+  emit(arg: T): number;
+  /**
+   * @deprecated
+   * @remarks 订阅者是否已经在订阅中 */
+  listening(listener: Function): boolean;
 }
 /**
  * @public
  * @remarks 可订阅对象, 可通过 await 等待
  */
 export interface Listenable<T> {
-  /** @remarks 订阅者的数量 */
-  count: number;
-  /**
-   * @remarks 触发事件
-   * @returns 返回监听器的数量
-   */
-  emit(arg: T): number;
   /**
    * @remarks 与on()类似, 在触发前取消订阅, 可使用 await 语法等待
    * 如果 listener 之前已经订阅, 则忽略
-   * @example
    */
   then<R extends Listener<T>>(listener: R): R;
   /** @remarks 订阅事件 */
@@ -72,7 +80,5 @@ export interface Listenable<T> {
    * @returns 如果 subscriber 已经订阅， 则返回 true, 否则返回 false
    */
   off(listener: Function): boolean;
-  /** @remarks 订阅者是否已经在订阅中 */
-  listening(listener: Function): boolean;
 }
 type Listener<T> = (arg: T) => void;
