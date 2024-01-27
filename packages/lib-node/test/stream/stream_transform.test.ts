@@ -88,7 +88,7 @@ describe.concurrent("writeable", function () {
       test("writable finished", async function () {
         const writeable = createWriteable();
         writeable.end();
-        await waitTime();
+        await afterTime();
         const writer = writableToWritableStream(writeable).getWriter();
         await expect(writer.closed).rejects.toThrowError();
       });
@@ -113,7 +113,7 @@ describe.concurrent(
           else this.push(null);
         },
         construct(callback) {
-          setTimeout(callback, 100);
+          setTimeout(callback, 10);
         },
       });
 
@@ -123,7 +123,7 @@ describe.concurrent(
 
       expect(chunks.length).toBe(3);
       expect(Buffer.concat(chunks)).toEqual(Buffer.from([3, 2, 1]));
-      await waitTime();
+      await afterTime();
       expect(readable.readable).toBeFalsy();
       expect(readable.readableEnded).toBeTruthy();
     });
@@ -143,16 +143,8 @@ describe.concurrent(
 
       const ctrl = readableToReadableStream<Buffer>(readable);
       const reader = ctrl.getReader();
-      await afterTime();
-      expect(read).toBeCalledTimes(1);
-      expect(readable.readableLength, "_read调用后添加源").toBe(8);
       let list: Buffer[] = [];
-      {
-        const res = await reader.read();
-        list.push(res.value!); // chunk length =4
-        await afterTime();
-        expect(read).toBeCalledTimes(2);
-      }
+
       do {
         const chunk = await reader.read();
         if (chunk.done) break;
@@ -179,15 +171,15 @@ describe.concurrent(
       const reader = ctrl.getReader();
       const data = Buffer.from("ab");
       expect(readable.push(data)).toBeTruthy(); //2
-      await waitTime();
+      await afterTime();
       expect(readable.push(data)).toBeTruthy(); //4
-      await waitTime();
+      await afterTime();
       expect(readable.push(data)).toBeFalsy(); //6
-      await waitTime();
+      await afterTime();
       await reader.read();
       await reader.read();
       expect(readable.push(data)).toBeTruthy();
-      await waitTime();
+      await afterTime();
       expect(readable.push(data)).toBeFalsy();
     });
     test("cancel(Error)", async function () {
@@ -281,8 +273,4 @@ async function readAll<T>(ctrl: ReadableStreamDefaultReader<T>): Promise<T[]> {
     if (chunk.done) return list;
     else list.push(chunk.value);
   } while (true);
-}
-
-function waitTime(time?: number) {
-  return new Promise((resolve) => setTimeout(resolve, time));
 }

@@ -8,7 +8,6 @@ import { WritableCore } from "./transform/writable_core.js";
  * 它的行为与 Readable.toWeb() 的行为不同. Readable.toWeb() 会造成 扩大 highWaterMark 的问题. node v20 目前是这样的
  */
 export function readableToReadableStream<T = Uint8Array>(readable: Readable): ReadableStream<T> {
-    readable.pause();
 
     /** highWaterMark 由 readable 处理 */
     let queuingStrategy: QueuingStrategy = { highWaterMark: 0 };

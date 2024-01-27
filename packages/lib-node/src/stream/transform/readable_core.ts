@@ -1,5 +1,5 @@
-import type { Readable } from "node:stream";
-import type { InternalReadable, ReadableState } from "./stream_core.js";
+import { Duplex, type Readable } from "node:stream";
+import type { ReadableState } from "./stream_core.js";
 import type { UnderlyingSource, ReadableStreamController, ReadableByteStreamController } from "node:stream/web";
 /**
  * @remarks 读取流的一个chunk
@@ -15,12 +15,7 @@ export function takeChunkFromReadableState<T>(readableState: ReadableState<T>): 
 
   return readableState.ended ? null : undefined;
 }
-function concatAllFromReadableState<T>(readableState: ReadableState<T>): T[] {
-  const list = Array.from(readableState.buffer);
-  readableState.buffer.clear();
-  readableState.length = 0;
-  return list;
-}
+
 export type BufferViewInfo = {
   view: ArrayBufferView;
   buf: Uint8Array;
@@ -29,18 +24,84 @@ export type BufferViewInfo = {
   /** 剩余长度 */
   size: number;
 };
+type NextResult<T> = { value: T; done?: boolean } | { value?: Error | null; done: true };
+class ReadableQueue<T = Uint8Array> {
+  private queue: T[] = [];
 
+  ended = false;
+  get(cb: (chunk: NextResult<T>) => void) {
+    if (this.callback) throw new Error("重复调用");
+
+    if (this.ended) {
+      if (this.queue.length) {
+        cb({ value: this.queue.shift() as T });
+      } else cb({ done: true });
+    } else if (this.readable.readable) {
+      this.callback = cb;
+      this.readable.resume();
+    } else if (this.readable.closed) {
+      cb({ done: true, value: this.readable.errored });
+    }
+  }
+  private callback?: (chunk: NextResult<T>) => void;
+  constructor(
+    readonly readable: Readable,
+    onError: (err?: any) => void = () => {},
+    public onClose?: (error?: Error | null) => void
+  ) {
+    readable.pause();
+    readable.on("data", this.onData);
+    readable.on("close", this.onClear);
+    readable.on("error", onError);
+    if (readable instanceof Duplex) readable.on("end", this.onClear);
+    this.rawPush = readable.push;
+    readable.push = this.onPush;
+  }
+  private onPush = (chunk: T) => {
+    if (chunk === null) {
+      this.ended = true;
+      this.readable.resume();
+    }
+    return this.rawPush.call(this.readable, chunk);
+  };
+  private rawPush: (chunk: T) => boolean;
+  private onData = (chunk: T) => {
+    const cb = this.callback;
+    this.callback = undefined;
+    if (this.ended) {
+      if (cb) {
+        cb({ value: chunk });
+      } else this.queue.push(chunk);
+    } else {
+      if (cb) {
+        cb({ value: chunk });
+        this.readable.pause();
+      } else throw new Error("xx");
+    }
+  };
+
+  private onClear = () => {
+    this.readable.off("close", this.onClear);
+    this.readable.off("end", this.onClear);
+    this.readable.off("data", this.onData);
+    const cb = this.callback;
+    if (cb) {
+      this.callback = undefined;
+      cb({ done: true, value: this.readable.errored });
+    } else if (this.queue.length == 0) {
+      this.onClose?.(this.readable.errored); //主动触发
+    }
+  };
+}
 export class ReadableSource<T> implements UnderlyingSource {
-  constructor(readable: Readable, type?: "bytes");
-  constructor(private readable: InternalReadable<T>, type?: "bytes") {
+  private syncChunkGetter: ReadableQueue<T>;
+  constructor(private readable: Readable, type?: "bytes") {
+    this.syncChunkGetter = new ReadableQueue(readable);
     this.type = type;
     if (type === "bytes") {
-      this.queue = bytesQueueHandler as any;
+      // this.queue = bytesQueueHandler as any;
     }
-    this.readableState = readable._readableState;
   }
-  private readableState: ReadableState<T>;
-  private closed = false;
   start(ctrl: ReadableStreamController<T>) {
     const readable = this.readable;
     if (readable.readableEnded) {
@@ -51,75 +112,21 @@ export class ReadableSource<T> implements UnderlyingSource {
       ctrl.error(readable.errored ?? new Error("raw stream is unreadable"));
       return;
     }
-    const tryClose = (error?: Error | null) => {
-      //没有进行读取，但是流已经关闭
-      if (!this.closed) {
-        if (error) ctrl.error(error);
-        else ctrl.close();
-        this.closed = true;
-      }
+    this.syncChunkGetter.onClose = (err) => {
+      err ? ctrl.error(err) : ctrl.close();
     };
-    readable.on("close", () => {
-      if (this.waiting) {
-        this.waiting.reject();
-        this.waiting = undefined;
-      }
-      tryClose(readable.errored);
-    });
-    readable.on("end", tryClose);
-
-    readable.on("error", (err) => {
-      ctrl.error(err);
-    });
-
-    //确保触发底层读取
-    readable.on("readable", () => {
-      const isNoMore = this.readableState.ended;
-      if (isNoMore) {
-        const list = concatAllFromReadableState(this.readableState);
-
-        for (const chunk of list) {
-          this.queue(ctrl, chunk);
-        }
-        if (this.waiting && list.length > 0) {
-          this.waiting.resolve();
-          this.waiting = undefined;
-        }
-        readable.read(0);
-        return;
-      }
-      if (this.waiting) {
-        //理论上至少命中 readableState.length 或 readableState.ended
-        const chunk = takeChunkFromReadableState(this.readableState);
-        if (chunk) {
-          ctrl.enqueue(chunk);
-          this.waiting.resolve();
-          this.waiting = undefined;
-          this.readable.read(0);
-        }
-      }
-    });
   }
-
-  private queue(ctrl: ReadableStreamController<T>, chunk: T) {
-    ctrl.enqueue(chunk);
-  }
-  private waiting?: { resolve(): void; reject(reason?: any): void };
   pull(ctrl: ReadableStreamController<T>) {
-    const chunk = takeChunkFromReadableState(this.readableState);
-    if (chunk) {
-      this.queue(ctrl, chunk);
-      this.readable.read(0);
-    } else {
-      if (chunk === null) this.readable.read(0);
-      return new Promise<void>((resolve, reject) => {
-        this.waiting = { resolve, reject };
-      });
-    }
+    this.syncChunkGetter.get((chunk) => {
+      if (chunk.done) {
+        if (chunk.value) ctrl.error(chunk.value);
+        else ctrl.close();
+      } else ctrl.enqueue(chunk.value);
+    });
   }
   /** cancel将销毁可读流 */
   cancel(reason = new Error("ReadableStream canceled")): void | PromiseLike<void> {
-    this.closed = true;
+    this.syncChunkGetter.onClose = undefined; //反正cancel 后重复调用 controller.close() 和  controller.error()
     this.readable.destroy(reason);
   }
   type: any;

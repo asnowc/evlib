@@ -1,18 +1,17 @@
 import { Readable } from "node:stream";
 import type { ByteReader } from "../byte_reader.js";
 import { takeChunkFromReadableState } from "../transform/readable_core.js";
-import { ReadableStream, ReadableStreamDefaultReadResult } from "node:stream/web";
+import { ReadableStream } from "node:stream/web";
 import { resolveChunk, WaitingQueue } from "../byte_stream/abstract_byte_stream.js";
 
 /**
  * @alpha
  * @remarks 创建对 Readable 的 StreamScanner
  */
-export function createByteReaderFromWebStream<T extends Uint8Array>(
-  stream: ReadableStream<T>
+export function createByteReader<T extends Uint8Array>(
+  iterable: AsyncIterable<T>
 ): { read: ByteReader<T>; cancel(reason?: Error): T | null } {
-  const readable = stream.getReader();
-
+  const iter = iterable[Symbol.asyncIterator]();
   let ended = false;
   let errored: Error | undefined;
   let residueChunk: T | undefined;
@@ -54,11 +53,11 @@ export function createByteReaderFromWebStream<T extends Uint8Array>(
 
   async function readNext() {
     while (queue[0]) {
-      let res: ReadableStreamDefaultReadResult<T>;
+      let res: IteratorResult<T, any>;
       if (residueChunk) {
         residueChunk = resolveChunk(queue, residueChunk);
       } else {
-        res = await readable.read();
+        res = await iter.next();
         if (res.done) {
           ended = true;
           return cancel(new Error("no more data"));
@@ -81,10 +80,14 @@ export function createByteReaderFromWebStream<T extends Uint8Array>(
       }
     }
     queue.length = 0;
+    iter.return!();
     return residueChunk ?? null;
   }
 
   return { cancel, read };
+}
+export function createByteReaderFromWebStream(stream: ReadableStream) {
+  return createByteReader(stream);
 }
 interface BufferReader extends ByteReader<Buffer> {
   /** 读取一个 chunk */
