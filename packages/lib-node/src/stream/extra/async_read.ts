@@ -1,5 +1,4 @@
 import type { Readable } from "stream";
-import { createByteReaderFromReadable } from "./byte_reader.js";
 
 /**
  * @alpha
@@ -8,22 +7,55 @@ import { createByteReaderFromReadable } from "./byte_reader.js";
  *
  * @throws
  */
-export async function readableRead(stream: Readable, len: number, abortSignal?: AbortSignal): Promise<Buffer> {
-  if (stream.readableLength >= len) return stream.read(len);
-  abortSignal?.throwIfAborted();
+export function readableRead(stream: Readable, len: number, abortSignal?: AbortSignal): Promise<Buffer> {
+  if (Object.hasOwn(stream, asyncRead)) return Promise.reject(new Error("前一个异步读取解决之前不能再继续调用"));
+  else if (stream.readableLength >= len) return Promise.resolve(stream.read(len));
+  return new Promise<Buffer>(function (resolve, reject) {
+    abortSignal?.throwIfAborted();
+    Object.defineProperty(stream, asyncRead, { value: true, writable: true, configurable: true });
 
-  const { read, cancel } = createByteReaderFromReadable(stream);
-  function onTimeout() {
-    cancel(abortSignal!.reason);
-  }
+    const view = Buffer.allocUnsafe(len);
+    let offset = 0;
 
-  abortSignal?.addEventListener("abort", onTimeout);
-  return read(len).finally(function () {
-    abortSignal?.removeEventListener("abort", onTimeout);
-    cancel();
+    function onReadable() {
+      let need = view.byteLength - offset;
+      if (stream.readableLength >= need) {
+        view.set(stream.read(need)!, offset);
+        clear();
+        resolve(view);
+      } else {
+        const chunk: Buffer = stream.read();
+        if (chunk) {
+          view.set(chunk, offset);
+          offset += chunk.byteLength;
+        }
+      }
+    }
+    function onEnd() {
+      clear();
+      reject(new Error("no more data"));
+    }
+    stream.pause();
+    stream.on("readable", onReadable);
+    stream.on("end", onEnd);
+    stream.on("close", onEnd);
+
+    function onTimeout() {
+      clear();
+      reject(abortSignal!.reason);
+    }
+    function clear() {
+      stream.off("readable", onReadable);
+      stream.off("end", onEnd);
+      stream.off("close", onEnd);
+      abortSignal?.removeEventListener("abort", onTimeout);
+      Reflect.deleteProperty(stream, asyncRead);
+    }
+
+    abortSignal?.addEventListener("abort", onTimeout);
   });
 }
-
+const asyncRead = Symbol("asyncRead");
 /**
  * @alpha
  * @remarks 读取所有 chunks. 等待流 end 事件触发后解决

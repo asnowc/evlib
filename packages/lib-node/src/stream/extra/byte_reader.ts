@@ -1,17 +1,18 @@
 import { Readable } from "node:stream";
 import type { ByteReader } from "../byte_reader.js";
-import { takeChunkFromReadableState } from "../transform/readable_core.js";
-import { ReadableStream } from "node:stream/web";
+import { ReadableQueue, NextChunkResult } from "../transform/readable_core.js";
+import { ReadableStream, ReadableStreamDefaultReadResult } from "node:stream/web";
 import { resolveChunk, WaitingQueue } from "../byte_stream/abstract_byte_stream.js";
 
 /**
  * @alpha
  * @remarks 创建对 Readable 的 StreamScanner
  */
-export function createByteReader<T extends Uint8Array>(
-  iterable: AsyncIterable<T>
+export function createByteReaderFromWebStream<T extends Uint8Array>(
+  stream: ReadableStream<T>
 ): { read: ByteReader<T>; cancel(reason?: Error): T | null } {
-  const iter = iterable[Symbol.asyncIterator]();
+  const readable = stream.getReader();
+
   let ended = false;
   let errored: Error | undefined;
   let residueChunk: T | undefined;
@@ -47,20 +48,20 @@ export function createByteReader<T extends Uint8Array>(
         buf = view instanceof Uint8Array ? view : new Uint8Array(view.buffer, view.byteOffset, view.byteLength);
       }
       queue.push({ resolve, reject, safe, viewInfo: { buf, view, offset: 0, size: view.byteLength } });
-      readNext();
+      if (queue.length === 1) readNext();
     });
   }
 
   async function readNext() {
     while (queue[0]) {
-      let res: IteratorResult<T, any>;
+      let res: ReadableStreamDefaultReadResult<T>;
       if (residueChunk) {
         residueChunk = resolveChunk(queue, residueChunk);
       } else {
-        res = await iter.next();
+        res = await readable.read().catch((e) => ({ done: true, value: e }));
         if (res.done) {
           ended = true;
-          return cancel(new Error("no more data"));
+          return cancel(res.value ?? new Error("no more data"));
         }
         residueChunk = resolveChunk(queue, res.value);
       }
@@ -80,14 +81,11 @@ export function createByteReader<T extends Uint8Array>(
       }
     }
     queue.length = 0;
-    iter.return!();
+    readable.releaseLock();
     return residueChunk ?? null;
   }
 
   return { cancel, read };
-}
-export function createByteReaderFromWebStream(stream: ReadableStream) {
-  return createByteReader(stream);
 }
 interface BufferReader extends ByteReader<Buffer> {
   /** 读取一个 chunk */
@@ -103,11 +101,12 @@ interface BufferReader extends ByteReader<Buffer> {
  */
 export function createByteReaderFromReadable(readable: Readable): {
   read: BufferReader;
-  cancel(reason?: Error): null;
+  cancel(reason?: Error): Buffer | null;
 } {
-  readable.pause();
-  const waitingQueue: WaitingQueue[] = [];
-  let closed: Error | undefined;
+  const getter = new ReadableQueue<Buffer>(readable);
+  const queue: WaitingQueue[] = [];
+  let residueChunk: Buffer | undefined;
+  let noMoreErr: Error | undefined;
 
   function read(): Promise<Buffer | null>;
   function read(size: number): Promise<Buffer>;
@@ -117,6 +116,7 @@ export function createByteReaderFromReadable(readable: Readable): {
   function read(view?: number | ArrayBufferView, safe?: boolean): Promise<Buffer | null> {
     return new Promise<unknown>(function (resolve, reject) {
       const item: WaitingQueue = { resolve, reject };
+      if (noMoreErr) return safe ? resolve(null) : reject(noMoreErr);
 
       if (view === undefined) {
         item.safe = true;
@@ -147,63 +147,59 @@ export function createByteReaderFromReadable(readable: Readable): {
         );
       }
 
-      if (closed) return safe ? resolve(null) : reject(closed);
-      waitingQueue.push(item);
-      onReadable();
+      queue.push(item);
+      if (queue.length === 1) readNext();
     }) as Promise<Buffer | null>;
   }
 
-  function onReadable() {
-    if (checkQueue(waitingQueue, readable)) onEnd(new Error("Stream no more data"));
-  }
-  function onEnd(reason: any) {
-    closed = reason;
-    readable.off("readable", onReadable);
-    readable.off("close", onEnd);
-    rejectQueue(waitingQueue, reason);
-  }
-  if (!readable.readableEnded) {
-    readable.on("readable", onReadable); //监听数据变化, 包括push(null)
-    readable.on("close", onEnd); // 监听destroy()
-  }
-  function cancel(reason?: any): null {
-    onEnd(reason ?? new Error("Reader has be cancel"));
-    return null;
-  }
-
-  return { cancel, read };
-}
-
-/**
- * @remarks 检查 Readable的内部队列, 并解决等待队列
- * @returns 如果流不会再有更多数据, 则返回 true
- */
-function checkQueue(queue: WaitingQueue[], readable: Readable) {
-  const state = (readable as any)._readableState;
-
-  while (queue.length) {
-    let handle = queue[0];
-    const viewInfo = handle.viewInfo;
-    if (!viewInfo) {
-      const chunk = takeChunkFromReadableState(state);
-      if (chunk) {
-        handle.resolve(chunk);
-        queue.shift();
-      } else return chunk === null;
-    } else {
-      const buf = readable.read(viewInfo.size) as Uint8Array | null;
-      if (!buf) return state.ended || state.closed;
-      viewInfo.buf.set(buf, viewInfo.offset);
-      viewInfo.offset += buf.byteLength;
-      viewInfo.size -= buf.byteLength;
-
-      if (viewInfo.size > 0) return state.ended || state.closed;
-      handle.resolve(viewInfo.view);
-      queue.shift();
+  async function readNext() {
+    while (queue[0]) {
+      let res: NextChunkResult<Buffer>;
+      if (residueChunk) {
+        residueChunk = resolveChunk(queue, residueChunk);
+      } else if (!readable.readable) {
+        return onNoMore(readable.errored!);
+      } else {
+        res = await next();
+        if (res.done) {
+          return onNoMore(res.value as Error | undefined);
+        }
+        residueChunk = resolveChunk(queue, res.value);
+      }
     }
   }
-  readable.read(0); //调用以检测 readable 的各种事件
+  const next = () => {
+    return new Promise<NextChunkResult<Buffer>>((resolve, reject) => {
+      getter.get(resolve);
+    });
+  };
+  function onNoMore(error?: Error) {
+    noMoreErr = error ? error : createNoMoreDataErr();
+    getter.cancel();
+    rejectQueue(queue, noMoreErr);
+  }
+
+  if (!readable.readable) noMoreErr = readable.errored ?? createNoMoreDataErr();
+
+  return {
+    cancel(reason = new Error("Reader has be cancel")): null | Buffer {
+      onNoMore(reason);
+      if (residueChunk && readable.readable) {
+        readable.unshift(residueChunk);
+        return null;
+      }
+      let returnChunk = residueChunk;
+      residueChunk = undefined;
+
+      return returnChunk === undefined ? null : returnChunk;
+    },
+    read,
+  };
 }
+function createNoMoreDataErr() {
+  return new Error("no more data");
+}
+
 function rejectQueue(queue: WaitingQueue[], reason: Error) {
   for (let i = 0; i < queue.length; i++) {
     let item = queue[i];

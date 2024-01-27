@@ -38,22 +38,21 @@ class TestRead extends Readable {
     this.push(null);
   }
 }
-const chunks = [Buffer.from("abcd"), Buffer.from("efgh"), Buffer.from("ijkl"), Buffer.from("mnop")];
 describe("readableRead", function () {
+  const chunks = [Buffer.from("abcd"), Buffer.from("efgh"), Buffer.from("ijkl"), Buffer.from("mnop")];
   it("读取成功", async function () {
+    setTimeout(() => {
+      readable.push(chunks[0]);
+      readable.push(chunks[1]);
+      readable.push(null);
+    });
     const readable = createReadable();
-    let p1 = expect(readableRead(readable, 2), "p1").resolves.toEqual(chunks[0].subarray(0, 2));
-    let p2 = expect(
+    await expect(readableRead(readable, 2), "p1").resolves.toEqual(chunks[0].subarray(0, 2));
+    await expect(
       readableRead(readable, 4).then((buf) => buf.toString()),
       "p2"
     ).resolves.toBe("cdef");
-    let p3 = expect(readableRead(readable, 2), "p3").resolves.toEqual(chunks[1].subarray(2, 4));
-
-    readable.push(chunks[0]);
-    readable.push(chunks[1]);
-    readable.push(null);
-
-    await Promise.all([p1, p2, p3]);
+    await expect(readableRead(readable, 2), "p3").resolves.toEqual(chunks[1].subarray(2, 4));
   });
 
   it("流结束", async function () {
@@ -83,7 +82,7 @@ describe("readableRead", function () {
     await expect(readableRead(readable, 15).then((data) => data.toString("utf-8"))).resolves.toEqual("000001111122222");
     expect(readable.listenerCount("readable")).toBe(1);
   });
-});
+}, 1000);
 
 describe.concurrent("pipeTo", function () {
   describe("resolve", function () {

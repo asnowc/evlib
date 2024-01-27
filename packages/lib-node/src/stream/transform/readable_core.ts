@@ -1,20 +1,5 @@
-import { Duplex, type Readable } from "node:stream";
-import type { ReadableState } from "./stream_core.js";
+import { type Readable } from "node:stream";
 import type { UnderlyingSource, ReadableStreamController, ReadableByteStreamController } from "node:stream/web";
-/**
- * @remarks 读取流的一个chunk
- * @returns null: 流不会再有更多数据 undefined 没有 chunk
- */
-export function takeChunkFromReadableState<T>(readableState: ReadableState<T>): T | undefined | null {
-  const readableQueue = readableState.buffer;
-  if (readableQueue.length) {
-    const chunk = readableQueue.shift()!;
-    readableState.length -= readableState.objectMode ? 1 : (chunk as unknown as Uint8Array).byteLength;
-    return chunk;
-  }
-
-  return readableState.ended ? null : undefined;
-}
 
 export type BufferViewInfo = {
   view: ArrayBufferView;
@@ -24,67 +9,72 @@ export type BufferViewInfo = {
   /** 剩余长度 */
   size: number;
 };
-type NextResult<T> = { value: T; done?: boolean } | { value?: Error | null; done: true };
-class ReadableQueue<T = Uint8Array> {
+export type NextChunkResult<T> = { value: T; done?: boolean } | { value?: Error | null; done: true };
+
+export class ReadableQueue<T = Uint8Array> {
   private queue: T[] = [];
 
   ended = false;
-  get(cb: (chunk: NextResult<T>) => void) {
+  get(cb: (chunk: NextChunkResult<T>) => void) {
     if (this.callback) throw new Error("重复调用");
-
-    if (this.ended) {
-      if (this.queue.length) {
-        cb({ value: this.queue.shift() as T });
-      } else cb({ done: true });
-    } else if (this.readable.readable) {
+    if (this.queue.length) cb({ value: this.queue.shift() as T });
+    else if (this.readable.closed) cb({ done: true, value: this.readable.errored });
+    else if (this.ended) this.callback = cb;
+    else {
       this.callback = cb;
       this.readable.resume();
-    } else if (this.readable.closed) {
-      cb({ done: true, value: this.readable.errored });
     }
   }
-  private callback?: (chunk: NextResult<T>) => void;
+  cancel() {
+    this.readable.off("close", this.onClear);
+    this.readable.off("end", this.onClear);
+    this.readable.off("data", this.onDataAfterEnd);
+    this.readable.off("data", this.onDataBeforeEnd);
+    const cb = this.callback;
+    this.callback = undefined;
+    this.readable.pause();
+    return cb;
+  }
+  private callback?: (chunk: NextChunkResult<T>) => void;
   constructor(
     readonly readable: Readable,
     onError: (err?: any) => void = () => {},
     public onClose?: (error?: Error | null) => void
   ) {
     readable.pause();
-    readable.on("data", this.onData);
+    if (readable.listenerCount("readable")) readable.removeAllListeners("readable"); //readable事件影响data事件
+    readable.on("data", this.onDataBeforeEnd);
     readable.on("close", this.onClear);
     readable.on("error", onError);
-    if (readable instanceof Duplex) readable.on("end", this.onClear);
+    readable.on("end", this.onClear);
     this.rawPush = readable.push;
     readable.push = this.onPush;
   }
   private onPush = (chunk: T) => {
-    if (chunk === null) {
+    if (chunk === null && !this.ended) {
       this.ended = true;
+      this.readable.on("data", this.onDataAfterEnd);
+      this.readable.off("data", this.onDataBeforeEnd);
       this.readable.resume();
     }
     return this.rawPush.call(this.readable, chunk);
   };
   private rawPush: (chunk: T) => boolean;
-  private onData = (chunk: T) => {
+  private onDataAfterEnd = (chunk: T) => {
     const cb = this.callback;
     this.callback = undefined;
-    if (this.ended) {
-      if (cb) {
-        cb({ value: chunk });
-      } else this.queue.push(chunk);
-    } else {
-      if (cb) {
-        cb({ value: chunk });
-        this.readable.pause();
-      } else throw new Error("xx");
-    }
+    if (cb) cb({ value: chunk });
+    else this.queue.push(chunk);
+  };
+  private onDataBeforeEnd = (chunk: T) => {
+    const cb = this.callback;
+    this.callback = undefined;
+    cb?.({ value: chunk });
+    this.readable.pause();
   };
 
   private onClear = () => {
-    this.readable.off("close", this.onClear);
-    this.readable.off("end", this.onClear);
-    this.readable.off("data", this.onData);
-    const cb = this.callback;
+    const cb = this.cancel();
     if (cb) {
       this.callback = undefined;
       cb({ done: true, value: this.readable.errored });

@@ -195,6 +195,17 @@ describe.concurrent(
       expect(readable.destroyed).toBeTruthy();
       expect(readable.readable).toBeFalsy();
     });
+    test("设置了readable 事件", async function () {
+      const readable = new Readable({ read(size) {} });
+      readable.on("readable", () => {});
+      readable.push(Buffer.from("abcd"));
+      readable.push(null);
+
+      const ctrl = readableToReadableStream(readable);
+      const reader = ctrl.getReader();
+
+      await expect(reader.read()).resolves.toEqual({ done: false, value: Buffer.from("abcd") });
+    });
     test("readable 直接结束", async function () {
       const { readable, stream, reader } = createReadableStream();
       setTimeout(() => readable.push(null));
