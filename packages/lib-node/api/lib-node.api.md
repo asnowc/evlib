@@ -100,7 +100,11 @@ function connect(config: TcpConnectConfig, options?: ConnectOptions): Promise<Co
 // @public (undocumented)
 class Connection extends SocketStream {
     // (undocumented)
-    $timeout: Listenable<void>;
+    $timeout: Listenable<void> & {
+        count: number;
+        emit(arg: void): number;
+        listening(listener: Function): boolean;
+    };
     constructor(socket: net_2.Socket);
     // (undocumented)
     enableNagle(enable: boolean): void;
@@ -146,7 +150,7 @@ function createByteReadable<T extends Uint8Array = Uint8Array>(readable: Readabl
 // @public (undocumented)
 function createByteReaderFromReadable(readable: Readable): {
     read: BufferReader;
-    cancel(reason?: Error): null;
+    cancel(reason?: Error): Buffer | null;
 };
 
 // @alpha (undocumented)
@@ -238,9 +242,17 @@ export { net }
 // @beta (undocumented)
 class NodeSubProcess extends SubProcess {
     // (undocumented)
-    $disconnect: Listenable<void>;
+    $disconnect: Listenable<void> & {
+        count: number;
+        emit(arg: void): number;
+        listening(listener: Function): boolean;
+    };
     // (undocumented)
-    $message: Listenable<unknown>;
+    $message: Listenable<unknown> & {
+        count: number;
+        emit(arg: unknown): number;
+        listening(listener: Function): boolean;
+    };
     constructor(nodeCps: ChildProcess);
     // (undocumented)
     get connected(): boolean;
@@ -332,9 +344,17 @@ function readAllFromStream<T>(stream: ReadableStream<T>): Promise<T[]>;
 // @public (undocumented)
 class Server {
     // (undocumented)
-    $close: Listenable<void>;
+    $close: Listenable<void> & {
+        count: number;
+        emit(arg: void): number;
+        listening(listener: Function): boolean;
+    };
     // (undocumented)
-    $error: Listenable<Error>;
+    $error: Listenable<Error> & {
+        count: number;
+        emit(arg: Error): number;
+        listening(listener: Function): boolean;
+    };
     // (undocumented)
     [Symbol.asyncDispose](): Promise<void>;
     constructor(onConn: (conn: net_2.Socket) => void, options?: TcpServerOpts | undefined);
@@ -460,8 +480,12 @@ export { stream }
 // @public (undocumented)
 interface StreamBufferViewScan {
     // (undocumented)
-    <P extends ArrayBufferView>(view: P): Promise<P>;
+    <P extends Uint8Array>(view: P): Promise<P>;
     // (undocumented)
+    <P extends Uint8Array>(view: P, safe?: boolean): Promise<P | null>;
+    // @deprecated (undocumented)
+    <P extends ArrayBufferView>(view: P): Promise<P>;
+    // @deprecated (undocumented)
     <P extends ArrayBufferView>(view: P, safe?: boolean): Promise<P | null>;
 }
 
@@ -487,12 +511,26 @@ class SubProcess {
     $close: Listenable<Readonly<{
         code: number | null;
         signal: NodeJS.Signals | null;
-    }>>;
+    }>> & {
+        count: number;
+        emit(arg: Readonly<{
+            code: number | null;
+            signal: NodeJS.Signals | null;
+        }>): number;
+        listening(listener: Function): boolean;
+    };
     // (undocumented)
     $exit: Listenable<Readonly<{
         code: number | null;
         signal: NodeJS.Signals | null;
-    }>>;
+    }>> & {
+        count: number;
+        emit(arg: Readonly<{
+            code: number | null;
+            signal: NodeJS.Signals | null;
+        }>): number;
+        listening(listener: Function): boolean;
+    };
     constructor(nodeCps: node_ps.ChildProcess);
     // (undocumented)
     readonly closed: boolean;
@@ -572,7 +610,7 @@ function writableToWritableStream<T = Uint8Array>(writable: Writable): WritableS
 
 // Warnings were encountered during analysis:
 //
-// src/stream/extra/byte_reader.ts:102:3 - (ae-forgotten-export) The symbol "BufferReader" needs to be exported by the entry point index.d.ts
+// src/stream/extra/byte_reader.ts:103:3 - (ae-forgotten-export) The symbol "BufferReader" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

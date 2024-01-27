@@ -45,24 +45,24 @@ export const Listenable: ListenableConstructor = class Listenable<T> {
 };
 
 interface ListenableConstructor {
-  new <T>(): Listenable<T> & ListenableCtrl<T>;
+  new <T>(): Listenable<T> & {
+    /**
+     * @deprecated
+     * @remarks 订阅者的数量 */
+    count: number;
+    /**
+     * @deprecated
+     * @remarks 触发事件
+     * @returns 返回监听器的数量
+     */
+    emit(arg: T): number;
+    /**
+     * @deprecated
+     * @remarks 订阅者是否已经在订阅中 */
+    listening(listener: Function): boolean;
+  };
 }
-interface ListenableCtrl<T> {
-  /**
-   * @deprecated
-   * @remarks 订阅者的数量 */
-  count: number;
-  /**
-   * @deprecated
-   * @remarks 触发事件
-   * @returns 返回监听器的数量
-   */
-  emit(arg: T): number;
-  /**
-   * @deprecated
-   * @remarks 订阅者是否已经在订阅中 */
-  listening(listener: Function): boolean;
-}
+
 /**
  * @public
  * @remarks 可订阅对象, 可通过 await 等待

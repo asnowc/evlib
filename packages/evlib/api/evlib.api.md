@@ -58,9 +58,10 @@ declare namespace core {
         setTimer,
         setInterval,
         afterTime,
+        withPromise,
         promiseHandle,
         dePromise,
-        PPPromiseHandle,
+        WithPromise,
         Listenable,
         VoidFn,
         TerminablePromise,
@@ -74,13 +75,18 @@ declare namespace core {
         pickObjectKey,
         deepClone,
         PatchObjectOpts,
-        toErrorStr
+        toErrorStr,
+        createEvent,
+        EventController
     }
 }
 export { core }
 
 // @public @deprecated (undocumented)
 const createErrDesc: typeof createTypeErrorDesc;
+
+// @public
+function createEvent<T>(): EventController<T>;
 
 // @public (undocumented)
 function createTypeErrorDesc(except: string, actual: string): string;
@@ -122,7 +128,17 @@ declare namespace errors {
 }
 export { errors }
 
+// Warning: (ae-forgotten-export) The symbol "Event" needs to be exported by the entry point index.d.ts
+//
 // @public (undocumented)
+interface EventController<T> extends Event<T> {
+    // (undocumented)
+    close(): void;
+    // (undocumented)
+    emit(data: T): number;
+}
+
+// @public @deprecated (undocumented)
 class EventEmitter<T extends EventList = {}> {
     // (undocumented)
     emit<E extends keyof T, Prams extends T[E]>(name: E, ...args: Prams): number;
@@ -190,12 +206,6 @@ const Listenable: ListenableConstructor;
 
 // @public (undocumented)
 interface Listenable<T> {
-    // (undocumented)
-    count: number;
-    // (undocumented)
-    emit(arg: T): number;
-    // (undocumented)
-    listening(listener: Function): boolean;
     // (undocumented)
     off(listener: Function): boolean;
     // (undocumented)
@@ -280,11 +290,6 @@ function pickObjectKey<P extends {}>(obj: Object, keys: (keyof P)[] | Set<keyof 
 // @public (undocumented)
 function pickObjectKey(obj: Object, keys: string[] | Set<any>, target?: Object): Record<string, unknown>;
 
-// @alpha (undocumented)
-type PPPromiseHandle<T> = PromiseHandle<T> & {
-    promise: Promise<T>;
-};
-
 // @public (undocumented)
 interface PromiseHandle<T> {
     // (undocumented)
@@ -293,11 +298,8 @@ interface PromiseHandle<T> {
     resolve(data: T): void;
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "promiseHandle" is marked as @public, but its signature references "PPPromiseHandle" which is marked as @alpha
-// Warning: (ae-incompatible-release-tags) The symbol "promiseHandle" is marked as @public, but its signature references "PPPromiseHandle" which is marked as @alpha
-//
-// @public (undocumented)
-function promiseHandle<T>(): PPPromiseHandle<T>;
+// @public @deprecated (undocumented)
+function promiseHandle<T>(): WithPromise<T>;
 
 // @public (undocumented)
 function removeUndefinedKey<T extends Obj>(obj: T, deep?: boolean): T;
@@ -403,13 +405,26 @@ interface VoidFn {
     (): void;
 }
 
+// @public (undocumented)
+interface WithPromise<T, R = any> {
+    // (undocumented)
+    promise: Promise<T>;
+    // (undocumented)
+    reject(data: R): void;
+    // (undocumented)
+    resolve(data: T): void;
+}
+
+// @public (undocumented)
+function withPromise<T, R = any, E extends object = {}>(handle?: E): WithPromise<T, R> & E;
+
 // Warnings were encountered during analysis:
 //
-// src/core/type_check.ts:321:3 - (ae-forgotten-export) The symbol "union" needs to be exported by the entry point index.d.ts
-// src/core/type_check.ts:324:3 - (ae-forgotten-export) The symbol "optional" needs to be exported by the entry point index.d.ts
-// src/core/type_check.ts:325:3 - (ae-forgotten-export) The symbol "array" needs to be exported by the entry point index.d.ts
-// src/core/type_check.ts:326:3 - (ae-forgotten-export) The symbol "record" needs to be exported by the entry point index.d.ts
-// src/core/type_check.ts:365:27 - (ae-forgotten-export) The symbol "TypeChecker" needs to be exported by the entry point index.d.ts
+// src/core/type_check.ts:326:3 - (ae-forgotten-export) The symbol "union" needs to be exported by the entry point index.d.ts
+// src/core/type_check.ts:329:3 - (ae-forgotten-export) The symbol "optional" needs to be exported by the entry point index.d.ts
+// src/core/type_check.ts:330:3 - (ae-forgotten-export) The symbol "array" needs to be exported by the entry point index.d.ts
+// src/core/type_check.ts:331:3 - (ae-forgotten-export) The symbol "record" needs to be exported by the entry point index.d.ts
+// src/core/type_check.ts:370:27 - (ae-forgotten-export) The symbol "TypeChecker" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 
