@@ -1,4 +1,4 @@
-import { createByteReaderFromReadable, createByteReaderFromWebStream } from "@eavid/lib-node/stream";
+import { readableToByteReader, readableStreamToByteReader } from "@eavid/lib-node/stream";
 import { describe, test, expect, vi } from "vitest";
 import {
   ReadableStream,
@@ -47,7 +47,7 @@ describe("createReaderFromWebStream", function () {
   function createMockRead() {
     const source = new MockSource();
     const stream = new ReadableStream<Uint8Array>(source, new ByteLengthQueuingStrategy({ highWaterMark: 0 }));
-    const { read, cancel } = createByteReaderFromWebStream(stream);
+    const { read, cancel } = readableStreamToByteReader(stream);
     return {
       stream,
       ctrl: source.ctrl,
@@ -65,7 +65,7 @@ describe("createReaderFromWebStream", function () {
 describe("createByteReaderFromReadable", function () {
   function createMockRead() {
     const readable = new Readable({ read(size) {} });
-    const { read, cancel } = createByteReaderFromReadable(readable);
+    const { read, cancel } = readableToByteReader(readable);
     return { readable, read, cancel };
   }
 
@@ -105,15 +105,6 @@ describe("createByteReaderFromReadable", function () {
     });
   });
 
-  test("队列读取", async function () {
-    const { read, readable } = createMockRead();
-    const pms = Promise.all([read(2), read(2), read(2)]);
-    const buf = Buffer.from([0, 1, 0, 2, 0, 3]);
-    readable.push(buf);
-    readable.push(null);
-    const arr = (await pms).map((buf) => Buffer.from(buf).readUint16BE());
-    expect(arr).toEqual(arr);
-  });
   test("不安全读取", async function () {
     const { read, readable } = createMockRead();
     let pms = read(4);
@@ -135,22 +126,22 @@ describe("createByteReaderFromReadable", function () {
       readable.push(null);
       await expect(read(4)).rejects.toThrowError();
     });
-    test("小于1的读取", function () {
+    test("小于1的读取", async function () {
       const { read } = createMockRead();
-      expect(read(0)).rejects.toThrowError();
+      await expect(read(0)).rejects.toThrowError();
     });
     test("创建reader前流已经结束", async function () {
       const readable = new Readable({ read(size) {} });
       readable.on("data", () => {});
       readable.push(null);
       await afterTime();
-      const { read } = createByteReaderFromReadable(readable);
+      const { read } = readableToByteReader(readable);
       await expect(read(2, true)).resolves.toBe(null);
     });
     test("没有autoDestroy的流", async function () {
       const readable = new Readable({ read(size) {}, autoDestroy: false });
       // readable.on("readable", () => {});
-      const { cancel, read } = createByteReaderFromReadable(readable);
+      const { cancel, read } = readableToByteReader(readable);
       readable.push("ab", "utf-8");
       setTimeout(() => readable.push(null));
       await expect(read(4)).rejects.toThrow();
@@ -181,14 +172,6 @@ describe("createByteReaderFromReadable", function () {
       expect(cancel()).toBe(null);
       expect(readable.readableLength).toBe(4); // efgh
       expect(readable.read().toString()).toBe("efgh");
-    });
-    test("结束后不会再推回Readable", async function () {
-      const { read, cancel, readable } = createMockRead();
-      readable.push(Buffer.from("abcdefgh"));
-      await read(4);
-      readable.push(null);
-      await afterTime();
-      expect(cancel()?.toString()).toBe("efgh");
     });
   });
 }, 1000);

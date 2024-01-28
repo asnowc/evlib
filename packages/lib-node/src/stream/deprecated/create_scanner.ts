@@ -1,6 +1,5 @@
 import { Readable } from "node:stream";
-import { createByteReaderFromReadable } from "../extra/byte_reader.js";
-import type { StreamBufferViewScan, StreamScan } from "../byte_reader.js";
+import { readableToByteReader } from "../extra/byte_reader.js";
 
 /**
  * @public
@@ -8,16 +7,22 @@ import type { StreamBufferViewScan, StreamScan } from "../byte_reader.js";
  * @deprecated 改用 createByteReaderFromReadable()
  */
 export function createScannerFromReadable<T extends Buffer = Buffer>(readable: Readable): StreamScanner<Buffer> {
-  const { cancel, read } = createByteReaderFromReadable(readable);
+  const { cancel, read } = readableToByteReader(readable);
   function readTo<T extends ArrayBufferView>(view: T): Promise<T> {
     if (!ArrayBuffer.isView(view)) throw new Error("view must be ArrayBuffer view");
-    return read(view);
+    if (view instanceof Uint8Array) return read(view);
+    const buf = new Uint8Array(view.buffer, view.byteOffset, view.byteLength);
+    return read(buf).then(() => view);
   }
+  const read2 = function read2(len: number, safe?: boolean) {
+    if (safe) return read(Buffer.allocUnsafe(len)).catch(() => null);
+    return read(Buffer.allocUnsafe(len));
+  } as StreamScanner<Buffer>["read"];
   return {
     cancel,
-    read,
+    read: read2,
     readTo,
-    nextChunk: () => read(),
+    nextChunk: () => read2(1),
   };
 }
 /**
@@ -25,9 +30,14 @@ export function createScannerFromReadable<T extends Buffer = Buffer>(readable: R
  * @deprecated 已废弃
  */
 export type StreamScanner<T extends Uint8Array = Uint8Array> = {
-  read: StreamScan<T>;
+  read: {
+    (len: number): Promise<T>;
+    (len: number, safe?: boolean): Promise<T | null>;
+  };
   /** @deprecated 改用 read(view) */
-  readTo: StreamBufferViewScan;
+  readTo: {
+    <T extends ArrayBufferView>(view: T): Promise<T>;
+  };
   /** @deprecated 改用 read() */
   nextChunk(): Promise<T | null>;
   /**

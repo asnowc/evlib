@@ -9,7 +9,7 @@ export type BufferViewInfo = {
   /** 剩余长度 */
   size: number;
 };
-export type NextChunkResult<T> = { value: T; done?: boolean } | { value?: Error | null; done: true };
+export type NextChunkResult<T> = { value: T; done?: false } | { value?: Error | null; done: true };
 
 export class ReadableQueue<T = Uint8Array> {
   private queue: T[] = [];
@@ -87,10 +87,8 @@ export class ReadableSource<T> implements UnderlyingSource {
   private syncChunkGetter: ReadableQueue<T>;
   constructor(private readable: Readable, type?: "bytes") {
     this.syncChunkGetter = new ReadableQueue(readable);
-    this.type = type;
-    if (type === "bytes") {
-      // this.queue = bytesQueueHandler as any;
-    }
+    if (type !== "bytes")
+      this.bytesQueueHandler = (ctrl: ReadableStreamController<T>, chunk) => ctrl.enqueue(chunk as T);
   }
   start(ctrl: ReadableStreamController<T>) {
     const readable = this.readable;
@@ -111,7 +109,7 @@ export class ReadableSource<T> implements UnderlyingSource {
       if (chunk.done) {
         if (chunk.value) ctrl.error(chunk.value);
         else ctrl.close();
-      } else ctrl.enqueue(chunk.value);
+      } else this.bytesQueueHandler(ctrl, chunk.value as any);
     });
   }
   /** cancel将销毁可读流 */
@@ -119,7 +117,21 @@ export class ReadableSource<T> implements UnderlyingSource {
     this.syncChunkGetter.onClose = undefined; //反正cancel 后重复调用 controller.close() 和  controller.error()
     this.readable.destroy(reason);
   }
-  type: any;
+  /** 可读字节流chunk处理，避免将 node 的 Buffer 的底层 转移*/
+  bytesQueueHandler(ctrl: ReadableByteStreamController | ReadableStreamController<T>, chunk: Uint8Array) {
+    const byobRequest = (ctrl as any).byobRequest as ReadableStreamBYOBRequest | undefined;
+    if (byobRequest) {
+      if (chunk.buffer === fastArrayBuffer) {
+        const buffer = new Uint8Array(chunk.byteLength);
+        buffer.set(chunk);
+        chunk = buffer;
+      }
+      byobRequest.respondWithNewView(chunk);
+      byobRequest.respond(chunk.byteLength);
+    } else {
+      ctrl.enqueue(chunk as any);
+    }
+  }
 }
 interface ReadableStreamBYOBRequest {
   readonly view: ArrayBufferView | null;
@@ -128,22 +140,5 @@ interface ReadableStreamBYOBRequest {
 }
 
 const fastArrayBuffer = Buffer.allocUnsafe(1).buffer;
-/** 可读字节流chunk处理，避免将 node 的 Buffer 的底层 转移*/
-function bytesQueueHandler(
-  this: ReadableSource<ArrayBufferLike>,
-  ctrl: ReadableByteStreamController,
-  chunk: Uint8Array
-) {
-  if (chunk.buffer === fastArrayBuffer) {
-    const buffer = new Uint8Array(chunk.byteLength);
-    buffer.set(chunk);
-    chunk = buffer;
-  }
-  const byobRequest = ctrl.byobRequest as unknown as ReadableStreamBYOBRequest | null;
-  if (byobRequest) {
-    byobRequest.respondWithNewView(chunk as any);
-    byobRequest.respond(chunk.byteLength);
-  } else {
-    ctrl.enqueue(chunk);
-  }
-}
+
+export const nodeReadableLock = Symbol("nodeReadableLock");

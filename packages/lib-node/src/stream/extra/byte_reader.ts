@@ -1,209 +1,238 @@
 import { Readable } from "node:stream";
 import type { ByteReader } from "../byte_reader.js";
-import { ReadableQueue, NextChunkResult } from "../transform/readable_core.js";
 import { ReadableStream, ReadableStreamDefaultReadResult } from "node:stream/web";
-import { resolveChunk, WaitingQueue } from "../byte_stream/abstract_byte_stream.js";
+import { WithPromise, withPromise } from "evlib";
+import { NumericalRangeError } from "evlib/errors";
+import { nodeReadableLock } from "../transform/readable_core.js";
+type WaitingPromise = WithPromise<Uint8Array | null> & {
+  buf?: Uint8Array;
+  offset: number;
+  safe?: boolean;
+};
 
 /**
- * @alpha
+ * @public
  * @remarks 创建对 Readable 的 StreamScanner
  */
-export function createByteReaderFromWebStream<T extends Uint8Array>(
+export function readableStreamToByteReader<T extends Uint8Array>(
   stream: ReadableStream<T>
-): { read: ByteReader<T>; cancel(reason?: Error): T | null } {
+): { read: ByteReader; cancel(reason?: Error): Uint8Array | null } {
   const readable = stream.getReader();
+  let noMoreErr: Error | undefined;
+  let waitCtrl = new WaitingCtrl<Uint8Array>();
 
-  let ended = false;
-  let errored: Error | undefined;
-  let residueChunk: T | undefined;
-  const queue: WaitingQueue[] = [];
-
-  function read(): Promise<null | T>;
-  function read(size: number): Promise<Uint8Array>;
-  function read(size: number, safe?: boolean): Promise<Uint8Array | null>;
-  function read<P extends ArrayBufferView>(size: P): Promise<P | null>;
-  function read<P extends ArrayBufferView>(size: P, safe?: boolean): Promise<P | null>;
-  function read<P extends ArrayBufferView>(
-    view?: number | Uint8Array | P,
-    safe?: boolean
-  ): Promise<Uint8Array | P | null> {
-    if (ended) {
-      if (view === undefined || safe) Promise.resolve(null);
-      else Promise.reject(errored);
-    }
-    if (errored) Promise.reject(errored);
-
-    return new Promise<P | Uint8Array | null>(function (resolve, reject) {
-      if (view === undefined) {
-        queue.push({ resolve, reject, safe: true });
-        return;
+  function read(len_view: number): Promise<Uint8Array>;
+  function read(len_view: number, safe?: boolean): Promise<Uint8Array | null>;
+  function read(len_view: Uint8Array): Promise<Uint8Array>;
+  function read(len_view: Uint8Array, safe?: boolean): Promise<Uint8Array | null>;
+  function read(len_view?: number | Uint8Array, safe?: boolean): Promise<Uint8Array | null> {
+    if (waitCtrl.wait) return Promise.reject(new Error("前一个异步读取解决之前不能再继续调用"));
+    else if (noMoreErr) return safe ? Promise.resolve(null) : Promise.reject(noMoreErr);
+    if (typeof len_view === "number") {
+      if (len_view <= 0) return Promise.reject(new NumericalRangeError(0));
+      const data = waitCtrl.checkResidue(len_view);
+      if (data) return Promise.resolve(data);
+      len_view = new Uint8Array(len_view);
+    } else if (len_view instanceof Uint8Array) {
+      const data = waitCtrl.checkResidue(len_view.byteLength);
+      if (data) {
+        len_view.set(data);
+        return Promise.resolve(len_view);
       }
-      let buf: Uint8Array;
-      if (typeof view === "number") {
-        if (view > 0) {
-          buf = new Uint8Array(view);
-          view = buf;
-        } else throw new Error("size must be greater than 0");
-      } else {
-        buf = view instanceof Uint8Array ? view : new Uint8Array(view.buffer, view.byteOffset, view.byteLength);
-      }
-      queue.push({ resolve, reject, safe, viewInfo: { buf, view, offset: 0, size: view.byteLength } });
-      if (queue.length === 1) readNext();
-    });
+    } else len_view = undefined;
+    const promise = waitCtrl.createWait(len_view, safe);
+    readNext();
+    return promise;
   }
 
   async function readNext() {
-    while (queue[0]) {
-      let res: ReadableStreamDefaultReadResult<T>;
-      if (residueChunk) {
-        residueChunk = resolveChunk(queue, residueChunk);
-      } else {
-        res = await readable.read().catch((e) => ({ done: true, value: e }));
-        if (res.done) {
-          ended = true;
-          return cancel(res.value ?? new Error("no more data"));
-        }
-        residueChunk = resolveChunk(queue, res.value);
-      }
+    if (!waitCtrl.wait) return;
+    let res: ReadableStreamDefaultReadResult<T>;
+    while (true) {
+      res = await readable.read().catch((e) => ({ done: true, value: e }));
+      if (res.done) break;
+      if (waitCtrl.set(waitCtrl.wait, res.value)) return;
     }
+    noMoreErr = res.value ?? createNoMoreDataErr();
+    waitCtrl.reject(noMoreErr);
   }
 
-  function cancel(reason = new Error("Reader has be cancel")): null | T {
-    if (errored) {
-      for (const item of queue) {
-        item.reject(errored);
-      }
-    } else {
-      errored = reason;
-      for (const item of queue) {
-        if (item.safe) item.resolve(null);
-        else item.reject(reason);
-      }
-    }
-    queue.length = 0;
+  function cancel(reason = new Error("Reader has be cancel")): null | Uint8Array {
+    waitCtrl.reject(reason);
     readable.releaseLock();
-    return residueChunk ?? null;
+    return waitCtrl.takeResidue();
   }
 
   return { cancel, read };
 }
-interface BufferReader extends ByteReader<Buffer> {
-  /** 读取一个 chunk */
-  (): Promise<Buffer | null>;
-  /** @remarks 读取指定长度，如果Stream不足该长度，则抛出异常 */
-  (len: number): Promise<Buffer>;
-  /** @remarks 安全读取指定长度，如果Stream不足该长度，则返回 null */
-  (len: number, safe?: boolean): Promise<Buffer | null>;
-}
+
 /**
  * @public
  * @remarks 创建对 Readable 的 Scanner. 它不监听 readable 的 error 事件
  */
-export function createByteReaderFromReadable(readable: Readable): {
-  read: BufferReader;
+export function readableToByteReader(stream: Readable): {
+  read: ByteReader;
   cancel(reason?: Error): Buffer | null;
 } {
-  const getter = new ReadableQueue<Buffer>(readable);
-  const queue: WaitingQueue[] = [];
-  let residueChunk: Buffer | undefined;
+  if (Object.hasOwn(stream, nodeReadableLock)) throw new Error("Readable 被锁定");
+  Object.defineProperty(stream, nodeReadableLock, {
+    value: true,
+    writable: true,
+    configurable: true,
+    enumerable: false,
+  });
+
   let noMoreErr: Error | undefined;
+  let wait: WaitingPromise | undefined;
 
-  function read(): Promise<Buffer | null>;
-  function read(size: number): Promise<Buffer>;
-  function read(size: number, safe?: boolean): Promise<Buffer | null>;
-  function read<R extends ArrayBufferView>(view: R): Promise<R>;
-  function read<R extends ArrayBufferView>(view: R, safe?: boolean): Promise<R | null>;
-  function read(view?: number | ArrayBufferView, safe?: boolean): Promise<Buffer | null> {
-    return new Promise<unknown>(function (resolve, reject) {
-      const item: WaitingQueue = { resolve, reject };
-      if (noMoreErr) return safe ? resolve(null) : reject(noMoreErr);
-
-      if (view === undefined) {
-        item.safe = true;
-      } else if (typeof view === "number") {
-        if (view <= 0) return reject(new Error("size must be greater than 0"));
-        item.safe = Boolean(safe);
-        const rawView = Buffer.alloc(view);
-        item.viewInfo = {
-          view: rawView,
-          buf: rawView,
-          offset: 0,
-          size: view,
-        };
-      } else if (ArrayBuffer.isView(view)) {
-        if (view.byteLength <= 0) return reject(new Error("buffer view length must be greater than 0"));
-        item.safe = Boolean(safe);
-        const buf = view instanceof Buffer ? view : Buffer.from(view.buffer, view.byteOffset, view.byteLength);
-
-        item.viewInfo = {
-          buf,
-          view,
-          offset: 0,
-          size: view.byteLength,
-        };
-      } else {
-        return reject(
-          new Error("Parameter 1 should be of type undefined, number, or a ArrayBufferView. Actual:" + typeof view)
-        );
+  function read(len_view: number): Promise<Uint8Array>;
+  function read(len_view: number, safe?: boolean): Promise<Uint8Array | null>;
+  function read(len_view: Uint8Array): Promise<Uint8Array>;
+  function read(len_view: Uint8Array, safe?: boolean): Promise<Uint8Array | null>;
+  function read(len_view?: number | Uint8Array, safe?: boolean): Promise<Uint8Array | null> {
+    if (wait) return Promise.reject(new Error("前一个异步读取解决之前不能再继续调用"));
+    else if (noMoreErr) return safe ? Promise.resolve(null) : Promise.reject(noMoreErr);
+    if (typeof len_view === "number") {
+      if (len_view <= 0) return Promise.reject(new NumericalRangeError(0));
+      const len = len_view;
+      if (stream.readableLength >= len) return Promise.resolve(stream.read(len));
+      len_view = new Uint8Array(len);
+    } else if (len_view instanceof Uint8Array) {
+      if (stream.readableLength >= len_view.byteLength) {
+        const chunk = stream.read(len_view.byteLength);
+        len_view.set(chunk);
+        return Promise.resolve(len_view);
       }
-
-      queue.push(item);
-      if (queue.length === 1) readNext();
-    }) as Promise<Buffer | null>;
+    } else len_view = undefined;
+    const item = withPromise<Uint8Array | null, any, any>({ buf: len_view, offset: 0, safe });
+    wait = item;
+    return item.promise;
   }
-
-  async function readNext() {
-    while (queue[0]) {
-      let res: NextChunkResult<Buffer>;
-      if (residueChunk) {
-        residueChunk = resolveChunk(queue, residueChunk);
-      } else if (!readable.readable) {
-        return onNoMore(readable.errored!);
-      } else {
-        res = await next();
-        if (res.done) {
-          return onNoMore(res.value as Error | undefined);
-        }
-        residueChunk = resolveChunk(queue, res.value);
+  function onReadable() {
+    if (!wait) return;
+    if (!wait.buf) {
+      const chunk: Buffer = stream.read();
+      if (chunk) wait.resolve(chunk);
+      return;
+    }
+    let need = wait.buf.byteLength - wait.offset;
+    if (stream.readableLength >= need) {
+      wait.buf.set(stream.read(need)!, wait.offset);
+      wait.resolve(wait.buf);
+      wait = undefined;
+    } else {
+      const chunk: Buffer = stream.read();
+      if (chunk) {
+        wait.buf.set(chunk, wait.offset);
+        wait.offset += chunk.byteLength;
       }
     }
   }
-  const next = () => {
-    return new Promise<NextChunkResult<Buffer>>((resolve, reject) => {
-      getter.get(resolve);
-    });
-  };
-  function onNoMore(error?: Error) {
-    noMoreErr = error ? error : createNoMoreDataErr();
-    getter.cancel();
-    rejectQueue(queue, noMoreErr);
+  function onEnd() {
+    noMoreErr = stream.errored ?? createNoMoreDataErr();
+    clear();
+    rejectWait(noMoreErr);
   }
-
-  if (!readable.readable) noMoreErr = readable.errored ?? createNoMoreDataErr();
+  stream.pause();
+  function rejectWait(reason: Error) {
+    if (wait) {
+      if (wait.safe) wait.resolve(null);
+      else wait.reject(reason);
+      wait = undefined;
+    }
+  }
+  function clear() {
+    stream.off("readable", onReadable);
+    stream.off("end", onEnd);
+    stream.off("close", onEnd);
+    stream.off("close", onError);
+    Reflect.deleteProperty(stream, nodeReadableLock);
+  }
+  const onError = () => {};
+  if (stream.readable) {
+    stream.on("readable", onReadable);
+    stream.on("end", onEnd);
+    stream.on("close", onEnd);
+    stream.on("error", onError);
+  } else noMoreErr = stream.errored ?? createNoMoreDataErr();
 
   return {
-    cancel(reason = new Error("Reader has be cancel")): null | Buffer {
-      onNoMore(reason);
-      if (residueChunk && readable.readable) {
-        readable.unshift(residueChunk);
-        return null;
-      }
-      let returnChunk = residueChunk;
-      residueChunk = undefined;
-
-      return returnChunk === undefined ? null : returnChunk;
+    cancel(reason = new Error("Reader has be cancel")): null {
+      clear();
+      rejectWait(reason);
+      return null;
     },
     read,
   };
 }
+/**
+ * @public
+ * @deprecated 改用 readableToByteReader
+ */
+export const createByteReaderFromReadable = readableToByteReader;
 function createNoMoreDataErr() {
   return new Error("no more data");
 }
 
-function rejectQueue(queue: WaitingQueue[], reason: Error) {
-  for (let i = 0; i < queue.length; i++) {
-    let item = queue[i];
-    if (item.safe) item.resolve(null);
-    else item.reject(reason);
+class WaitingCtrl<T extends Uint8Array> {
+  wait?: WaitingPromise;
+  private residueChunk: Uint8Array | undefined;
+
+  set(wait: WaitingPromise, chunk: Uint8Array): boolean {
+    if (!wait.buf) {
+      if (this.residueChunk) {
+        wait.resolve(this.residueChunk);
+        this.residueChunk = chunk;
+      } else {
+        wait.resolve(chunk);
+      }
+      this.wait = undefined;
+      return true;
+    }
+    let need = wait.buf.byteLength - wait.offset;
+    if (chunk.byteLength > need) {
+      wait.buf.set(chunk.subarray(0, need));
+      wait.resolve(wait.buf);
+      this.residueChunk = chunk.subarray(need);
+      return true;
+    } else if (chunk.byteLength === need) {
+      wait.buf.set(chunk, wait.offset);
+      wait.resolve(wait.buf);
+      return true;
+    } else {
+      wait.buf.set(chunk, wait.offset);
+      wait.offset += chunk.byteLength;
+      return false;
+    }
+  }
+  createWait(buf?: T, safe?: boolean) {
+    this.wait = withPromise({ buf, safe, offset: 0 });
+    return this.wait!.promise;
+  }
+  checkResidue(len: number) {
+    let residueChunk = this.residueChunk;
+    if (residueChunk) {
+      if (residueChunk.byteLength === len) {
+        let data = residueChunk;
+        residueChunk = undefined;
+        return data;
+      } else if (residueChunk.byteLength > len) {
+        let data = residueChunk.subarray(0, len);
+        this.residueChunk = residueChunk.subarray(len);
+        return data;
+      }
+    }
+  }
+  reject(reason?: any) {
+    this.wait?.reject(reason);
+    this.wait = undefined;
+  }
+  takeResidue() {
+    const data = this.residueChunk;
+    if (data) {
+      this.residueChunk = undefined;
+      return data;
+    }
+    return null;
   }
 }

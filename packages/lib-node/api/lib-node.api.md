@@ -64,8 +64,7 @@ interface ByteReadable<T extends Uint8Array = Uint8Array> {
 }
 
 // @public (undocumented)
-interface ByteReader<T extends Uint8Array = Uint8Array> extends StreamBufferViewScan {
-    (): Promise<T | null>;
+interface ByteReader extends StreamBufferViewScan {
     // (undocumented)
     (len: number): Promise<Uint8Array>;
     // (undocumented)
@@ -147,17 +146,8 @@ function connectSocket(config: TcpConnectConfig | PipeConfig, options?: ConnectO
 // @public (undocumented)
 function createByteReadable<T extends Uint8Array = Uint8Array>(readable: ReadableStream): ByteReadable<T>;
 
-// @public (undocumented)
-function createByteReaderFromReadable(readable: Readable): {
-    read: BufferReader;
-    cancel(reason?: Error): Buffer | null;
-};
-
-// @alpha (undocumented)
-function createByteReaderFromWebStream<T extends Uint8Array>(stream: ReadableStream<T>): {
-    read: ByteReader<T>;
-    cancel(reason?: Error): T | null;
-};
+// @public @deprecated (undocumented)
+const createByteReaderFromReadable: typeof readableToByteReader;
 
 // @public (undocumented)
 function createByteWritable<T extends Uint8Array = Uint8Array>(writable: WritableStream): ByteWritable<T>;
@@ -336,6 +326,18 @@ function readableRead(stream: Readable_2, len: number, abortSignal?: AbortSignal
 function readableReadAll<T>(stream: Readable_2, abortSignal?: AbortSignal): Promise<T[]>;
 
 // @public (undocumented)
+function readableStreamToByteReader<T extends Uint8Array>(stream: ReadableStream<T>): {
+    read: ByteReader;
+    cancel(reason?: Error): Uint8Array | null;
+};
+
+// @public (undocumented)
+function readableToByteReader(stream: Readable): {
+    read: ByteReader;
+    cancel(reason?: Error): Buffer | null;
+};
+
+// @public (undocumented)
 function readableToReadableStream<T = Uint8Array>(readable: Readable): ReadableStream<T>;
 
 // @public (undocumented)
@@ -469,7 +471,8 @@ declare namespace stream {
         PipeSourceError,
         PipeTargetError,
         BridgingError,
-        createByteReaderFromWebStream,
+        readableStreamToByteReader,
+        readableToByteReader,
         createByteReaderFromReadable,
         readableToReadableStream,
         writableToWritableStream
@@ -480,27 +483,28 @@ export { stream }
 // @public (undocumented)
 interface StreamBufferViewScan {
     // (undocumented)
-    <P extends Uint8Array>(view: P): Promise<P>;
+    <T extends Uint8Array = Uint8Array>(view: T): Promise<T>;
     // (undocumented)
-    <P extends Uint8Array>(view: P, safe?: boolean): Promise<P | null>;
-    // @deprecated (undocumented)
-    <P extends ArrayBufferView>(view: P): Promise<P>;
-    // @deprecated (undocumented)
-    <P extends ArrayBufferView>(view: P, safe?: boolean): Promise<P | null>;
+    <T extends Uint8Array = Uint8Array>(view: T, safe?: boolean): Promise<T | null>;
 }
 
 // @public (undocumented)
-interface StreamScan<T extends Uint8Array = Uint8Array> {
+interface StreamScan {
     // (undocumented)
-    (len: number): Promise<T>;
+    (len: number): Promise<Uint8Array>;
     // (undocumented)
-    (len: number, safe?: boolean): Promise<T | null>;
+    (len: number, safe?: boolean): Promise<Uint8Array | null>;
 }
 
 // @public @deprecated (undocumented)
 type StreamScanner<T extends Uint8Array = Uint8Array> = {
-    read: StreamScan<T>;
-    readTo: StreamBufferViewScan;
+    read: {
+        (len: number): Promise<T>;
+        (len: number, safe?: boolean): Promise<T | null>;
+    };
+    readTo: {
+        <T extends ArrayBufferView>(view: T): Promise<T>;
+    };
     nextChunk(): Promise<T | null>;
     cancel(reason?: any): null | T;
 };
@@ -607,10 +611,6 @@ interface WritableHandle<T> {
 
 // @public (undocumented)
 function writableToWritableStream<T = Uint8Array>(writable: Writable): WritableStream<T>;
-
-// Warnings were encountered during analysis:
-//
-// src/stream/extra/byte_reader.ts:103:3 - (ae-forgotten-export) The symbol "BufferReader" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 
