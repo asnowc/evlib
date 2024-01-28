@@ -31,24 +31,12 @@ jobs:
       - name: Check api
         if: ${{matrix.node-version==20 && github.ref_name=='main'}}
         run: pnpm ci:api-extractor
-      - name: Setup Deno
-        if: ${{matrix.node-version==20 && github.ref_name=='main'}}
-        uses: denoland/setup-deno@v1
-        with:
-          deno-version: v1.x
-      - name: Check tags
-        if: ${{matrix.node-version==20 && github.ref_name=='main'}}
-        uses: asnowc/actions@deno-script/v1
+      - name: Check Tags
         id: check_tag
+        uses: asnowc/actions@check-tags/v1
         with:
-          script: |
-            import { writeNewTagsToOutput } from "https://cdn.jsdelivr.net/gh/dnpack/action-script@0.3.x/cmd/github_repo.ts";
-            import { getWorkspaceTagMap } from "https://cdn.jsdelivr.net/gh/dnpack/action-script@0.3.x/cmd/package.ts";
-
-            const tagMap = await getWorkspaceTagMap();
-            const tags = Object.keys(tagMap);
-            await writeNewTagsToOutput(tags, "return");
-          args: -A
+          file: .
+          preset: pnpm-workspace
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   publish:
