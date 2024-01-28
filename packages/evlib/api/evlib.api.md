@@ -7,6 +7,14 @@
 // @public (undocumented)
 function afterTime(time?: number): TerminablePromise<void>;
 
+declare namespace async {
+    export {
+        InquiryRequest,
+        PassiveDataCollector
+    }
+}
+export { async }
+
 // @public (undocumented)
 const autoUnit: {
     byte(number: number, raids?: number, unit?: "B" | "KB" | "MB" | "GB" | "TB" | "PB"): string;
@@ -199,6 +207,17 @@ type InferExcept<T> = T extends string ? InferBaseMap[T] : T extends any[] ? Inf
     [key in keyof T]: InferExcept<T[key]>;
 } : unknown;
 
+// @alpha (undocumented)
+class InquiryRequest<AcceptReturn = unknown, RejectReturn = unknown, AcceptArgs extends any[] = [], RejectArgs extends any[] = []> {
+    constructor(acceptCb: (...args: AcceptArgs) => AcceptReturn, rejectCb: (...args: RejectArgs) => RejectReturn);
+    // (undocumented)
+    accept(...args: AcceptArgs): AcceptReturn;
+    // (undocumented)
+    reject(...args: RejectArgs): RejectReturn;
+    // (undocumented)
+    get status(): boolean | undefined;
+}
+
 // Warning: (ae-forgotten-export) The symbol "ListenableConstructor" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
@@ -239,7 +258,7 @@ class NotImplementedError extends Error {
 }
 
 // @public (undocumented)
-class NumericalRangeError extends Error {
+class NumericalRangeError extends RangeError {
     constructor(min?: number, max?: number, valueName?: string);
 }
 
@@ -272,6 +291,18 @@ function paseExponentNum(num: number, carry: number[]): ExponentFormat;
 function paseModMeta(meta: {
     url: string;
 }): ModuleMeta;
+
+// @alpha
+class PassiveDataCollector<T, R = void, N = void> {
+    // (undocumented)
+    close(data: R): void;
+    // (undocumented)
+    getAsyncGen(): AsyncGenerator<T, R, N>;
+    // (undocumented)
+    lock: boolean;
+    // (undocumented)
+    yield(data: T): Promise<N>;
+}
 
 // Warning: (ae-forgotten-export) The symbol "Obj" needs to be exported by the entry point index.d.ts
 //
