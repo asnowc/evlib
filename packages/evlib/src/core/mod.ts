@@ -8,4 +8,3 @@ export * from "./type.js";
 export * from "./enum.js";
 export * from "./object.js";
 export * from "./to_string.js";
-export * from "./event_controller.js";

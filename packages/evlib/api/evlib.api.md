@@ -70,7 +70,10 @@ declare namespace core {
         promiseHandle,
         dePromise,
         WithPromise,
+        createEvent,
         Listenable,
+        EventController,
+        EventCenter,
         VoidFn,
         TerminablePromise,
         PromiseHandle,
@@ -83,9 +86,7 @@ declare namespace core {
         pickObjectKey,
         deepClone,
         PatchObjectOpts,
-        toErrorStr,
-        createEvent,
-        EventController
+        toErrorStr
     }
 }
 export { core }
@@ -94,7 +95,7 @@ export { core }
 const createErrDesc: typeof createTypeErrorDesc;
 
 // @public
-function createEvent<T>(): EventController<T>;
+function createEvent<T, E = T>(): EventCenter<T, E>;
 
 // @public (undocumented)
 function createTypeErrorDesc(except: string, actual: string): string;
@@ -136,14 +137,19 @@ declare namespace errors {
 }
 export { errors }
 
-// Warning: (ae-forgotten-export) The symbol "Event" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "AsyncEvent" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-interface EventController<T> extends Event<T> {
+type EventCenter<T, E = T> = EventController<T, E> & AsyncEvent<T> & Listenable<T, E>;
+
+// @public (undocumented)
+interface EventController<T, E = T> {
     // (undocumented)
-    close(): void;
+    close(data?: T, reject?: boolean): void;
     // (undocumented)
-    emit(data: T): number;
+    emit(data: T, reject?: false): number;
+    // (undocumented)
+    emit(data: E, reject: true): number;
 }
 
 // @public @deprecated (undocumented)
@@ -224,15 +230,19 @@ class InquiryRequest<AcceptReturn = unknown, RejectReturn = unknown, AcceptArgs 
 const Listenable: ListenableConstructor;
 
 // @public (undocumented)
-interface Listenable<T> {
+interface Listenable<T, E = T> {
     // (undocumented)
-    off(listener: Function): boolean;
+    done: boolean;
+    // Warning: (ae-forgotten-export) The symbol "Fn_2" needs to be exported by the entry point index.d.ts
+    //
     // (undocumented)
-    on<R extends Listener<T>>(listener: R): R;
+    off(listener: Fn_2): boolean;
+    // (undocumented)
+    on<R extends Listener<T, E>>(listener: R): R;
     // Warning: (ae-forgotten-export) The symbol "Listener" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
-    then<R extends Listener<T>>(listener: R): R;
+    then<R extends Listener<T, E>>(listener: R): R;
 }
 
 declare namespace math {

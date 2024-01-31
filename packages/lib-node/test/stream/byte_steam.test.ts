@@ -149,7 +149,7 @@ describe("byteReadable", function () {
         await expect(reader.pipeTo(pipeTarget), "管道 reject").rejects.toBe(err);
         expect(pipeTarget.close, "目标应调用关闭方法").not.toBeCalled();
         expect(reader.readableClosed, "源应关闭").toBeTruthy();
-        expect(onErr).toBeCalledWith(err);
+        expect(onErr).toBeCalledWith(err, false);
       });
       test("阻止传输异常到目标(abort())", async function () {
         const { reader } = createMockRead<Buffer>();
