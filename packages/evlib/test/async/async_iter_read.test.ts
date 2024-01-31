@@ -5,11 +5,19 @@ describe("PassiveDataCollector", function () {
   test("迭代被动解决", async function () {
     const collector = new PassiveDataCollector<number, number>();
     const gen = collector.getAsyncGen();
-    setTimeout(() => collector.yield(4));
+    setTimeout(() => {
+      collector.yield(4);
+      collector.yield(3);
+      collector.yield(2);
+    });
     await expect(getGen(gen.next())).resolves.toBe(4);
-    setTimeout(() => collector.yield(3));
     await expect(getGen(gen.next())).resolves.toBe(3);
-    setTimeout(() => collector.close(0));
+    await expect(getGen(gen.next())).resolves.toBe(2);
+    setTimeout(() => {
+      collector.yield(4);
+      setTimeout(() => collector.close(0));
+    });
+    await expect(getGen(gen.next())).resolves.toBe(4);
     await expect(getGen(gen.next())).resolves.toBe(0);
   });
 
@@ -48,7 +56,7 @@ describe("PassiveDataCollector", function () {
     }
     expect(list).toEqual([4, 3, 2]);
   });
-});
+}, 500);
 function getGen<T, R>(pms: Promise<IteratorResult<T, R>>) {
   return pms.then((val) => val.value);
 }

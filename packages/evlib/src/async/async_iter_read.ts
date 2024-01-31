@@ -42,12 +42,7 @@ export class PassiveDataCollector<T, R = void, N = void> {
     }
     this.result = data;
   }
-  /**
-   * @remarks 获取异步迭代器, 在异步迭代器关闭前再次调用会抛出异常.
-   * @returns 返回这个异步迭代器的 next() 必须按顺序调用. 否则抛出异常 */
-  async *getAsyncGen(): AsyncGenerator<T, R, N> {
-    if (this.lock) throw new Error("locked");
-    this.lock = true;
+  private *yieldCache() {
     let ret: N;
     while (this.head) {
       try {
@@ -59,6 +54,16 @@ export class PassiveDataCollector<T, R = void, N = void> {
       this.head = this.head.next;
     }
     this.last = undefined;
+  }
+  /**
+   * @remarks 获取异步迭代器, 在异步迭代器关闭前再次调用会抛出异常.
+   * @returns 返回这个异步迭代器的 next() 必须按顺序调用. 否则抛出异常 */
+  async *getAsyncGen(): AsyncGenerator<T, R, N> {
+    if (this.lock) throw new Error("locked");
+    this.lock = true;
+    let ret: N;
+    if (this.head) yield* this.yieldCache();
+
     while (!this.closed) {
       try {
         this.wait = withPromise({ nextData: ret! });
@@ -67,6 +72,7 @@ export class PassiveDataCollector<T, R = void, N = void> {
         this.lock = false;
         return r as R;
       }
+      if (this.head) yield* this.yieldCache();
     }
     this.lock = false;
     return this.result!;
