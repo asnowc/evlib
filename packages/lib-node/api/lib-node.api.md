@@ -9,6 +9,7 @@
 import { ChildProcess } from 'node:child_process';
 import type * as dgram from 'node:dgram';
 import { Duplex } from 'node:stream';
+import { EventController } from 'evlib';
 import { Listenable } from 'evlib';
 import * as net_2 from 'node:net';
 import * as node_ps from 'node:child_process';
@@ -99,10 +100,9 @@ function connect(config: TcpConnectConfig, options?: ConnectOptions): Promise<Co
 // @public (undocumented)
 class Connection extends SocketStream {
     // (undocumented)
-    $timeout: Listenable<void> & {
+    $timeout: Listenable<void, void> & EventController<void, void> & {
         count: number;
-        emit(arg: void): number;
-        listening(listener: Function): boolean;
+        listening(listener: (...args: any[]) => any): boolean;
     };
     constructor(socket: net_2.Socket);
     // (undocumented)
@@ -232,16 +232,14 @@ export { net }
 // @beta (undocumented)
 class NodeSubProcess extends SubProcess {
     // (undocumented)
-    $disconnect: Listenable<void> & {
+    $disconnect: Listenable<void, void> & EventController<void, void> & {
         count: number;
-        emit(arg: void): number;
-        listening(listener: Function): boolean;
+        listening(listener: (...args: any[]) => any): boolean;
     };
     // (undocumented)
-    $message: Listenable<unknown> & {
+    $message: Listenable<unknown, unknown> & EventController<unknown, unknown> & {
         count: number;
-        emit(arg: unknown): number;
-        listening(listener: Function): boolean;
+        listening(listener: (...args: any[]) => any): boolean;
     };
     constructor(nodeCps: ChildProcess);
     // (undocumented)
@@ -346,16 +344,14 @@ function readAllFromStream<T>(stream: ReadableStream<T>): Promise<T[]>;
 // @public (undocumented)
 class Server {
     // (undocumented)
-    $close: Listenable<void> & {
+    $close: Listenable<void, void> & EventController<void, void> & {
         count: number;
-        emit(arg: void): number;
-        listening(listener: Function): boolean;
+        listening(listener: (...args: any[]) => any): boolean;
     };
     // (undocumented)
-    $error: Listenable<Error> & {
+    $error: Listenable<Error, Error> & EventController<Error, Error> & {
         count: number;
-        emit(arg: Error): number;
-        listening(listener: Function): boolean;
+        listening(listener: (...args: any[]) => any): boolean;
     };
     // (undocumented)
     [Symbol.asyncDispose](): Promise<void>;
@@ -515,25 +511,35 @@ class SubProcess {
     $close: Listenable<Readonly<{
         code: number | null;
         signal: NodeJS.Signals | null;
+    }>, Readonly<{
+        code: number | null;
+        signal: NodeJS.Signals | null;
+    }>> & EventController<Readonly<{
+    code: number | null;
+    signal: NodeJS.Signals | null;
+    }>, Readonly<{
+    code: number | null;
+    signal: NodeJS.Signals | null;
     }>> & {
         count: number;
-        emit(arg: Readonly<{
-            code: number | null;
-            signal: NodeJS.Signals | null;
-        }>): number;
-        listening(listener: Function): boolean;
+        listening(listener: (...args: any[]) => any): boolean;
     };
     // (undocumented)
     $exit: Listenable<Readonly<{
         code: number | null;
         signal: NodeJS.Signals | null;
+    }>, Readonly<{
+        code: number | null;
+        signal: NodeJS.Signals | null;
+    }>> & EventController<Readonly<{
+    code: number | null;
+    signal: NodeJS.Signals | null;
+    }>, Readonly<{
+    code: number | null;
+    signal: NodeJS.Signals | null;
     }>> & {
         count: number;
-        emit(arg: Readonly<{
-            code: number | null;
-            signal: NodeJS.Signals | null;
-        }>): number;
-        listening(listener: Function): boolean;
+        listening(listener: (...args: any[]) => any): boolean;
     };
     constructor(nodeCps: node_ps.ChildProcess);
     // (undocumented)

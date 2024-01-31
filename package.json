@@ -8,7 +8,7 @@
     "test:coverage": "vitest --coverage --ui",
     "ci:build": "pnpm -r ci:build",
     "ci:api-extractor": "pnpm -r ci:api-extractor",
-    "ci:test": "vitest run --coverage",
+    "ci:test": "vitest run",
     "publish:try": "pnpm  publish --tag beta --no-git-checks --dry-run -r"
   },
   "devDependencies": {
