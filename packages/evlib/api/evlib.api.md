@@ -10,7 +10,10 @@ function afterTime(time?: number): TerminablePromise<void>;
 declare namespace async {
     export {
         InquiryRequest,
-        PassiveDataCollector
+        PassiveDataCollector,
+        ByteParser,
+        LengthByteParser,
+        StepsByteParser
     }
 }
 export { async }
@@ -19,6 +22,22 @@ export { async }
 const autoUnit: {
     byte(number: number, raids?: number, unit?: "B" | "KB" | "MB" | "GB" | "TB" | "PB"): string;
 };
+
+// @alpha (undocumented)
+abstract class ByteParser<T> {
+    // (undocumented)
+    finish(): {
+        value: T;
+        residue?: Uint8Array;
+    };
+    // (undocumented)
+    abstract next(chunk: Uint8Array): boolean;
+    // (undocumented)
+    protected result?: {
+        value: T;
+        residue?: Uint8Array;
+    };
+}
 
 // @public @deprecated (undocumented)
 const checkFnFactor: {
@@ -224,6 +243,15 @@ class InquiryRequest<AcceptReturn = unknown, RejectReturn = unknown, AcceptArgs 
     get status(): boolean | undefined;
 }
 
+// @alpha (undocumented)
+class LengthByteParser extends ByteParser<Uint8Array> {
+    constructor(total: number);
+    // (undocumented)
+    next(buf: Uint8Array): boolean;
+    // (undocumented)
+    readonly total: number;
+}
+
 // Warning: (ae-forgotten-export) The symbol "ListenableConstructor" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
@@ -359,6 +387,18 @@ function setInterval(fn: VoidFn, intervalTime?: number): () => void;
 
 // @public (undocumented)
 function setTimer(fn: VoidFn, timeout?: number): () => void;
+
+// @alpha (undocumented)
+class StepsByteParser<T> extends ByteParser<T> {
+    constructor(opts: {
+        first: ByteParser<any>;
+        final?: (data: any) => T;
+    }, ...steps: ((data: any) => ByteParser<any>)[]);
+    // (undocumented)
+    next(chunk: Uint8Array): boolean;
+    // (undocumented)
+    step: number;
+}
 
 // @public (undocumented)
 interface TerminablePromise<T> extends Promise<T> {
