@@ -1,13 +1,18 @@
 /** @alpha */
-export abstract class ByteParser<T> {
+export abstract class ByteParser<T> implements BySteps<T> {
   abstract next(chunk: Uint8Array): boolean;
-  protected result?: { value: T; residue?: Uint8Array };
-  finish(): { value: T; residue?: Uint8Array } {
+  protected result?: ParserResult<T>;
+  finish(): ParserResult<T> {
     const result = this.result;
     if (!result) throw new Error("unfinished");
     this.result = undefined;
     return result;
   }
+}
+type ParserResult<T> = { value: T; residue?: Uint8Array };
+interface BySteps<T> {
+  next(chunk: Uint8Array): boolean;
+  finish(): ParserResult<T>;
 }
 
 /** @alpha */
@@ -51,10 +56,7 @@ export class LengthByteParser extends ByteParser<Uint8Array> {
 }
 /** @alpha */
 export class StepsByteParser<T> extends ByteParser<T> {
-  constructor(
-    opts: { first: ByteParser<any>; final?: (data: any) => T },
-    ...steps: ((data: any) => ByteParser<any>)[]
-  ) {
+  constructor(opts: { first: BySteps<any>; final?: (data: any) => T }, ...steps: ((data: any) => BySteps<any>)[]) {
     super();
     this.first = opts.first;
     this.current = opts.first;

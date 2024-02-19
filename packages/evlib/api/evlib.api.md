@@ -23,20 +23,18 @@ const autoUnit: {
     byte(number: number, raids?: number, unit?: "B" | "KB" | "MB" | "GB" | "TB" | "PB"): string;
 };
 
+// Warning: (ae-forgotten-export) The symbol "BySteps" needs to be exported by the entry point index.d.ts
+//
 // @alpha (undocumented)
-abstract class ByteParser<T> {
+abstract class ByteParser<T> implements BySteps<T> {
     // (undocumented)
-    finish(): {
-        value: T;
-        residue?: Uint8Array;
-    };
+    finish(): ParserResult<T>;
     // (undocumented)
     abstract next(chunk: Uint8Array): boolean;
+    // Warning: (ae-forgotten-export) The symbol "ParserResult" needs to be exported by the entry point index.d.ts
+    //
     // (undocumented)
-    protected result?: {
-        value: T;
-        residue?: Uint8Array;
-    };
+    protected result?: ParserResult<T>;
 }
 
 // @public @deprecated (undocumented)
@@ -391,9 +389,9 @@ function setTimer(fn: VoidFn, timeout?: number): () => void;
 // @alpha (undocumented)
 class StepsByteParser<T> extends ByteParser<T> {
     constructor(opts: {
-        first: ByteParser<any>;
+        first: BySteps<any>;
         final?: (data: any) => T;
-    }, ...steps: ((data: any) => ByteParser<any>)[]);
+    }, ...steps: ((data: any) => BySteps<any>)[]);
     // (undocumented)
     next(chunk: Uint8Array): boolean;
     // (undocumented)
