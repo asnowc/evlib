@@ -61,6 +61,7 @@ export type CreateIpcServerOpts = Omit<IpcServerOpts, "path">;
 
 /** @public */
 export class Server {
+  /** @alpha */
   static listen(onConn: (conn: Connection) => void, options?: TcpServerOpts): Promise<Server>;
   static listen(onConn: (conn: SocketStream) => void, options?: IpcServerOpts): Promise<Server>;
   static async listen(onConn: (conn: any) => void, options: TcpServerOpts | IpcServerOpts = {}) {

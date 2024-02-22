@@ -20,9 +20,4 @@ export interface StreamBufferViewScan {
 }
 
 /** @public */
-export interface ByteReader extends StreamBufferViewScan {
-  /** @remarks 读取指定长度，如果Stream不足该长度，则抛出异常 */
-  (len: number): Promise<Uint8Array>;
-  /** @remarks 安全读取指定长度，如果Stream不足该长度，则返回 null */
-  (len: number, safe?: boolean): Promise<Uint8Array | null>;
-}
+export type ByteReader = StreamScan & StreamBufferViewScan;

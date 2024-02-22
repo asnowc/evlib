@@ -9,6 +9,7 @@
 import { ChildProcess } from 'node:child_process';
 import type * as dgram from 'node:dgram';
 import { Duplex } from 'node:stream';
+import { EventCenter } from 'evlib';
 import { EventController } from 'evlib';
 import { Listenable } from 'evlib';
 import * as net_2 from 'node:net';
@@ -17,7 +18,6 @@ import * as NodeStream from 'node:stream';
 import { Readable } from 'node:stream';
 import type { Readable as Readable_2 } from 'stream';
 import { ReadableStream } from 'node:stream/web';
-import { StreamPipeOptions } from 'node:stream/web';
 import { Writable } from 'node:stream';
 import { WritableStream } from 'node:stream/web';
 
@@ -41,52 +41,7 @@ interface BridgingOptions {
 }
 
 // @public (undocumented)
-interface ByteReadable<T extends Uint8Array = Uint8Array> {
-    // (undocumented)
-    $readableClosed: Listenable<Error | null>;
-    // (undocumented)
-    [Symbol.asyncIterator](): AsyncGenerator<T>;
-    // (undocumented)
-    cancel(reason?: any): Promise<void>;
-    // (undocumented)
-    pipeTo(target: WritableHandle<T>, options?: StreamPipeOptions): Promise<void>;
-    // (undocumented)
-    read(): Promise<T | null>;
-    // (undocumented)
-    read(size: number): Promise<Uint8Array>;
-    // (undocumented)
-    read(size: number, safe?: boolean): Promise<Uint8Array | null>;
-    // (undocumented)
-    read<R extends ArrayBufferView>(buffer: R): Promise<R>;
-    // (undocumented)
-    read<R extends ArrayBufferView>(buffer: R, safe?: boolean): Promise<R | null>;
-    // (undocumented)
-    readonly readableClosed: boolean;
-}
-
-// @public (undocumented)
-interface ByteReader extends StreamBufferViewScan {
-    // (undocumented)
-    (len: number): Promise<Uint8Array>;
-    // (undocumented)
-    (len: number, safe?: boolean): Promise<Uint8Array | null>;
-}
-
-// @public (undocumented)
-interface ByteWritable<T extends Uint8Array = Uint8Array> {
-    // (undocumented)
-    $writableClosed: Listenable<Error | null>;
-    // (undocumented)
-    abort(reason?: Error): Promise<void>;
-    // (undocumented)
-    close(): Promise<void>;
-    // (undocumented)
-    readonly desiredSize: number | null;
-    // (undocumented)
-    readonly writableClosed: boolean;
-    // (undocumented)
-    write(chunk: T): Promise<void>;
-}
+type ByteReader = StreamScan & StreamBufferViewScan;
 
 // @public (undocumented)
 type ClosedState = Readonly<{
@@ -97,7 +52,7 @@ type ClosedState = Readonly<{
 // @alpha (undocumented)
 function connect(config: TcpConnectConfig, options?: ConnectOptions): Promise<Connection>;
 
-// @public (undocumented)
+// @alpha (undocumented)
 class Connection extends SocketStream {
     // (undocumented)
     $timeout: Listenable<void, void> & EventController<void, void> & {
@@ -143,14 +98,8 @@ function connectPipe(config: PipeConfig, options?: ConnectOptions): Promise<Sock
 // @public (undocumented)
 function connectSocket(config: TcpConnectConfig | PipeConfig, options?: ConnectOptions): Promise<net_2.Socket>;
 
-// @public (undocumented)
-function createByteReadable<T extends Uint8Array = Uint8Array>(readable: ReadableStream): ByteReadable<T>;
-
 // @public @deprecated (undocumented)
 const createByteReaderFromReadable: typeof readableToByteReader;
-
-// @public (undocumented)
-function createByteWritable<T extends Uint8Array = Uint8Array>(writable: WritableStream): ByteWritable<T>;
 
 // @public (undocumented)
 type CreateIpcServerOpts = Omit<IpcServerOpts, "path">;
@@ -366,8 +315,11 @@ class Server {
     get fd(): number | Object;
     // (undocumented)
     get keepCount(): number;
-    // (undocumented)
+    // @alpha (undocumented)
     static listen(onConn: (conn: Connection) => void, options?: TcpServerOpts): Promise<Server>;
+    // Warning: (ae-incompatible-release-tags) The symbol "listen" is marked as @public, but its signature references "SocketStream" which is marked as @alpha
+    // Warning: (ae-incompatible-release-tags) The symbol "listen" is marked as @public, but its signature references "SocketStream" which is marked as @alpha
+    //
     // (undocumented)
     static listen(onConn: (conn: SocketStream) => void, options?: IpcServerOpts): Promise<Server>;
     // (undocumented)
@@ -394,7 +346,7 @@ interface ServerListenOpts {
 
 // Warning: (ae-forgotten-export) The symbol "DuplexStream" needs to be exported by the entry point index.d.ts
 //
-// @public (undocumented)
+// @alpha (undocumented)
 class SocketStream extends DuplexStream<Buffer> {
     constructor(socket: net_2.Socket);
     // (undocumented)
@@ -448,11 +400,6 @@ interface SpawnSyncResult {
 declare namespace stream {
     export {
         readAllFromStream,
-        WritableHandle,
-        ByteReadable,
-        ByteWritable,
-        createByteReadable,
-        createByteWritable,
         StreamScan,
         StreamBufferViewScan,
         ByteReader,
@@ -603,16 +550,6 @@ interface TcpServerOpts extends ServerOpts {
     port?: number;
     // (undocumented)
     type?: "TCP";
-}
-
-// @public (undocumented)
-interface WritableHandle<T> {
-    // (undocumented)
-    abort?(reason?: Error): void | Promise<void>;
-    // (undocumented)
-    close?(): void | Promise<void>;
-    // (undocumented)
-    write(chunk: T): Promise<void> | void;
 }
 
 // @public (undocumented)
