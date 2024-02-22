@@ -162,11 +162,13 @@ type EventCenter<T, E = T> = EventController<T, E> & AsyncEvent<T> & Listenable<
 // @public (undocumented)
 interface EventController<T, E = T> {
     // (undocumented)
-    close(data?: T, reject?: boolean): void;
+    close(): void;
     // (undocumented)
-    emit(data: T, reject?: false): number;
+    emit(data: T): number;
+    // @deprecated (undocumented)
+    emit(data: E | T, reject: boolean): number;
     // (undocumented)
-    emit(data: E, reject: true): number;
+    emitError(data: E): number;
 }
 
 // @public @deprecated (undocumented)

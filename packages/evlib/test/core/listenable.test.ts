@@ -79,7 +79,7 @@ describe("Listenable", function () {
     });
     test("emit error", function () {
       listenable.on(listener);
-      listenable.emit(8, true);
+      listenable.emitError(8);
       expect(listener).toBeCalledWith(8, true);
     });
     test("close", function () {

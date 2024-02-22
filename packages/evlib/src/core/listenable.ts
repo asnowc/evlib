@@ -10,7 +10,7 @@ export const Listenable: ListenableConstructor = class Listenable<T, E> {
     return this.#queue.size;
   }
   done = false;
-  emit(arg: any, error: any): any;
+  emit(arg: T | E, error?: boolean): any;
   emit(arg: T | E, error = false) {
     const once = this.#once;
     this.#once = new Set();
@@ -24,6 +24,9 @@ export const Listenable: ListenableConstructor = class Listenable<T, E> {
       this.#queue.delete(fn);
     }
     return size;
+  }
+  emitError(arg: E): number {
+    return this.emit(arg, true);
   }
 
   then(listener: any): any;
@@ -102,13 +105,15 @@ export interface EventController<T, E = T> {
    * @remarks 触发事件
    * @returns 返回监听器的数量
    */
-  emit(data: T, reject?: false): number;
+  emit(data: T): number;
   /**
+   * @deprecated 已弃用
    * @remarks 触发事件
    * @returns 返回监听器的数量
    */
-  emit(data: E, reject: true): number;
-  close(data?: T, reject?: boolean): void;
+  emit(data: E | T, reject: boolean): number;
+  emitError(data: E): number;
+  close(): void;
 }
 interface AsyncEvent<T> {
   (): Promise<T>;
@@ -142,8 +147,8 @@ export function createEvent<T, E = T>(): EventCenter<T, E> {
     for (const item of asyncListeners) item.reject(createDoneError());
     asyncListeners.clear();
   };
-  const emit: EventController<T, E>["emit"] = function emit(data, reject = false): number {
-    return listenable.emit(data, reject as any) + emitAsync(data as any, reject);
+  const emit: EventController<T, E>["emit"] = function emit(data, reject: boolean = false): number {
+    return listenable.emit(data, reject) + emitAsync(data as any, reject);
   };
 
   Object.defineProperty(asyncEvent, "done", {
@@ -154,6 +159,7 @@ export function createEvent<T, E = T>(): EventCenter<T, E> {
   asyncEvent.off = listenable.off.bind(listenable);
   asyncEvent.on = listenable.on.bind(listenable);
   asyncEvent.then = listenable.then.bind(listenable);
+  asyncEvent.emitError = listenable.emitError.bind(listenable);
   asyncEvent.emit = emit;
   asyncEvent.close = close;
 
