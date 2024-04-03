@@ -4,10 +4,9 @@ import { ReadableStream, ReadableStreamDefaultReadResult } from "node:stream/web
 import { WithPromise, withPromise } from "evlib";
 import { NumericalRangeError } from "evlib/errors";
 import { nodeReadableLock } from "../transform/readable_core.js";
-type WaitingPromise = WithPromise<Uint8Array | null> & {
+type WaitingPromise = WithPromise<Uint8Array> & {
   buf?: Uint8Array;
   offset: number;
-  safe?: boolean;
 };
 
 /**
@@ -22,8 +21,10 @@ export function readableStreamToByteReader<T extends Uint8Array>(
   let waitCtrl = new WaitingCtrl<Uint8Array>();
 
   function read(len_view: number): Promise<Uint8Array>;
+  /** @deprecated 使用 .catch(()=>null) 代替 */
   function read(len_view: number, safe?: boolean): Promise<Uint8Array | null>;
   function read(len_view: Uint8Array): Promise<Uint8Array>;
+  /** @deprecated 使用 .catch(()=>null) 代替 */
   function read(len_view: Uint8Array, safe?: boolean): Promise<Uint8Array | null>;
   function read(len_view?: number | Uint8Array, safe?: boolean): Promise<Uint8Array | null> {
     if (waitCtrl.wait) return Promise.reject(new Error("前一个异步读取解决之前不能再继续调用"));
@@ -40,8 +41,9 @@ export function readableStreamToByteReader<T extends Uint8Array>(
         return Promise.resolve(len_view);
       }
     } else len_view = undefined;
-    const promise = waitCtrl.createWait(len_view, safe);
+    const promise = waitCtrl.createWait(len_view);
     readNext();
+    if (safe) return promise.catch(() => null);
     return promise;
   }
 
@@ -86,8 +88,10 @@ export function readableToByteReader(stream: Readable): {
   let wait: WaitingPromise | undefined;
 
   function read(len_view: number): Promise<Uint8Array>;
+  /** @deprecated 使用 .catch(()=>null) 代替 */
   function read(len_view: number, safe?: boolean): Promise<Uint8Array | null>;
   function read(len_view: Uint8Array): Promise<Uint8Array>;
+  /** @deprecated 使用 .catch(()=>null) 代替 */
   function read(len_view: Uint8Array, safe?: boolean): Promise<Uint8Array | null>;
   function read(len_view?: number | Uint8Array, safe?: boolean): Promise<Uint8Array | null> {
     if (wait) return Promise.reject(new Error("前一个异步读取解决之前不能再继续调用"));
@@ -104,8 +108,9 @@ export function readableToByteReader(stream: Readable): {
         return Promise.resolve(len_view);
       }
     } else len_view = undefined;
-    const item = withPromise<Uint8Array | null, any, any>({ buf: len_view, offset: 0, safe });
+    const item = withPromise<Uint8Array | null, any, any>({ buf: len_view, offset: 0 });
     wait = item;
+    if (safe) return item.promise.catch(() => null);
     return item.promise;
   }
   function onReadable() {
@@ -136,8 +141,7 @@ export function readableToByteReader(stream: Readable): {
   stream.pause();
   function rejectWait(reason: Error) {
     if (wait) {
-      if (wait.safe) wait.resolve(null);
-      else wait.reject(reason);
+      wait.reject(reason);
       wait = undefined;
     }
   }
@@ -205,8 +209,8 @@ class WaitingCtrl<T extends Uint8Array> {
       return false;
     }
   }
-  createWait(buf?: T, safe?: boolean) {
-    this.wait = withPromise({ buf, safe, offset: 0 });
+  createWait(buf?: T) {
+    this.wait = withPromise({ buf, offset: 0 });
     return this.wait!.promise;
   }
   checkResidue(len: number) {

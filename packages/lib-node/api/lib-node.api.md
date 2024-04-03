@@ -41,7 +41,16 @@ interface BridgingOptions {
 }
 
 // @public (undocumented)
-type ByteReader = StreamScan & StreamBufferViewScan;
+interface ByteReader {
+    // (undocumented)
+    (len: number): Promise<Uint8Array>;
+    // (undocumented)
+    <T extends Uint8Array = Uint8Array>(view: T): Promise<T>;
+    // @deprecated (undocumented)
+    (len: number, safe?: boolean): Promise<Uint8Array | null>;
+    // @deprecated (undocumented)
+    <T extends Uint8Array = Uint8Array>(view: T, safe?: boolean): Promise<T | null>;
+}
 
 // @public (undocumented)
 type ClosedState = Readonly<{
@@ -423,7 +432,7 @@ declare namespace stream {
 }
 export { stream }
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 interface StreamBufferViewScan {
     // (undocumented)
     <T extends Uint8Array = Uint8Array>(view: T): Promise<T>;
@@ -431,7 +440,7 @@ interface StreamBufferViewScan {
     <T extends Uint8Array = Uint8Array>(view: T, safe?: boolean): Promise<T | null>;
 }
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 interface StreamScan {
     // (undocumented)
     (len: number): Promise<Uint8Array>;
