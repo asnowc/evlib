@@ -51,7 +51,7 @@ describe("createReaderFromWebStream", function () {
     const source = new MockSource();
     const stream = new ReadableStream<Uint8Array>(
       source,
-      new ByteLengthQueuingStrategy({ highWaterMark: 0 }),
+      new ByteLengthQueuingStrategy({ highWaterMark: 0 })
     );
     const { read, cancel } = readableStreamToByteReader(stream);
     return {
@@ -81,18 +81,17 @@ describe("createByteReaderFromReadable", function () {
       readable.push(Buffer.from("abcdefghij"));
       readable.push(null);
       await expect(
-        read(Buffer.alloc(4)).then((buf) => buf.toString()),
+        read(Buffer.alloc(4)).then((buf) => buf.toString())
       ).resolves.toBe("abcd");
       await expect(
-        read(Buffer.alloc(2)).then((buf) => buf.toString()),
+        read(Buffer.alloc(2)).then((buf) => buf.toString())
       ).resolves.toBe("ef");
       await expect(
-        read(Buffer.alloc(2)).then((buf) => buf.toString()),
+        read(Buffer.alloc(2)).then((buf) => buf.toString())
       ).resolves.toBe("gh");
       await expect(
-        read(Buffer.alloc(2)).then((buf) => buf.toString()),
+        read(Buffer.alloc(2)).then((buf) => buf.toString())
       ).resolves.toBe("ij");
-      await expect(read(Buffer.alloc(2), true)).resolves.toBe(null);
     });
     test("需要等待多个chunk", async function () {
       const { read, readable } = createMockRead();
@@ -106,13 +105,13 @@ describe("createByteReaderFromReadable", function () {
       }
       await expect(pms.then((buf) => buf.toString())).resolves.toBe("abcd");
       await expect(
-        read(Buffer.alloc(2)).then((buf) => buf.toString()),
+        read(Buffer.alloc(2)).then((buf) => buf.toString())
       ).resolves.toBe("ee");
     });
     test("等待的chunk足够下一个分段", async function () {
       const { read, readable } = createMockRead();
       const p1 = expect(
-        read(Buffer.alloc(4)).then((buf) => buf.toString()),
+        read(Buffer.alloc(4)).then((buf) => buf.toString())
       ).resolves.toBe("abcd");
       readable.push(Buffer.from("ab"));
       await afterTime();
@@ -120,7 +119,7 @@ describe("createByteReaderFromReadable", function () {
       readable.push(null);
       await p1;
       await expect(
-        read(Buffer.alloc(4)).then((buf) => buf.toString()),
+        read(Buffer.alloc(4)).then((buf) => buf.toString())
       ).resolves.toBe("efgh");
     });
   });
@@ -133,13 +132,6 @@ describe("createByteReaderFromReadable", function () {
     await expect(pms).rejects.toThrowError();
   });
 
-  test("安全读取", async function () {
-    const { read, readable } = createMockRead();
-    let pms = read(4, true);
-    readable.push(Buffer.allocUnsafe(2));
-    readable.push(null);
-    await expect(pms).resolves.toBe(null);
-  });
   describe("异常", function () {
     test("结束的流继续读取", async function () {
       const { read, readable } = createMockRead();
@@ -156,7 +148,7 @@ describe("createByteReaderFromReadable", function () {
       readable.push(null);
       await afterTime();
       const { read } = readableToByteReader(readable);
-      await expect(read(2, true)).resolves.toBe(null);
+      await expect(read(2)).rejects.toThrowError();
     });
     test("没有autoDestroy的流", async function () {
       const readable = new Readable({ read(size) {}, autoDestroy: false });

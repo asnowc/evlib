@@ -23,7 +23,7 @@ describe.concurrent("byteDuplex", function () {
     // duplex.push(null);
 
     setTimeout(() => duplex.push(null));
-    await expect(dpStream.read(1, true)).resolves.toBeNull();
+    await expect(dpStream.read(1)).rejects.toThrowError();
 
     await dpStream.watchClose();
     expect(dpStream.closed).toBeTruthy();
@@ -39,11 +39,11 @@ describe.concurrent("byteDuplex", function () {
     expect(dpStream.closed, "duplexStream closed").toBeTruthy();
     expect(
       dpStream.writableClosed,
-      "duplexStream.writable closed",
+      "duplexStream.writable closed"
     ).toBeTruthy();
     expect(
       dpStream.readableClosed,
-      "duplexStream.readable closed",
+      "duplexStream.readable closed"
     ).toBeTruthy();
     expect(res).toBe(err);
 

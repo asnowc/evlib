@@ -17,29 +17,18 @@ type WaitingPromise = WithPromise<Uint8Array> & {
  * @remarks 创建对 Readable 的 StreamScanner
  */
 export function readableStreamToByteReader<T extends Uint8Array>(
-  stream: ReadableStream<T>,
+  stream: ReadableStream<T>
 ): { read: ByteReader; cancel(reason?: Error): Uint8Array | null } {
   const readable = stream.getReader();
   let noMoreErr: Error | undefined;
   let waitCtrl = new WaitingCtrl<Uint8Array>();
 
   function read(len_view: number): Promise<Uint8Array>;
-  /** @deprecated 使用 .catch(()=>null) 代替 */
-  function read(len_view: number, safe?: boolean): Promise<Uint8Array | null>;
   function read(len_view: Uint8Array): Promise<Uint8Array>;
-  /** @deprecated 使用 .catch(()=>null) 代替 */
-  function read(
-    len_view: Uint8Array,
-    safe?: boolean,
-  ): Promise<Uint8Array | null>;
-  function read(
-    len_view?: number | Uint8Array,
-    safe?: boolean,
-  ): Promise<Uint8Array | null> {
+  function read(len_view: number | Uint8Array): Promise<Uint8Array | null> {
     if (waitCtrl.wait)
       return Promise.reject(new Error("前一个异步读取解决之前不能再继续调用"));
-    else if (noMoreErr)
-      return safe ? Promise.resolve(null) : Promise.reject(noMoreErr);
+    else if (noMoreErr) return Promise.reject(noMoreErr);
     if (typeof len_view === "number") {
       if (len_view <= 0) return Promise.reject(new NumericalRangeError(0));
       const data = waitCtrl.checkResidue(len_view);
@@ -51,10 +40,9 @@ export function readableStreamToByteReader<T extends Uint8Array>(
         len_view.set(data);
         return Promise.resolve(len_view);
       }
-    } else len_view = undefined;
+    }
     const promise = waitCtrl.createWait(len_view);
     readNext();
-    if (safe) return promise.catch(() => null);
     return promise;
   }
 
@@ -71,7 +59,7 @@ export function readableStreamToByteReader<T extends Uint8Array>(
   }
 
   function cancel(
-    reason = new Error("Reader has be cancel"),
+    reason = new Error("Reader has be cancel")
   ): null | Uint8Array {
     waitCtrl.reject(reason);
     readable.releaseLock();
@@ -102,22 +90,11 @@ export function readableToByteReader(stream: Readable): {
   let wait: WaitingPromise | undefined;
 
   function read(len_view: number): Promise<Uint8Array>;
-  /** @deprecated 使用 .catch(()=>null) 代替 */
-  function read(len_view: number, safe?: boolean): Promise<Uint8Array | null>;
   function read(len_view: Uint8Array): Promise<Uint8Array>;
-  /** @deprecated 使用 .catch(()=>null) 代替 */
-  function read(
-    len_view: Uint8Array,
-    safe?: boolean,
-  ): Promise<Uint8Array | null>;
-  function read(
-    len_view?: number | Uint8Array,
-    safe?: boolean,
-  ): Promise<Uint8Array | null> {
+  function read(len_view: number | Uint8Array): Promise<Uint8Array | null> {
     if (wait)
       return Promise.reject(new Error("前一个异步读取解决之前不能再继续调用"));
-    else if (noMoreErr)
-      return safe ? Promise.resolve(null) : Promise.reject(noMoreErr);
+    else if (noMoreErr) return Promise.reject(noMoreErr);
     if (typeof len_view === "number") {
       if (len_view <= 0) return Promise.reject(new NumericalRangeError(0));
       const len = len_view;
@@ -130,13 +107,12 @@ export function readableToByteReader(stream: Readable): {
         len_view.set(chunk);
         return Promise.resolve(len_view);
       }
-    } else len_view = undefined;
+    }
     const item = withPromise<Uint8Array | null, any, any>({
       buf: len_view,
       offset: 0,
     });
     wait = item;
-    if (safe) return item.promise.catch(() => null);
     return item.promise;
   }
   function onReadable() {
@@ -195,11 +171,6 @@ export function readableToByteReader(stream: Readable): {
     read,
   };
 }
-/**
- * @public
- * @deprecated 改用 readableToByteReader
- */
-export const createByteReaderFromReadable = readableToByteReader;
 function createNoMoreDataErr() {
   return new Error("no more data");
 }
