@@ -54,7 +54,7 @@ class EventTriggerImpl<T>
 }
 
 interface EventTriggerConstructor {
-  new <T>(): Listenable<T> & OnceListenable<T> & EventTriggerController<T>;
+  new <T>(): EventTrigger<T>;
 }
 /** @public */
 export const EventTrigger: EventTriggerConstructor = EventTriggerImpl;
@@ -158,7 +158,7 @@ export class OnceEventTrigger<T> implements OnceListenable<T> {
     this.#asyncListeners.delete(key);
     item.signalListener?.signal.removeEventListener(
       "abort",
-      item.signalListener,
+      item.signalListener
     );
     return true;
   }
@@ -177,7 +177,7 @@ export class OnceEventTrigger<T> implements OnceListenable<T> {
       handle.resolve(arg);
       handle.signalListener?.signal.removeEventListener(
         "abort",
-        handle.signalListener,
+        handle.signalListener
       );
     }
     this.#asyncListeners.clear();
@@ -190,7 +190,7 @@ export class OnceEventTrigger<T> implements OnceListenable<T> {
       handle.reject(err);
       handle.signalListener?.signal.removeEventListener(
         "abort",
-        handle.signalListener,
+        handle.signalListener
       );
     }
     this.#asyncListeners.clear();

@@ -100,8 +100,6 @@ export class Connection extends SocketStream {
    * @remarks timeout 事件
    */
   readonly timeoutEvent = new EventTrigger<void>();
-  /** @deprecated 改用 timeoutEvent */
-  readonly $timeout = this.timeoutEvent;
 }
 
 /**
@@ -134,7 +132,7 @@ export interface ConnectOptions {
  */
 export function connect(config: TcpConnectConfig, options?: ConnectOptions) {
   return connectSocket(config, options).then(
-    (socket) => new Connection(socket),
+    (socket) => new Connection(socket)
   );
 }
 /**
@@ -143,7 +141,7 @@ export function connect(config: TcpConnectConfig, options?: ConnectOptions) {
  */
 export function connectSocket(
   config: TcpConnectConfig | PipeConfig,
-  options?: ConnectOptions,
+  options?: ConnectOptions
 ): Promise<net.Socket>;
 export function connectSocket(config: any, options: ConnectOptions = {}) {
   return new Promise<net.Socket>((resolve, reject) => {
@@ -188,7 +186,7 @@ export function connectSocket(config: any, options: ConnectOptions = {}) {
       function () {
         clear();
         resolve(socket);
-      },
+      }
     );
     socket.once("error", onReject);
   });
@@ -214,9 +212,9 @@ export interface PipeConfig {
  */
 export function connectPipe(
   config: PipeConfig,
-  options: ConnectOptions = {},
+  options: ConnectOptions = {}
 ): Promise<SocketStream> {
   return connectSocket(config, options).then(
-    (socket) => new SocketStream(socket),
+    (socket) => new SocketStream(socket)
   );
 }

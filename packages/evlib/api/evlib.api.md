@@ -439,11 +439,11 @@ function withPromise<T, R = any, E extends object = {}>(handle?: E): WithPromise
 
 // Warnings were encountered during analysis:
 //
-// src/core/type_check.ts:297:25 - (ae-forgotten-export) The symbol "TypeChecker" needs to be exported by the entry point index.d.ts
-// src/core/type_check.ts:322:3 - (ae-forgotten-export) The symbol "union" needs to be exported by the entry point index.d.ts
-// src/core/type_check.ts:323:3 - (ae-forgotten-export) The symbol "optional" needs to be exported by the entry point index.d.ts
-// src/core/type_check.ts:324:3 - (ae-forgotten-export) The symbol "array" needs to be exported by the entry point index.d.ts
-// src/core/type_check.ts:325:3 - (ae-forgotten-export) The symbol "record" needs to be exported by the entry point index.d.ts
+// src/core/type_check.ts:370:25 - (ae-forgotten-export) The symbol "TypeChecker" needs to be exported by the entry point index.d.ts
+// src/core/type_check.ts:402:3 - (ae-forgotten-export) The symbol "union" needs to be exported by the entry point index.d.ts
+// src/core/type_check.ts:403:3 - (ae-forgotten-export) The symbol "optional" needs to be exported by the entry point index.d.ts
+// src/core/type_check.ts:404:3 - (ae-forgotten-export) The symbol "array" needs to be exported by the entry point index.d.ts
+// src/core/type_check.ts:405:3 - (ae-forgotten-export) The symbol "record" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

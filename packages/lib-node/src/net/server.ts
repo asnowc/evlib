@@ -64,15 +64,15 @@ export class Server {
   /** @alpha */
   static listen(
     onConn: (conn: Connection) => void,
-    options?: TcpServerOpts,
+    options?: TcpServerOpts
   ): Promise<Server>;
   static listen(
     onConn: (conn: SocketStream) => void,
-    options?: IpcServerOpts,
+    options?: IpcServerOpts
   ): Promise<Server>;
   static async listen(
     onConn: (conn: any) => void,
-    options: TcpServerOpts | IpcServerOpts = {},
+    options: TcpServerOpts | IpcServerOpts = {}
   ) {
     const type = options.type;
     const onSocketConnect =
@@ -86,19 +86,19 @@ export class Server {
 
   constructor(
     onConn: (conn: net.Socket) => void,
-    options?: TcpServerOpts | undefined,
+    options?: TcpServerOpts | undefined
   );
   constructor(
     onConn: (conn: net.Socket) => void,
-    options?: IpcServerOpts | undefined,
+    options?: IpcServerOpts | undefined
   );
   constructor(
     onConn: (conn: net.Socket) => void,
-    options?: TcpServerOpts | IpcServerOpts | undefined,
+    options?: TcpServerOpts | IpcServerOpts | undefined
   );
   constructor(
     onConn: (conn: net.Socket) => void,
-    options: TcpServerOpts | IpcServerOpts = {},
+    options: TcpServerOpts | IpcServerOpts = {}
   ) {
     if (typeof onConn !== "function")
       throw new Error("onConnection must be a function");
@@ -112,8 +112,8 @@ export class Server {
 
     const server = new net.Server(serverOpts);
     this.#server = server;
-    server.on("close", () => this.$close.emit());
-    server.on("error", (err: Error) => this.$error.emit(err));
+    server.on("close", () => this.closeEvent.emit());
+    server.on("error", (err: Error) => this.errorEvent.emit(err));
 
     {
       let listenOpts: net.ListenOptions;
@@ -152,14 +152,10 @@ export class Server {
   #options: net.ListenOptions;
   #server = new net.Server();
   watchClose(signal?: AbortSignal) {
-    return this.$close.getPromise(signal);
+    return this.closeEvent.getPromise(signal);
   }
   readonly closeEvent = new OnceEventTrigger<void>();
   readonly errorEvent = new EventTrigger<Error>();
-  /** @deprecated 改用 closeEvent */
-  readonly $close = this.closeEvent;
-  /** @deprecated 改用 errorEvent */
-  readonly $error = this.errorEvent;
   /* c8 ignore next 3 */
   ref() {
     this.#server.ref();

@@ -17,7 +17,7 @@ export function fork(file: string, options: SpawnOptions = {}) {
   return rawSpawn(
     exePath,
     { ...options, args: [file, ...args] },
-    { nodeIPC: true },
+    { nodeIPC: true }
   ).then((cps) => new NodeSubProcess(cps));
 }
 
@@ -31,8 +31,6 @@ export class NodeSubProcess extends SubProcess {
     nodeCps.on("disconnect", () => this.disconnectEvent.emit());
   }
   readonly messageEvent = new EventTrigger<unknown>();
-  /** @deprecated 改用messageEvent  */
-  readonly $message = this.messageEvent;
   protected readonly disconnectEvent = new OnceEventTrigger<void>();
   watchDisconnect(signal?: AbortSignal) {
     return this.disconnectEvent.getPromise(signal);

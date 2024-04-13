@@ -9,14 +9,13 @@
 import { ChildProcess } from 'node:child_process';
 import type * as dgram from 'node:dgram';
 import { Duplex } from 'node:stream';
-import { EventCenter } from 'evlib';
-import { EventController } from 'evlib';
-import { Listenable } from 'evlib';
+import { EventTrigger } from 'evlib';
 import * as net_2 from 'node:net';
 import * as node_ps from 'node:child_process';
 import * as NodeStream from 'node:stream';
-import { Readable } from 'node:stream';
-import type { Readable as Readable_2 } from 'stream';
+import { OnceEventTrigger } from 'evlib';
+import type { Readable } from 'stream';
+import { Readable as Readable_2 } from 'node:stream';
 import { ReadableStream } from 'node:stream/web';
 import { Writable } from 'node:stream';
 import { WritableStream } from 'node:stream/web';
@@ -46,10 +45,6 @@ interface ByteReader {
     (len: number): Promise<Uint8Array>;
     // (undocumented)
     <T extends Uint8Array = Uint8Array>(view: T): Promise<T>;
-    // @deprecated (undocumented)
-    (len: number, safe?: boolean): Promise<Uint8Array | null>;
-    // @deprecated (undocumented)
-    <T extends Uint8Array = Uint8Array>(view: T, safe?: boolean): Promise<T | null>;
 }
 
 // @public (undocumented)
@@ -63,11 +58,6 @@ function connect(config: TcpConnectConfig, options?: ConnectOptions): Promise<Co
 
 // @alpha (undocumented)
 class Connection extends SocketStream {
-    // (undocumented)
-    $timeout: Listenable<void, void> & EventController<void, void> & {
-        count: number;
-        listening(listener: (...args: any[]) => any): boolean;
-    };
     constructor(socket: net_2.Socket);
     // (undocumented)
     enableNagle(enable: boolean): void;
@@ -90,6 +80,8 @@ class Connection extends SocketStream {
     // (undocumented)
     get timeout(): number;
     set timeout(time: number);
+    // (undocumented)
+    readonly timeoutEvent: EventTrigger<void>;
 }
 
 // @public (undocumented)
@@ -107,14 +99,8 @@ function connectPipe(config: PipeConfig, options?: ConnectOptions): Promise<Sock
 // @public (undocumented)
 function connectSocket(config: TcpConnectConfig | PipeConfig, options?: ConnectOptions): Promise<net_2.Socket>;
 
-// @public @deprecated (undocumented)
-const createByteReaderFromReadable: typeof readableToByteReader;
-
 // @public (undocumented)
 type CreateIpcServerOpts = Omit<IpcServerOpts, "path">;
-
-// @public @deprecated (undocumented)
-function createScannerFromReadable<T extends Buffer = Buffer>(readable: Readable): StreamScanner<Buffer>;
 
 // @public (undocumented)
 type CreateTcpServerOpts = Omit<TcpServerOpts, "port">;
@@ -189,25 +175,21 @@ export { net }
 
 // @beta (undocumented)
 class NodeSubProcess extends SubProcess {
-    // (undocumented)
-    $disconnect: Listenable<void, void> & EventController<void, void> & {
-        count: number;
-        listening(listener: (...args: any[]) => any): boolean;
-    };
-    // (undocumented)
-    $message: Listenable<unknown, unknown> & EventController<unknown, unknown> & {
-        count: number;
-        listening(listener: (...args: any[]) => any): boolean;
-    };
     constructor(nodeCps: ChildProcess);
     // (undocumented)
     get connected(): boolean;
     // (undocumented)
     disconnect(): void;
+    // (undocumented)
+    protected readonly disconnectEvent: OnceEventTrigger<void>;
+    // (undocumented)
+    readonly messageEvent: EventTrigger<unknown>;
     // Warning: (ae-forgotten-export) The symbol "Handle" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
     send(msg: any, handle?: Handle | number): Promise<unknown>;
+    // (undocumented)
+    watchDisconnect(signal?: AbortSignal): Promise<void>;
 }
 
 // @public (undocumented)
@@ -254,7 +236,7 @@ class PipeTargetError extends Error {
 // Warning: (ae-forgotten-export) The symbol "WithPromise" needs to be exported by the entry point index.d.ts
 //
 // @beta (undocumented)
-function pipeTo<T extends Readable, R extends Writable>(source: T, target: R, options?: PipeOptions): WithPromise<{
+function pipeTo<T extends Readable_2, R extends Writable>(source: T, target: R, options?: PipeOptions): WithPromise<{
     abort(reason?: Error): void;
 }, void>;
 
@@ -276,10 +258,10 @@ declare namespace process_2 {
 export { process_2 as process }
 
 // @alpha (undocumented)
-function readableRead(stream: Readable_2, len: number, abortSignal?: AbortSignal): Promise<Buffer>;
+function readableRead(stream: Readable, len: number, abortSignal?: AbortSignal): Promise<Buffer>;
 
 // @alpha (undocumented)
-function readableReadAll<T>(stream: Readable_2, abortSignal?: AbortSignal): Promise<T[]>;
+function readableReadAll<T>(stream: Readable, abortSignal?: AbortSignal): Promise<T[]>;
 
 // @public (undocumented)
 function readableStreamToByteReader<T extends Uint8Array>(stream: ReadableStream<T>): {
@@ -288,29 +270,19 @@ function readableStreamToByteReader<T extends Uint8Array>(stream: ReadableStream
 };
 
 // @public (undocumented)
-function readableToByteReader(stream: Readable): {
+function readableToByteReader(stream: Readable_2): {
     read: ByteReader;
     cancel(reason?: Error): Buffer | null;
 };
 
 // @public (undocumented)
-function readableToReadableStream<T = Uint8Array>(readable: Readable): ReadableStream<T>;
+function readableToReadableStream<T = Uint8Array>(readable: Readable_2): ReadableStream<T>;
 
 // @public (undocumented)
 function readAllFromStream<T>(stream: ReadableStream<T>): Promise<T[]>;
 
 // @public (undocumented)
 class Server {
-    // (undocumented)
-    $close: Listenable<void, void> & EventController<void, void> & {
-        count: number;
-        listening(listener: (...args: any[]) => any): boolean;
-    };
-    // (undocumented)
-    $error: Listenable<Error, Error> & EventController<Error, Error> & {
-        count: number;
-        listening(listener: (...args: any[]) => any): boolean;
-    };
     // (undocumented)
     [Symbol.asyncDispose](): Promise<void>;
     constructor(onConn: (conn: net_2.Socket) => void, options?: TcpServerOpts | undefined);
@@ -319,7 +291,11 @@ class Server {
     // (undocumented)
     close(): Promise<void>;
     // (undocumented)
+    readonly closeEvent: OnceEventTrigger<void>;
+    // (undocumented)
     disposeQueue: boolean;
+    // (undocumented)
+    readonly errorEvent: EventTrigger<Error>;
     // @alpha (undocumented)
     get fd(): number | Object;
     // (undocumented)
@@ -341,6 +317,8 @@ class Server {
     readonly type: "IPC" | "TCP";
     // (undocumented)
     unref(): void;
+    // (undocumented)
+    watchClose(signal?: AbortSignal): Promise<void>;
 }
 
 // @public (undocumented)
@@ -409,11 +387,7 @@ interface SpawnSyncResult {
 declare namespace stream {
     export {
         readAllFromStream,
-        StreamScan,
-        StreamBufferViewScan,
         ByteReader,
-        createScannerFromReadable,
-        StreamScanner,
         readableRead,
         readableReadAll,
         pipeTo,
@@ -425,83 +399,29 @@ declare namespace stream {
         BridgingError,
         readableStreamToByteReader,
         readableToByteReader,
-        createByteReaderFromReadable,
         readableToReadableStream,
         writableToWritableStream
     }
 }
 export { stream }
 
-// @public @deprecated (undocumented)
-interface StreamBufferViewScan {
-    // (undocumented)
-    <T extends Uint8Array = Uint8Array>(view: T): Promise<T>;
-    // (undocumented)
-    <T extends Uint8Array = Uint8Array>(view: T, safe?: boolean): Promise<T | null>;
-}
-
-// @public @deprecated (undocumented)
-interface StreamScan {
-    // (undocumented)
-    (len: number): Promise<Uint8Array>;
-    // (undocumented)
-    (len: number, safe?: boolean): Promise<Uint8Array | null>;
-}
-
-// @public @deprecated (undocumented)
-type StreamScanner<T extends Uint8Array = Uint8Array> = {
-    read: {
-        (len: number): Promise<T>;
-        (len: number, safe?: boolean): Promise<T | null>;
-    };
-    readTo: {
-        <T extends ArrayBufferView>(view: T): Promise<T>;
-    };
-    nextChunk(): Promise<T | null>;
-    cancel(reason?: any): null | T;
-};
-
 // @public (undocumented)
 class SubProcess {
-    // @alpha (undocumented)
-    $close: Listenable<Readonly<{
-        code: number | null;
-        signal: NodeJS.Signals | null;
-    }>, Readonly<{
-        code: number | null;
-        signal: NodeJS.Signals | null;
-    }>> & EventController<Readonly<{
-    code: number | null;
-    signal: NodeJS.Signals | null;
-    }>, Readonly<{
-    code: number | null;
-    signal: NodeJS.Signals | null;
-    }>> & {
-        count: number;
-        listening(listener: (...args: any[]) => any): boolean;
-    };
-    // (undocumented)
-    $exit: Listenable<Readonly<{
-        code: number | null;
-        signal: NodeJS.Signals | null;
-    }>, Readonly<{
-        code: number | null;
-        signal: NodeJS.Signals | null;
-    }>> & EventController<Readonly<{
-    code: number | null;
-    signal: NodeJS.Signals | null;
-    }>, Readonly<{
-    code: number | null;
-    signal: NodeJS.Signals | null;
-    }>> & {
-        count: number;
-        listening(listener: (...args: any[]) => any): boolean;
-    };
     constructor(nodeCps: node_ps.ChildProcess);
     // (undocumented)
     readonly closed: boolean;
     // (undocumented)
     closedState: ClosedState | null;
+    // @alpha (undocumented)
+    protected readonly closeEvent: OnceEventTrigger<Readonly<{
+        code: number | null;
+        signal: NodeJS.Signals | null;
+    }>>;
+    // (undocumented)
+    protected readonly exitEvent: OnceEventTrigger<Readonly<{
+        code: number | null;
+        signal: NodeJS.Signals | null;
+    }>>;
     // (undocumented)
     kill(signal?: NodeJS.Signals | number): void;
     // (undocumented)
@@ -530,6 +450,16 @@ class SubProcess {
     readonly stdout: null | ReadableStream<Buffer>;
     // (undocumented)
     unref(): void;
+    // (undocumented)
+    watchClose(signal?: AbortSignal): Promise<Readonly<{
+        code: number | null;
+        signal: NodeJS.Signals | null;
+    }>>;
+    // (undocumented)
+    watchExit(signal?: AbortSignal): Promise<Readonly<{
+        code: number | null;
+        signal: NodeJS.Signals | null;
+    }>>;
 }
 
 // @public (undocumented)

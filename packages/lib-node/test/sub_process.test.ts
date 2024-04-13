@@ -26,7 +26,7 @@ describe("spawn", function () {
     expect(stdout).instanceOf(ReadableStream);
 
     const res = readAllFromStream(stdout).then((bufList): string =>
-      Buffer.concat(bufList).toString(),
+      Buffer.concat(bufList).toString()
     );
 
     expect(process.pid).toBeTypeOf("number");
@@ -67,8 +67,8 @@ async function readAllMessage(process: NodeSubProcess) {
   function onMsg(msg: any) {
     list.push(msg);
   }
-  process.$message.on(onMsg);
+  process.messageEvent.on(onMsg);
   await process.watchDisconnect();
-  process.$message.off(onMsg);
+  process.messageEvent.off(onMsg);
   return list;
 }
