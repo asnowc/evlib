@@ -123,7 +123,7 @@ export function checkType(value: any, expect: ExceptType, opts: TypeCheckOptions
   if (expect === null) throw new ParameterError(2, createTypeErrorDesc("ExceptType", typeof expect), "exceptType");
   return internalCheckType(value, expect, {
     checkAll: opts.checkAll,
-    policy: opts.policy ?? opts.redundantFieldPolicy,
+    policy: opts.policy,
   });
 }
 
@@ -195,10 +195,6 @@ class InternalExceptType<T = unknown> {
 
 /** @public */
 export interface TypeCheckOptions {
-  /**
-   * @deprecated 改用 policy
-   */
-  redundantFieldPolicy?: "pass" | "delete" | "error";
   /**
    * @remarks 对于对象和元组类型, 如果对象或元组中存在预期类型中不存在的字段, 应该执行的策略
    *   "pass": 检测通过
@@ -324,8 +320,6 @@ export const typeChecker = {
   },
   /** @remarks 生成联合类型检测函数 */
   union,
-  /** @deprecated 改用 typeChecker.union */
-  unionType: union,
   optional,
   array,
   record,
@@ -361,13 +355,6 @@ export const typeChecker = {
     return checkFn;
   },
 };
-
-/**
- * @public
- * @remarks 预定义的检测函数工厂
- * @deprecated typeChecker的别名，改用 typeChecker
- */
-export const checkFnFactor = typeChecker;
 
 type BasicType = "string" | "number" | "bigint" | "boolean" | "symbol" | "undefined" | "object" | "function" | "null";
 /** @remarks 元组项检测 */

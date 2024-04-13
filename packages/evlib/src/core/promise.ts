@@ -10,14 +10,7 @@ export function withPromise(handle: Record<string, any> = {}): WithPromise<unkno
   });
   return handle as any;
 }
-/**
- * @public
- * @remarks 返回一个 promise 和控制这个 promise 的句柄
- * @deprecated 改用 withPromise
- */
-export function promiseHandle<T>(): WithPromise<T> {
-  return withPromise();
-}
+
 /**
  * @public
  * @remarks 尽量以同步的方式处理一个可能是 Promise 的值

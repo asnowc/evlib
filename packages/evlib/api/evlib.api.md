@@ -5,6 +5,10 @@
 ```ts
 
 // @public (undocumented)
+class AbortedError extends Error {
+}
+
+// @public (undocumented)
 function afterTime(time?: number): TerminablePromise<void>;
 
 declare namespace async {
@@ -37,19 +41,6 @@ abstract class ByteParser<T> implements BySteps<T> {
     protected result?: ParserResult<T>;
 }
 
-// @public @deprecated (undocumented)
-const checkFnFactor: {
-    create<T extends ExceptType>(expect: T, opts: Pick<TypeCheckOptions, "checkAll" | "policy">): TypeChecker<T>;
-    numberRange(min: number, max?: number): TypeCheckFn<number>;
-    instanceof<T_1 extends new (...args: any[]) => any>(obj: T_1): TypeCheckFn<InstanceType<T_1>>;
-    union: typeof union;
-    unionType: typeof union;
-    optional: typeof optional;
-    array: typeof array;
-    record: typeof record;
-    arrayType<T_2 extends ExceptType>(type: T_2, length?: number): TypeCheckFn<InferExcept<T_2>>;
-};
-
 // Warning: (ae-forgotten-export) The symbol "CheckRes" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
@@ -65,32 +56,22 @@ interface ControllablePromise<T> extends Promise<T> {
 
 declare namespace core {
     export {
-        paseModMeta,
         ECMA_VERSION,
         runtimeEngine,
-        ModuleMeta,
-        EventEmitter,
-        EventList,
         checkType,
         getBasicType,
         getClassType,
         TypeCheckOptions,
         TypeCheckFn,
         typeChecker,
-        checkFnFactor,
         ExceptType,
         InferExcept,
         setTimer,
         setInterval,
         afterTime,
         withPromise,
-        promiseHandle,
         dePromise,
         WithPromise,
-        createEvent,
-        Listenable,
-        EventController,
-        EventCenter,
         VoidFn,
         TerminablePromise,
         PromiseHandle,
@@ -103,16 +84,14 @@ declare namespace core {
         pickObjectKey,
         deepClone,
         PatchObjectOpts,
-        toErrorStr
+        toErrorStr,
+        EventTrigger,
+        Listenable,
+        OnceListenable,
+        OnceEventTrigger
     }
 }
 export { core }
-
-// @public @deprecated (undocumented)
-const createErrDesc: typeof createTypeErrorDesc;
-
-// @public
-function createEvent<T, E = T>(): EventCenter<T, E>;
 
 // @public (undocumented)
 function createTypeErrorDesc(except: string, actual: string): string;
@@ -143,59 +122,24 @@ declare namespace errors {
         NumericalRangeError,
         TimeoutError,
         createTypeErrorDesc,
-        createErrDesc,
         TypeError_2 as TypeError,
         ParameterError,
         ParameterTypeError,
-        ParametersError,
-        ParametersTypeError,
-        NotImplementedError
+        NotImplementedError,
+        AbortedError
     }
 }
 export { errors }
 
-// Warning: (ae-forgotten-export) The symbol "AsyncEvent" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "EventTriggerConstructor" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-type EventCenter<T, E = T> = EventController<T, E> & AsyncEvent<T> & Listenable<T, E>;
+const EventTrigger: EventTriggerConstructor;
 
+// Warning: (ae-forgotten-export) The symbol "EventTriggerController" needs to be exported by the entry point index.d.ts
+//
 // @public (undocumented)
-interface EventController<T, E = T> {
-    // (undocumented)
-    close(): void;
-    // (undocumented)
-    emit(data: T): number;
-    // @deprecated (undocumented)
-    emit(data: E | T, reject: boolean): number;
-    // (undocumented)
-    emitError(data: E): number;
-}
-
-// @public @deprecated (undocumented)
-class EventEmitter<T extends EventList = {}> {
-    // (undocumented)
-    emit<E extends keyof T, Prams extends T[E]>(name: E, ...args: Prams): number;
-    // Warning: (ae-forgotten-export) The symbol "LimitEmitPrams" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
-    emit<E extends EventName, Prams extends LimitEmitPrams<T, E>>(name: E, ...args: Prams): number;
-    // (undocumented)
-    off<E extends keyof T>(name: E, fn: Function): void;
-    // (undocumented)
-    off(name: EventName, fn: Function): void;
-    // (undocumented)
-    on<E extends keyof T, Fn extends T[E]>(name: E, fn: Fn): Fn;
-    // Warning: (ae-forgotten-export) The symbol "EventName" needs to be exported by the entry point index.d.ts
-    // Warning: (ae-forgotten-export) The symbol "LimitEvListener" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
-    on<E extends EventName, Fn extends LimitEvListener<T, E>>(name: E, fn: Fn): Fn;
-}
-
-// @public (undocumented)
-type EventList = {
-    [key: EventName]: any[];
-};
+type EventTrigger<T> = Listenable<T> & EventTriggerController<T> & OnceListenable<T>;
 
 // Warning: (ae-forgotten-export) The symbol "ExceptTypeMap" needs to be exported by the entry point index.d.ts
 // Warning: (ae-forgotten-export) The symbol "ExceptTypeTuple" needs to be exported by the entry point index.d.ts
@@ -252,25 +196,18 @@ class LengthByteParser extends ByteParser<Uint8Array> {
     readonly total: number;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ListenableConstructor" needs to be exported by the entry point index.d.ts
-//
 // @public (undocumented)
-const Listenable: ListenableConstructor;
-
-// @public (undocumented)
-interface Listenable<T, E = T> {
+interface Listenable<T> extends OnceListenable<T> {
     // (undocumented)
     done: boolean;
     // Warning: (ae-forgotten-export) The symbol "Fn_2" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
     off(listener: Fn_2): boolean;
-    // (undocumented)
-    on<R extends Listener<T, E>>(listener: R): R;
     // Warning: (ae-forgotten-export) The symbol "Listener" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
-    then<R extends Listener<T, E>>(listener: R): R;
+    on<R extends Listener<T>>(listener: R): R;
 }
 
 declare namespace math {
@@ -283,12 +220,6 @@ declare namespace math {
     }
 }
 export { math }
-
-// @public @deprecated (undocumented)
-interface ModuleMeta {
-    dirname: string;
-    filename: string;
-}
 
 // @public (undocumented)
 class NotImplementedError extends Error {
@@ -304,15 +235,31 @@ class NumericalRangeError extends RangeError {
 type ObjectKey = string | number | symbol;
 
 // @public (undocumented)
+class OnceEventTrigger<T, E = any> implements OnceListenable<T> {
+    // (undocumented)
+    get done(): boolean;
+    // (undocumented)
+    emit(arg: T): number;
+    // (undocumented)
+    emitError(err: E): number;
+    // Warning: (ae-forgotten-export) The symbol "BaseAbortSignal" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    getPromise(signal?: BaseAbortSignal): Promise<T>;
+    // (undocumented)
+    then<R extends Listener<T>>(resolve: R, reject?: (arg: E) => void): R;
+}
+
+// @public (undocumented)
+interface OnceListenable<T> {
+    // (undocumented)
+    then<R extends Listener<T>>(resolve: R): R;
+}
+
+// @public (undocumented)
 class ParameterError extends Error {
     constructor(index: number, cause: string, name?: string);
 }
-
-// @public @deprecated (undocumented)
-const ParametersError: typeof ParameterError;
-
-// @public @deprecated (undocumented)
-const ParametersTypeError: typeof ParameterTypeError;
 
 // @public (undocumented)
 class ParameterTypeError extends ParameterError {
@@ -324,11 +271,6 @@ function paseExponentNum(num: number, carry: number, maxExponent?: number): Expo
 
 // @public (undocumented)
 function paseExponentNum(num: number, carry: number[]): ExponentFormat;
-
-// @public @deprecated (undocumented)
-function paseModMeta(meta: {
-    url: string;
-}): ModuleMeta;
 
 // @alpha
 class PassiveDataCollector<T, R = void, N = void> {
@@ -366,9 +308,6 @@ interface PromiseHandle<T> {
     // (undocumented)
     resolve(data: T): void;
 }
-
-// @public @deprecated (undocumented)
-function promiseHandle<T>(): WithPromise<T>;
 
 // @public (undocumented)
 function removeUndefinedKey<T extends Obj>(obj: T, deep?: boolean): T;
@@ -420,7 +359,6 @@ const typeChecker: {
     numberRange(min: number, max?: number): TypeCheckFn<number>;
     instanceof<T_1 extends new (...args: any[]) => any>(obj: T_1): TypeCheckFn<InstanceType<T_1>>;
     union: typeof union;
-    unionType: typeof union;
     optional: typeof optional;
     array: typeof array;
     record: typeof record;
@@ -441,8 +379,6 @@ interface TypeCheckOptions {
     checkAll?: boolean;
     // (undocumented)
     policy?: "pass" | "delete" | "error";
-    // @deprecated (undocumented)
-    redundantFieldPolicy?: "pass" | "delete" | "error";
 }
 
 // @public (undocumented)
@@ -501,11 +437,11 @@ function withPromise<T, R = any, E extends object = {}>(handle?: E): WithPromise
 
 // Warnings were encountered during analysis:
 //
-// src/core/type_check.ts:326:3 - (ae-forgotten-export) The symbol "union" needs to be exported by the entry point index.d.ts
-// src/core/type_check.ts:329:3 - (ae-forgotten-export) The symbol "optional" needs to be exported by the entry point index.d.ts
-// src/core/type_check.ts:330:3 - (ae-forgotten-export) The symbol "array" needs to be exported by the entry point index.d.ts
-// src/core/type_check.ts:331:3 - (ae-forgotten-export) The symbol "record" needs to be exported by the entry point index.d.ts
-// src/core/type_check.ts:370:27 - (ae-forgotten-export) The symbol "TypeChecker" needs to be exported by the entry point index.d.ts
+// src/core/type_check.ts:297:25 - (ae-forgotten-export) The symbol "TypeChecker" needs to be exported by the entry point index.d.ts
+// src/core/type_check.ts:322:3 - (ae-forgotten-export) The symbol "union" needs to be exported by the entry point index.d.ts
+// src/core/type_check.ts:323:3 - (ae-forgotten-export) The symbol "optional" needs to be exported by the entry point index.d.ts
+// src/core/type_check.ts:324:3 - (ae-forgotten-export) The symbol "array" needs to be exported by the entry point index.d.ts
+// src/core/type_check.ts:325:3 - (ae-forgotten-export) The symbol "record" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

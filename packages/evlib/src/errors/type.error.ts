@@ -6,12 +6,7 @@ export function createTypeErrorDesc(except: string, actual: string) {
   return `预期: ${except}, 实际: ${actual}`;
   //return `Except: ${except}, actual: ${actual}`;
 }
-/**
- * @public
- * @deprecated 将于 2.0.0 移除，改用 createTypeErrorDesc
- * @remarks 创建一个类型错误的描述
- */
-export const createErrDesc = createTypeErrorDesc;
+
 /** @public */
 export class TypeError extends Error {
   constructor(public cause: TypeErrorDesc, msg?: string) {
@@ -45,11 +40,3 @@ export class ParameterTypeError extends ParameterError {
     super(index, createTypeErrorDesc(except, actual), name);
   }
 }
-/**
- * @public
- * @deprecated 将在 2.0.0 移除。 改用 ParameterError  */
-export const ParametersError = ParameterError;
-/**
- * @public
- * @deprecated 将在 2.0.0 移除。 改用 ParameterError  */
-export const ParametersTypeError = ParameterTypeError;

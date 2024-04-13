@@ -56,6 +56,7 @@ interface EventTriggerConstructor {
 }
 /** @public */
 export const EventTrigger: EventTriggerConstructor = EventTriggerImpl;
+/** @public */
 export type EventTrigger<T> = Listenable<T> & EventTriggerController<T> & OnceListenable<T>;
 
 /**
@@ -91,6 +92,7 @@ function createDoneError() {
 
 type Fn = (...args: any[]) => any;
 
+/** @public */
 export interface OnceListenable<T> {
   /**
    * @remarks 与on()类似, 在触发前取消订阅, 可使用 await 语法等待
