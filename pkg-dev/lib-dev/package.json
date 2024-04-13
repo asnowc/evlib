@@ -17,16 +17,16 @@
   "author": "Eavid",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^20.5.7"
+    "@types/node": "^20.12.7"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "dependencies": {
     "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-typescript": "^11.1.5",
-    "glob": "^10.3.4",
-    "rollup": "^4.1.4"
+    "@rollup/plugin-typescript": "^11.1.6",
+    "glob": "^10.3.12",
+    "rollup": "^4.14.2"
   },
   "files": [
     "dist/**/*.js",

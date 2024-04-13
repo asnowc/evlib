@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@eavid/lib-dev": "workspace:^",
-    "@types/node": "^20.5.7"
+    "@types/node": "^20.12.7"
   },
   "dependencies": {
     "evlib": "workspace:^"
