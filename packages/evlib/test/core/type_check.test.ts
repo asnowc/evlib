@@ -123,12 +123,12 @@ describe("内置测试函数", function () {
       checkType(
         { s: 3, i: null },
         {
-          s: typeChecker.unionType(["number", "string"]),
-          i: typeChecker.unionType(["string", (a) => undefined]),
+          s: typeChecker.union(["number", "string"]),
+          i: typeChecker.union(["string", (a) => undefined]),
         }
       )
     ).toCheckPass();
-    expect(checkType({ s: 3 }, { s: typeChecker.unionType(["bigint", "string"]) })).toCheckFailWithField(["s"]);
+    expect(checkType({ s: 3 }, { s: typeChecker.union(["bigint", "string"]) })).toCheckFailWithField(["s"]);
   });
   describe("可选", function () {
     describe("自定义可选", function () {
