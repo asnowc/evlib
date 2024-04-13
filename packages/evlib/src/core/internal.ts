@@ -25,7 +25,7 @@ export interface BaseAbortSignal {
   readonly aborted: boolean;
   readonly reason: any;
   addEventListener(type: string, listener: EventListenerObject, options?: { once?: boolean }): void;
-  removeEventListener(type: string, listener: EventListenerObject, options?: { once?: boolean }): void;
+  removeEventListener(type: string, listener: EventListenerObject): void;
 }
 export interface EventListenerObject {
   handleEvent(object: unknown): void;

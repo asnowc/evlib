@@ -143,4 +143,12 @@ describe("OnceEventTrigger", function () {
     event.emit(1);
     await expect(event.getPromise()).rejects.toThrowError();
   });
+  test("signal", async function () {
+    const abc = new AbortController();
+    const pms = event.getPromise(abc.signal);
+    const data = Symbol("aa");
+    abc.abort(data);
+    await expect(pms).rejects.toBe(data);
+    expect(event.done).toBeFalsy();
+  });
 });

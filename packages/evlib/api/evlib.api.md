@@ -235,19 +235,21 @@ class NumericalRangeError extends RangeError {
 type ObjectKey = string | number | symbol;
 
 // @public (undocumented)
-class OnceEventTrigger<T, E = any> implements OnceListenable<T> {
+class OnceEventTrigger<T> implements OnceListenable<T> {
     // (undocumented)
     get done(): boolean;
     // (undocumented)
     emit(arg: T): number;
     // (undocumented)
-    emitError(err: E): number;
+    emitError(err: any): number;
     // Warning: (ae-forgotten-export) The symbol "BaseAbortSignal" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
     getPromise(signal?: BaseAbortSignal): Promise<T>;
     // (undocumented)
-    then<R extends Listener<T>>(resolve: R, reject?: (arg: E) => void): R;
+    off(key: object): boolean;
+    // (undocumented)
+    then<R extends Listener<T>>(resolve: R, reject?: (arg: any) => void): R;
 }
 
 // @public (undocumented)

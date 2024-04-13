@@ -1,5 +1,4 @@
 import { ParameterTypeError, AbortedError } from "../errors.js";
-import { withPromise } from "./promise.js";
 import { BaseAbortSignal } from "./internal.js";
 
 class EventTriggerImpl<T> implements Listenable<T>, EventTriggerController<T>, OnceListenable<T> {
@@ -103,45 +102,58 @@ export interface OnceListenable<T> {
 }
 
 interface SignalListener {
+  key: object;
   signal: BaseAbortSignal;
-  key: {};
   listeners: AsyncListenerList<unknown>;
   handleEvent(): void;
 }
-type AsyncListenerList<T, E = any> = Map<object, { resolve(data: T): void; reject(data: E): void }>;
+type AsyncListenerInfo<T> = {
+  resolve(data: T): void;
+  reject(data?: any): void;
+  signalListener?: SignalListener;
+};
+type AsyncListenerList<T> = Map<object, AsyncListenerInfo<T>>;
 /** @public */
-export class OnceEventTrigger<T, E = any> implements OnceListenable<T> {
-  #asyncListeners: AsyncListenerList<T, E> = new Map();
-  #signals = new Set<SignalListener>();
+export class OnceEventTrigger<T> implements OnceListenable<T> {
+  #asyncListeners: AsyncListenerList<T> = new Map();
   #done = false;
   get done() {
     return this.#done;
   }
   getPromise(signal?: BaseAbortSignal) {
     if (this.#done) return Promise.reject(createDoneError());
-    const key = {};
+    let item: AsyncListenerInfo<T>;
+    const key = new Promise<T>(function (resolve, reject) {
+      item = { resolve, reject } as any;
+    });
 
     if (signal) {
       if (signal.aborted) return Promise.reject(signal.reason ?? new AbortedError());
 
       const signalListener: SignalListener = {
-        signal,
         key,
+        signal,
         listeners: this.#asyncListeners,
         handleEvent() {
-          this.signal.removeEventListener("abort", this);
-          this.listeners.delete(key);
+          const item = this.listeners.get(this.key);
+          item?.reject(this.signal.reason);
+          this.listeners.delete(this.key);
         },
       };
-      signal.addEventListener("abort", signalListener);
-      this.#signals.add(signalListener);
+      signal.addEventListener("abort", signalListener, { once: true });
+      item!.signalListener = signalListener;
     }
-
-    const item = withPromise<T>();
-    this.#asyncListeners.set(key, item);
-    return item.promise;
+    this.#asyncListeners.set(key, item!);
+    return key;
   }
-  then<R extends Listener<T>>(resolve: R, reject?: (arg: E) => void): R {
+  off(key: object) {
+    const item = this.#asyncListeners.get(key);
+    if (!item) return false;
+    this.#asyncListeners.delete(key);
+    item.signalListener?.signal.removeEventListener("abort", item.signalListener);
+    return true;
+  }
+  then<R extends Listener<T>>(resolve: R, reject?: (arg: any) => void): R {
     if (this.#done) throw createDoneError();
     this.#asyncListeners.set(resolve, { resolve, reject: reject ?? (() => {}) });
     return resolve;
@@ -149,21 +161,21 @@ export class OnceEventTrigger<T, E = any> implements OnceListenable<T> {
   emit(arg: T): number {
     this.#done = true;
     const size = this.#asyncListeners.size;
-    this.clearSignal();
-    for (const handle of this.#asyncListeners.values()) handle.resolve(arg);
+    for (const handle of this.#asyncListeners.values()) {
+      handle.resolve(arg);
+      handle.signalListener?.signal.removeEventListener("abort", handle.signalListener);
+    }
     this.#asyncListeners.clear();
     return size;
   }
-  emitError(err: E) {
+  emitError(err: any) {
     this.#done = true;
     const size = this.#asyncListeners.size;
-    this.clearSignal();
-    for (const handle of this.#asyncListeners.values()) handle.reject(err);
+    for (const handle of this.#asyncListeners.values()) {
+      handle.reject(err);
+      handle.signalListener?.signal.removeEventListener("abort", handle.signalListener);
+    }
     this.#asyncListeners.clear();
     return size;
-  }
-  private clearSignal() {
-    for (const signalInfo of this.#signals) signalInfo.signal.removeEventListener("abort", signalInfo);
-    this.#signals.clear();
   }
 }
