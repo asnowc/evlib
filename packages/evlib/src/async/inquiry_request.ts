@@ -3,9 +3,12 @@ export class InquiryRequest<
   AcceptReturn = unknown,
   RejectReturn = unknown,
   AcceptArgs extends any[] = [],
-  RejectArgs extends any[] = []
+  RejectArgs extends any[] = [],
 > {
-  constructor(acceptCb: (...args: AcceptArgs) => AcceptReturn, rejectCb: (...args: RejectArgs) => RejectReturn) {
+  constructor(
+    acceptCb: (...args: AcceptArgs) => AcceptReturn,
+    rejectCb: (...args: RejectArgs) => RejectReturn,
+  ) {
     this.#acceptCb = acceptCb;
     this.#rejectCb = rejectCb;
   }

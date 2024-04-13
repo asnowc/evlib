@@ -37,8 +37,14 @@ describe.concurrent("byteDuplex", function () {
 
     const res = await dpStream.watchClose().catch((err) => err);
     expect(dpStream.closed, "duplexStream closed").toBeTruthy();
-    expect(dpStream.writableClosed, "duplexStream.writable closed").toBeTruthy();
-    expect(dpStream.readableClosed, "duplexStream.readable closed").toBeTruthy();
+    expect(
+      dpStream.writableClosed,
+      "duplexStream.writable closed",
+    ).toBeTruthy();
+    expect(
+      dpStream.readableClosed,
+      "duplexStream.readable closed",
+    ).toBeTruthy();
     expect(res).toBe(err);
 
     expect(destroy).toBeCalled();

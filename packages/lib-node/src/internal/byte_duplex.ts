@@ -1,4 +1,9 @@
-import { readableToByteReader, ByteReader, readableToReadableStream, writableToWritableStream } from "../stream.js";
+import {
+  readableToByteReader,
+  ByteReader,
+  readableToReadableStream,
+  writableToWritableStream,
+} from "../stream.js";
 import * as NodeStream from "node:stream";
 import { OnceEventTrigger } from "evlib";
 import { ReadableStream, WritableStream } from "node:stream/web";

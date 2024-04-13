@@ -5,18 +5,18 @@ import { resolve } from "node:path";
  * @remarks 模块的位置信息
  */
 export interface ModulePathInfo {
-    dir: string;
-    file: string;
+  dir: string;
+  file: string;
 }
 /**
  * @public
  * @remarks 获取ECMA 模块的位置信息
  */
 export function getModuleInfo({ url }: ImportMeta): ModulePathInfo {
-    const file = fileURLToPath(url);
+  const file = fileURLToPath(url);
 
-    return {
-        file,
-        dir: resolve(file, ".."),
-    };
+  return {
+    file,
+    dir: resolve(file, ".."),
+  };
 }

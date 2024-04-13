@@ -1,5 +1,8 @@
 import { Writable } from "node:stream";
-import { UnderlyingSink, WritableStreamDefaultController } from "node:stream/web";
+import {
+  UnderlyingSink,
+  WritableStreamDefaultController,
+} from "node:stream/web";
 
 export class WritableCore<T> implements UnderlyingSink<T> {
   constructor(writable: Writable);
@@ -12,7 +15,8 @@ export class WritableCore<T> implements UnderlyingSink<T> {
       return;
     }
     const onClose = () => {
-      if (!this.closed) ctrl.error(writable.errored ?? new Error("raw stream closed"));
+      if (!this.closed)
+        ctrl.error(writable.errored ?? new Error("raw stream closed"));
       this.closed = true;
     };
     writable.on("close", onClose);
@@ -27,7 +31,10 @@ export class WritableCore<T> implements UnderlyingSink<T> {
       this.writable.end(() => resolve());
     });
   }
-  write(chunk: T, ctrl: WritableStreamDefaultController): void | PromiseLike<void> {
+  write(
+    chunk: T,
+    ctrl: WritableStreamDefaultController,
+  ): void | PromiseLike<void> {
     /** 没有完成初始化，不能直接调用 _write() */
     //todo: 想办法监听 writable 完成初始化的事件，由 start() 函数处理
     return new Promise((resolve, reject) => {

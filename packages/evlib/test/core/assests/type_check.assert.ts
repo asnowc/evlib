@@ -17,7 +17,10 @@ const passRes = { pass: true, message: passMsg };
 expect.extend({
   toCheckPass(received: any) {
     return {
-      pass: typeof received === "object" && received !== null && received.error === undefined,
+      pass:
+        typeof received === "object" &&
+        received !== null &&
+        received.error === undefined,
       message: () => received.error,
       actual: this.error,
     };
@@ -30,7 +33,12 @@ expect.extend({
       expect(received.error).toEqual(expe);
       return passRes;
     } catch (error) {
-      return { pass: false, message: () => `预期检测失败`, actual: received.error ?? null, expected: expe };
+      return {
+        pass: false,
+        message: () => `预期检测失败`,
+        actual: received.error ?? null,
+        expected: expe,
+      };
     }
   },
   toCheckFailWithField(received: { error: any }, field: string[]) {
@@ -43,7 +51,12 @@ expect.extend({
       expect(act).toEqual(field);
       return passRes;
     } catch (error) {
-      return { pass: false, message: () => `预期检测失败`, actual: act, expected: field };
+      return {
+        pass: false,
+        message: () => `预期检测失败`,
+        actual: act,
+        expected: field,
+      };
     }
   },
 });

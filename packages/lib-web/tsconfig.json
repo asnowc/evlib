@@ -1,9 +1,9 @@
 {
-    "extends": "../dev-lib/config/tsconfig.std.json",
-    "compilerOptions": {
-        "lib": ["DOM", "ESNext"],
-        "baseUrl": ".",
-        "noEmit": true
-    },
-    "include": ["**/*.ts"]
+  "extends": "../dev-lib/config/tsconfig.std.json",
+  "compilerOptions": {
+    "lib": ["DOM", "ESNext"],
+    "baseUrl": ".",
+    "noEmit": true
+  },
+  "include": ["**/*.ts"]
 }

@@ -9,7 +9,12 @@ import {
   pipeTo,
 } from "@eavid/lib-node/stream";
 import { Duplex, Readable, Writable } from "node:stream";
-import { Callback, DuplexOpts, ReadableOpts, WritableOpts } from "../__mocks__/mock_stream.js";
+import {
+  Callback,
+  DuplexOpts,
+  ReadableOpts,
+  WritableOpts,
+} from "../__mocks__/mock_stream.js";
 import { afterTime } from "evlib";
 
 class TestRead extends Readable {
@@ -39,7 +44,12 @@ class TestRead extends Readable {
   }
 }
 describe("readableRead", function () {
-  const chunks = [Buffer.from("abcd"), Buffer.from("efgh"), Buffer.from("ijkl"), Buffer.from("mnop")];
+  const chunks = [
+    Buffer.from("abcd"),
+    Buffer.from("efgh"),
+    Buffer.from("ijkl"),
+    Buffer.from("mnop"),
+  ];
   it("读取成功", async function () {
     setTimeout(() => {
       readable.push(chunks[0]);
@@ -47,12 +57,16 @@ describe("readableRead", function () {
       readable.push(null);
     });
     const readable = createReadable();
-    await expect(readableRead(readable, 2), "p1").resolves.toEqual(chunks[0].subarray(0, 2));
+    await expect(readableRead(readable, 2), "p1").resolves.toEqual(
+      chunks[0].subarray(0, 2),
+    );
     await expect(
       readableRead(readable, 4).then((buf) => buf.toString()),
-      "p2"
+      "p2",
     ).resolves.toBe("cdef");
-    await expect(readableRead(readable, 2), "p3").resolves.toEqual(chunks[1].subarray(2, 4));
+    await expect(readableRead(readable, 2), "p3").resolves.toEqual(
+      chunks[1].subarray(2, 4),
+    );
   });
 
   it("流结束", async function () {
@@ -68,7 +82,9 @@ describe("readableRead", function () {
     setTimeout(() => {
       abc.abort();
     }, 200);
-    await expect(readableRead(readable, 1500, abc.signal)).rejects.toBeInstanceOf(Error);
+    await expect(
+      readableRead(readable, 1500, abc.signal),
+    ).rejects.toBeInstanceOf(Error);
     expect(readable.listenerCount("readable")).toBe(0);
   }, 500);
   it("初始足够", async function () {
@@ -79,146 +95,171 @@ describe("readableRead", function () {
       setTimeout(resolve, 10);
     });
 
-    await expect(readableRead(readable, 15).then((data) => data.toString("utf-8"))).resolves.toEqual("000001111122222");
+    await expect(
+      readableRead(readable, 15).then((data) => data.toString("utf-8")),
+    ).resolves.toEqual("000001111122222");
     expect(readable.listenerCount("readable")).toBe(1);
   });
 }, 1000);
 
 describe.concurrent("pipeTo", function () {
   describe("resolve", function () {
-    test.each([false, true])("默认自动结束 结束可写端: %s", async function (preventWritableEnd) {
-      const a = createReadable();
-      const b = createWritable();
+    test.each([false, true])(
+      "默认自动结束 结束可写端: %s",
+      async function (preventWritableEnd) {
+        const a = createReadable();
+        const b = createWritable();
 
-      setTimeout(() => {
-        arrayPush(a, ["1", "2", "3", null]);
-      });
-      await expect(pipeTo(a, b, { preventWritableEnd })).resolves.toBeUndefined();
-      expect(a.readableEnded).toBeTruthy();
-      expect(a.closed).toBeTruthy();
-      expect(a.destroyed).toBeTruthy();
+        setTimeout(() => {
+          arrayPush(a, ["1", "2", "3", null]);
+        });
+        await expect(
+          pipeTo(a, b, { preventWritableEnd }),
+        ).resolves.toBeUndefined();
+        expect(a.readableEnded).toBeTruthy();
+        expect(a.closed).toBeTruthy();
+        expect(a.destroyed).toBeTruthy();
 
-      expect(b.writable).toBe(preventWritableEnd);
+        expect(b.writable).toBe(preventWritableEnd);
 
-      expect(b.writableFinished).toBe(!preventWritableEnd);
-      expect(b.closed).toBe(!preventWritableEnd);
-      expect(b.destroyed).toBe(!preventWritableEnd);
-    });
+        expect(b.writableFinished).toBe(!preventWritableEnd);
+        expect(b.closed).toBe(!preventWritableEnd);
+        expect(b.destroyed).toBe(!preventWritableEnd);
+      },
+    );
   });
 
   describe("异常", function () {
-    describe.each([false, true])("writable 异常 - 阻止Readable销毁: %s", function (preventReadableDispose) {
-      test("writable 写入出错", async function () {
-        const err = new Error("w err");
-        const a = createReadable();
-        const b = createWritable({
-          write(a, b, cb) {
-            cb(err);
-          },
+    describe.each([false, true])(
+      "writable 异常 - 阻止Readable销毁: %s",
+      function (preventReadableDispose) {
+        test("writable 写入出错", async function () {
+          const err = new Error("w err");
+          const a = createReadable();
+          const b = createWritable({
+            write(a, b, cb) {
+              cb(err);
+            },
+          });
+          setTimeout(() => {
+            arrayPush(a, ["1", "2", "3"]);
+          });
+          const res = await pipeTo(a, b, { preventReadableDispose }).catch(
+            (e) => e,
+          );
+          expect(res).instanceof(PipeTargetError);
+          expect(res.cause).toBe(err);
+
+          expect(a.readable).toBe(preventReadableDispose);
+          expect(a.destroyed).toBe(!preventReadableDispose);
+
+          expect(b.destroyed).toBeTruthy();
         });
-        setTimeout(() => {
-          arrayPush(a, ["1", "2", "3"]);
+        test("writable 已销毁", async function () {
+          const err = new Error("w err");
+          const a = createReadable();
+          const b = await getDestroyedWritable(err);
+
+          const res = await pipeTo(a, b, { preventReadableDispose }).catch(
+            (e) => e,
+          );
+          expect(res).instanceof(PipeTargetError);
+          expect(res.cause).toBe(err);
+
+          expect(a.readable).toBe(preventReadableDispose);
+          expect(a.destroyed).toBe(!preventReadableDispose);
+
+          expect(b.destroyed).toBeTruthy();
         });
-        const res = await pipeTo(a, b, { preventReadableDispose }).catch((e) => e);
-        expect(res).instanceof(PipeTargetError);
-        expect(res.cause).toBe(err);
+        test("writable 已关闭", async function () {
+          const { a, b } = createDoubleDuplex();
+          b.end();
+          await afterTime();
+          expect(b.closed).toBeFalsy();
 
-        expect(a.readable).toBe(preventReadableDispose);
-        expect(a.destroyed).toBe(!preventReadableDispose);
+          const res = await pipeTo(a, b, { preventReadableDispose }).catch(
+            (e) => e,
+          );
+          expect(res).instanceof(PipeTargetError);
+          expect(res.cause).toMatchObject({ message: "Writable is ended" });
 
-        expect(b.destroyed).toBeTruthy();
-      });
-      test("writable 已销毁", async function () {
-        const err = new Error("w err");
-        const a = createReadable();
-        const b = await getDestroyedWritable(err);
+          expect(a.readable).toBe(preventReadableDispose);
+          expect(a.destroyed).toBe(!preventReadableDispose);
 
-        const res = await pipeTo(a, b, { preventReadableDispose }).catch((e) => e);
-        expect(res).instanceof(PipeTargetError);
-        expect(res.cause).toBe(err);
-
-        expect(a.readable).toBe(preventReadableDispose);
-        expect(a.destroyed).toBe(!preventReadableDispose);
-
-        expect(b.destroyed).toBeTruthy();
-      });
-      test("writable 已关闭", async function () {
-        const { a, b } = createDoubleDuplex();
-        b.end();
-        await afterTime();
-        expect(b.closed).toBeFalsy();
-
-        const res = await pipeTo(a, b, { preventReadableDispose }).catch((e) => e);
-        expect(res).instanceof(PipeTargetError);
-        expect(res.cause).toMatchObject({ message: "Writable is ended" });
-
-        expect(a.readable).toBe(preventReadableDispose);
-        expect(a.destroyed).toBe(!preventReadableDispose);
-
-        expect(b.closed).toBeFalsy();
-      });
-    });
-    describe.each([false, true])("readable 异常 - 阻止 Writable 销毁: %s", function (preventWritableDispose) {
-      test("readable 读取出错", async function () {
-        const err = new Error("w err");
-        const a = createReadable();
-        const b = createWritable();
-        setTimeout(() => {
-          a.destroy(err);
+          expect(b.closed).toBeFalsy();
         });
-        const res = await pipeTo(a, b, { preventWritableDispose }).catch((e) => e);
-        expect(res).instanceof(PipeSourceError);
-        expect(res.cause).toBe(err);
-
-        expect(a.destroyed).toBeTruthy();
-
-        expect(b.destroyed).toBe(!preventWritableDispose);
-      });
-      test("readable 已销毁", async function () {
-        const err = new Error("w err");
-        const a = await getDestroyedReadable(err);
-        const b = createWritable();
-        if (preventWritableDispose) return;
-        const res = await pipeTo(a, b, { preventWritableDispose }).catch((e) => e);
-        expect(res).instanceof(PipeSourceError);
-        expect(res.cause).toBe(err);
-
-        expect(a.destroyed).toBeTruthy();
-
-        expect(b.writable).toBe(preventWritableDispose);
-        expect(b.destroyed).toBe(!preventWritableDispose);
-      });
-      test("readable 已 ended", async function () {
-        const { a, b } = createDoubleDuplex();
-        a.push(null);
-        a.read();
-        await afterTime();
-
-        const res = await pipeTo(a, b, { preventWritableDispose }).catch((e) => e);
-        expect(res).instanceof(PipeSourceError);
-        expect(res.cause).toMatchObject({ message: "Readable is ended" });
-
-        expect(a.readable).toBeFalsy();
-
-        expect(b.destroyed).toBe(!preventWritableDispose);
-      });
-    });
-    describe("中断", function () {
-      test.each([{ preventReadableDispose: true }, { preventWritableDispose: true }] as PipeOptions[])(
-        "中断",
-        async function (pipeOpts) {
+      },
+    );
+    describe.each([false, true])(
+      "readable 异常 - 阻止 Writable 销毁: %s",
+      function (preventWritableDispose) {
+        test("readable 读取出错", async function () {
+          const err = new Error("w err");
           const a = createReadable();
           const b = createWritable();
-          const abc = pipeTo(a, b, pipeOpts);
+          setTimeout(() => {
+            a.destroy(err);
+          });
+          const res = await pipeTo(a, b, { preventWritableDispose }).catch(
+            (e) => e,
+          );
+          expect(res).instanceof(PipeSourceError);
+          expect(res.cause).toBe(err);
 
-          const err = new Error("ab");
-          abc.abort(err);
-          await expect(abc).rejects.toBe(err);
+          expect(a.destroyed).toBeTruthy();
 
-          expect(a.readable).toBe(!!pipeOpts.preventReadableDispose);
-          expect(b.writable).toBe(!!pipeOpts.preventWritableDispose);
-        }
-      );
+          expect(b.destroyed).toBe(!preventWritableDispose);
+        });
+        test("readable 已销毁", async function () {
+          const err = new Error("w err");
+          const a = await getDestroyedReadable(err);
+          const b = createWritable();
+          if (preventWritableDispose) return;
+          const res = await pipeTo(a, b, { preventWritableDispose }).catch(
+            (e) => e,
+          );
+          expect(res).instanceof(PipeSourceError);
+          expect(res.cause).toBe(err);
+
+          expect(a.destroyed).toBeTruthy();
+
+          expect(b.writable).toBe(preventWritableDispose);
+          expect(b.destroyed).toBe(!preventWritableDispose);
+        });
+        test("readable 已 ended", async function () {
+          const { a, b } = createDoubleDuplex();
+          a.push(null);
+          a.read();
+          await afterTime();
+
+          const res = await pipeTo(a, b, { preventWritableDispose }).catch(
+            (e) => e,
+          );
+          expect(res).instanceof(PipeSourceError);
+          expect(res.cause).toMatchObject({ message: "Readable is ended" });
+
+          expect(a.readable).toBeFalsy();
+
+          expect(b.destroyed).toBe(!preventWritableDispose);
+        });
+      },
+    );
+    describe("中断", function () {
+      test.each([
+        { preventReadableDispose: true },
+        { preventWritableDispose: true },
+      ] as PipeOptions[])("中断", async function (pipeOpts) {
+        const a = createReadable();
+        const b = createWritable();
+        const abc = pipeTo(a, b, pipeOpts);
+
+        const err = new Error("ab");
+        abc.abort(err);
+        await expect(abc).rejects.toBe(err);
+
+        expect(a.readable).toBe(!!pipeOpts.preventReadableDispose);
+        expect(b.writable).toBe(!!pipeOpts.preventWritableDispose);
+      });
     });
   });
 });
@@ -242,7 +283,7 @@ describe.concurrent(
             bList.push(c.toString());
             cb();
           },
-        }
+        },
       );
 
       const pms = bridgingDuplex(a, b);
@@ -267,26 +308,33 @@ describe.concurrent(
       expect(b.destroyed).toBeTruthy();
       expect(b.closed).toBeTruthy();
     });
-    test.each([false, true])("异常 - preventDispose: %s", async function (preventDispose) {
-      const a = createDuplex();
-      const b = createDuplex();
-      const err = new Error("ks");
-      setTimeout(() => {
-        b.destroy(err);
-      });
-      const res = await bridgingDuplex(a, b, { preventDispose }).catch((err) => err);
-      expect(res).toBeInstanceOf(BridgingError);
-      expect(res.side).toBe(b);
-      expect(res.cause).toBe(err);
+    test.each([false, true])(
+      "异常 - preventDispose: %s",
+      async function (preventDispose) {
+        const a = createDuplex();
+        const b = createDuplex();
+        const err = new Error("ks");
+        setTimeout(() => {
+          b.destroy(err);
+        });
+        const res = await bridgingDuplex(a, b, { preventDispose }).catch(
+          (err) => err,
+        );
+        expect(res).toBeInstanceOf(BridgingError);
+        expect(res.side).toBe(b);
+        expect(res.cause).toBe(err);
 
-      expect(b.destroyed).toBeTruthy();
-      expect(b.errored).toBe(err);
+        expect(b.destroyed).toBeTruthy();
+        expect(b.errored).toBe(err);
 
-      expect(a.destroyed).toBe(!preventDispose);
-      expect(a.errored ?? null, "error 应该是 b 抛出的 error").toBe(preventDispose ? null : err);
-    });
+        expect(a.destroyed).toBe(!preventDispose);
+        expect(a.errored ?? null, "error 应该是 b 抛出的 error").toBe(
+          preventDispose ? null : err,
+        );
+      },
+    );
   },
-  1000
+  1000,
 );
 
 function createReadable(opts?: ReadableOpts) {

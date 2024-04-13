@@ -133,19 +133,29 @@ export interface ConnectOptions {
  * @remarks 创建TCP连接
  */
 export function connect(config: TcpConnectConfig, options?: ConnectOptions) {
-  return connectSocket(config, options).then((socket) => new Connection(socket));
+  return connectSocket(config, options).then(
+    (socket) => new Connection(socket),
+  );
 }
 /**
  * @public
  * @remarks 创建一个已连接的 Socket
  */
-export function connectSocket(config: TcpConnectConfig | PipeConfig, options?: ConnectOptions): Promise<net.Socket>;
+export function connectSocket(
+  config: TcpConnectConfig | PipeConfig,
+  options?: ConnectOptions,
+): Promise<net.Socket>;
 export function connectSocket(config: any, options: ConnectOptions = {}) {
   return new Promise<net.Socket>((resolve, reject) => {
     const { signal } = options;
     const newOpts: net.SocketConstructorOpts =
       typeof config.path === "string"
-        ? { fd: config.fd, readable: config.readable, writable: config.writable, allowHalfOpen: true }
+        ? {
+            fd: config.fd,
+            readable: config.readable,
+            writable: config.writable,
+            allowHalfOpen: true,
+          }
         : { allowHalfOpen: true };
     const socket = new net.Socket(newOpts);
     function clear() {
@@ -178,7 +188,7 @@ export function connectSocket(config: any, options: ConnectOptions = {}) {
       function () {
         clear();
         resolve(socket);
-      }
+      },
     );
     socket.once("error", onReject);
   });
@@ -202,6 +212,11 @@ export interface PipeConfig {
 /**
  * @alpha
  */
-export function connectPipe(config: PipeConfig, options: ConnectOptions = {}): Promise<SocketStream> {
-  return connectSocket(config, options).then((socket) => new SocketStream(socket));
+export function connectPipe(
+  config: PipeConfig,
+  options: ConnectOptions = {},
+): Promise<SocketStream> {
+  return connectSocket(config, options).then(
+    (socket) => new SocketStream(socket),
+  );
 }

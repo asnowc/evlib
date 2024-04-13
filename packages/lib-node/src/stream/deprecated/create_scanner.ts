@@ -6,10 +6,13 @@ import { readableToByteReader } from "../extra/byte_reader.js";
  * @remarks 创建对 Readable 的 Scanner. 它不监听 readable 的 error 事件
  * @deprecated 改用 createByteReaderFromReadable()
  */
-export function createScannerFromReadable<T extends Buffer = Buffer>(readable: Readable): StreamScanner<Buffer> {
+export function createScannerFromReadable<T extends Buffer = Buffer>(
+  readable: Readable,
+): StreamScanner<Buffer> {
   const { cancel, read } = readableToByteReader(readable);
   function readTo<T extends ArrayBufferView>(view: T): Promise<T> {
-    if (!ArrayBuffer.isView(view)) throw new Error("view must be ArrayBuffer view");
+    if (!ArrayBuffer.isView(view))
+      throw new Error("view must be ArrayBuffer view");
     if (view instanceof Uint8Array) return read(view);
     const buf = new Uint8Array(view.buffer, view.byteOffset, view.byteLength);
     return read(buf).then(() => view);

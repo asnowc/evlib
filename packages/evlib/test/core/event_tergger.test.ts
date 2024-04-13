@@ -117,7 +117,12 @@ describe("OnceEventTrigger", function () {
     const listeners = [1, 2, 3, 4].map(() => event.getPromise());
     const data = Symbol();
     expect(event.emit(data), "订阅者数量").toBe(listeners.length);
-    await expect(Promise.all(listeners)).resolves.toEqual([data, data, data, data]);
+    await expect(Promise.all(listeners)).resolves.toEqual([
+      data,
+      data,
+      data,
+      data,
+    ]);
   });
   test("同步与异步同时监听", async function () {
     let i = 0;

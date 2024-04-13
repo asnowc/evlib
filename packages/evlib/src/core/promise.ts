@@ -2,8 +2,12 @@
  * @public
  * @remarks 返回一个 promise 和控制这个 promise 的句柄
  */
-export function withPromise<T, R = any, E extends object = {}>(handle?: E): WithPromise<T, R> & E;
-export function withPromise(handle: Record<string, any> = {}): WithPromise<unknown, unknown> {
+export function withPromise<T, R = any, E extends object = {}>(
+  handle?: E,
+): WithPromise<T, R> & E;
+export function withPromise(
+  handle: Record<string, any> = {},
+): WithPromise<unknown, unknown> {
   handle.promise = new Promise(function (resolve, reject) {
     handle.resolve = resolve;
     handle.reject = reject;

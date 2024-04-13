@@ -1,5 +1,9 @@
 import { type Readable } from "node:stream";
-import type { UnderlyingSource, ReadableStreamController, ReadableByteStreamController } from "node:stream/web";
+import type {
+  UnderlyingSource,
+  ReadableStreamController,
+  ReadableByteStreamController,
+} from "node:stream/web";
 
 export type BufferViewInfo = {
   view: ArrayBufferView;
@@ -9,7 +13,9 @@ export type BufferViewInfo = {
   /** 剩余长度 */
   size: number;
 };
-export type NextChunkResult<T> = { value: T; done?: false } | { value?: Error | null; done: true };
+export type NextChunkResult<T> =
+  | { value: T; done?: false }
+  | { value?: Error | null; done: true };
 
 export class ReadableQueue<T = Uint8Array> {
   private queue: T[] = [];
@@ -18,7 +24,8 @@ export class ReadableQueue<T = Uint8Array> {
   get(cb: (chunk: NextChunkResult<T>) => void) {
     if (this.callback) throw new Error("重复调用");
     if (this.queue.length) cb({ value: this.queue.shift() as T });
-    else if (this.readable.closed) cb({ done: true, value: this.readable.errored });
+    else if (this.readable.closed)
+      cb({ done: true, value: this.readable.errored });
     else if (this.ended) this.callback = cb;
     else {
       this.callback = cb;
@@ -39,10 +46,11 @@ export class ReadableQueue<T = Uint8Array> {
   constructor(
     readonly readable: Readable,
     onError: (err?: any) => void = () => {},
-    public onClose?: (error?: Error | null) => void
+    public onClose?: (error?: Error | null) => void,
   ) {
     readable.pause();
-    if (readable.listenerCount("readable")) readable.removeAllListeners("readable"); //readable事件影响data事件
+    if (readable.listenerCount("readable"))
+      readable.removeAllListeners("readable"); //readable事件影响data事件
     readable.on("data", this.onDataBeforeEnd);
     readable.on("close", this.onClear);
     readable.on("error", onError);
@@ -85,10 +93,14 @@ export class ReadableQueue<T = Uint8Array> {
 }
 export class ReadableSource<T> implements UnderlyingSource {
   private syncChunkGetter: ReadableQueue<T>;
-  constructor(private readable: Readable, type?: "bytes") {
+  constructor(
+    private readable: Readable,
+    type?: "bytes",
+  ) {
     this.syncChunkGetter = new ReadableQueue(readable);
     if (type !== "bytes")
-      this.bytesQueueHandler = (ctrl: ReadableStreamController<T>, chunk) => ctrl.enqueue(chunk as T);
+      this.bytesQueueHandler = (ctrl: ReadableStreamController<T>, chunk) =>
+        ctrl.enqueue(chunk as T);
   }
   start(ctrl: ReadableStreamController<T>) {
     const readable = this.readable;
@@ -113,13 +125,20 @@ export class ReadableSource<T> implements UnderlyingSource {
     });
   }
   /** cancel将销毁可读流 */
-  cancel(reason = new Error("ReadableStream canceled")): void | PromiseLike<void> {
+  cancel(
+    reason = new Error("ReadableStream canceled"),
+  ): void | PromiseLike<void> {
     this.syncChunkGetter.onClose = undefined; //反正cancel 后重复调用 controller.close() 和  controller.error()
     this.readable.destroy(reason);
   }
   /** 可读字节流chunk处理，避免将 node 的 Buffer 的底层 转移*/
-  bytesQueueHandler(ctrl: ReadableByteStreamController | ReadableStreamController<T>, chunk: Uint8Array) {
-    const byobRequest = (ctrl as any).byobRequest as ReadableStreamBYOBRequest | undefined;
+  bytesQueueHandler(
+    ctrl: ReadableByteStreamController | ReadableStreamController<T>,
+    chunk: Uint8Array,
+  ) {
+    const byobRequest = (ctrl as any).byobRequest as
+      | ReadableStreamBYOBRequest
+      | undefined;
     if (byobRequest) {
       if (chunk.buffer === fastArrayBuffer) {
         const buffer = new Uint8Array(chunk.byteLength);

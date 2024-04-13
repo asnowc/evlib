@@ -1,5 +1,8 @@
 import { afterTime } from "evlib";
-import { readableToReadableStream, writableToWritableStream } from "../../src/stream/stream_transform.js";
+import {
+  readableToReadableStream,
+  writableToWritableStream,
+} from "../../src/stream/stream_transform.js";
 import { Writable, Readable, Duplex } from "node:stream";
 import { ReadableStreamDefaultReader } from "node:stream/web";
 import { test, expect, describe, vi } from "vitest";
@@ -13,7 +16,8 @@ describe.concurrent("writeable", function () {
 
     const option: WritableOption = {
       write(chunk, encoding, callback) {
-        if ((encoding as any) !== "buffer") throw new Error("encoding must a buffer");
+        if ((encoding as any) !== "buffer")
+          throw new Error("encoding must a buffer");
         writeQueue.push(chunk);
         setTimeout(callback, 50);
       },
@@ -33,7 +37,9 @@ describe.concurrent("writeable", function () {
     }
 
     expect(writeQueue.length, "写入了3个chunk").toBe(3);
-    expect(Buffer.concat(writeQueue).toString(), "写入的内容一致").toBe(writeContent.toString());
+    expect(Buffer.concat(writeQueue).toString(), "写入的内容一致").toBe(
+      writeContent.toString(),
+    );
 
     /** 关闭流，等待 writable 的 final 的回调*/
     const pms = writer.close();
@@ -43,7 +49,10 @@ describe.concurrent("writeable", function () {
     expect(writeable.writableFinished).toBeTruthy();
   });
   test("highWaterMark", async function () {
-    const writeable = new Writable({ write(chunk, encoding, callback) {}, highWaterMark: 4 });
+    const writeable = new Writable({
+      write(chunk, encoding, callback) {},
+      highWaterMark: 4,
+    });
     const writeCtrl = writableToWritableStream(writeable);
     const writer = writeCtrl.getWriter();
     const data = Buffer.alloc(2);
@@ -204,7 +213,10 @@ describe.concurrent(
       const ctrl = readableToReadableStream(readable);
       const reader = ctrl.getReader();
 
-      await expect(reader.read()).resolves.toEqual({ done: false, value: Buffer.from("abcd") });
+      await expect(reader.read()).resolves.toEqual({
+        done: false,
+        value: Buffer.from("abcd"),
+      });
     });
     test("readable 直接结束", async function () {
       const { readable, stream, reader } = createReadableStream();
@@ -220,7 +232,9 @@ describe.concurrent(
         readable.push(null);
       });
       const endEvent = new Promise((resolve) => readable.on("end", resolve));
-      const closeEvent = new Promise((resolve) => readable.on("close", resolve));
+      const closeEvent = new Promise((resolve) =>
+        readable.on("close", resolve),
+      );
       await Promise.all([endEvent, closeEvent]);
     });
     describe("readable 异常", function () {
@@ -247,7 +261,9 @@ describe.concurrent(
           const readable = createReadable();
           readable.destroy();
           const stream = readableToReadableStream(readable).getReader();
-          await expect(stream.closed).rejects.toThrowError("raw stream is unreadable");
+          await expect(stream.closed).rejects.toThrowError(
+            "raw stream is unreadable",
+          );
         });
       });
     });
@@ -261,7 +277,7 @@ describe.concurrent(
       return { readable, stream, reader };
     }
   },
-  1000
+  1000,
 );
 
 function createWriteable() {

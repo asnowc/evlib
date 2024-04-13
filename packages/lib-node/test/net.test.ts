@@ -1,4 +1,9 @@
-import { Server, SocketStream, connect, connectPipe } from "@eavid/lib-node/net";
+import {
+  Server,
+  SocketStream,
+  connect,
+  connectPipe,
+} from "@eavid/lib-node/net";
 import { expect, describe, vi, test } from "vitest";
 import { platform } from "node:os";
 
@@ -9,7 +14,7 @@ describe("tcp", function () {
       (conn) => {
         conn.on("error", () => {});
       },
-      { port }
+      { port },
     );
     await server.listen();
     server.disposeQueue = true;
@@ -36,7 +41,10 @@ describe.runIf(platform() === "win32")("ipc", function () {
     async function onConnection(pipe: SocketStream) {
       await pipe.dispose();
     }
-    const ipcServer = await Server.listen(onConnection, { path: PIPE_PATH, type: "IPC" });
+    const ipcServer = await Server.listen(onConnection, {
+      path: PIPE_PATH,
+      type: "IPC",
+    });
     const socketStream = await connectPipe({ path: PIPE_PATH });
   });
 });

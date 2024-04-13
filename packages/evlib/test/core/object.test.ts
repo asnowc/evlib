@@ -1,4 +1,10 @@
-import { patchObject, groupObject, pickObjectKey, removeUndefinedKey, deepClone } from "evlib";
+import {
+  patchObject,
+  groupObject,
+  pickObjectKey,
+  removeUndefinedKey,
+  deepClone,
+} from "evlib";
 import { describe, expect, test } from "vitest";
 
 describe("deepClone", function () {
@@ -63,11 +69,21 @@ describe("patchObject", function () {
     expect(res).toEqual(form);
   });
   test("深度覆盖", function () {
-    const form = { a: "form", extra: {}, d1: {}, d2: { a: "form", extra: "to" } },
+    const form = {
+        a: "form",
+        extra: {},
+        d1: {},
+        d2: { a: "form", extra: "to" },
+      },
       to = { a: "to", d1: { q: "to" }, d2: { a: "to", b: "to" } };
 
     patchObject(form, to);
-    expect(to).toEqual({ a: "form", extra: {}, d1: { q: "to" }, d2: { a: "form", b: "to", extra: "to" } });
+    expect(to).toEqual({
+      a: "form",
+      extra: {},
+      d1: { q: "to" },
+      d2: { a: "form", b: "to", extra: "to" },
+    });
     expect((to as any).extra, "").not.toBe(form.extra);
   });
   test("对象替换值", function () {
@@ -101,7 +117,9 @@ describe("patchObject", function () {
     });
     test("unshift", function () {
       const to = { arr: [4, 5] };
-      const res = patchObject<typeof from>(from, to, { arrayStrategy: "unshift" });
+      const res = patchObject<typeof from>(from, to, {
+        arrayStrategy: "unshift",
+      });
       expect(res.arr).toEqual([1, 2, 3, 4, 5]);
       expect(res.arr).toBe(to.arr);
     });
@@ -165,6 +183,10 @@ describe("groupObject", function () {
       { a: "c", val: 5 },
     ];
     const res = groupObject(arr, "a");
-    expect(res).toEqual({ a: [arr[0], arr[1]], b: [arr[2], arr[3]], c: [arr[4]] });
+    expect(res).toEqual({
+      a: [arr[0], arr[1]],
+      b: [arr[2], arr[3]],
+      c: [arr[4]],
+    });
   });
 });

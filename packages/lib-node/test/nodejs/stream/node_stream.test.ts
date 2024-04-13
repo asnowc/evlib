@@ -1,6 +1,11 @@
 import { Readable, Duplex, Writable } from "node:stream";
 import { describe, test, vi, Mock, expect } from "vitest";
-import { Callback, createDuplex, createReadable, createWritable } from "../../stream/__mocks__/mock_stream.js";
+import {
+  Callback,
+  createDuplex,
+  createReadable,
+  createWritable,
+} from "../../stream/__mocks__/mock_stream.js";
 
 /**
  * @remarks 用于测试 node 流的生命周期
@@ -288,7 +293,14 @@ describe("pipe", function () {
     readable.push("abc", "utf-8");
     readable.push(null);
     await nextMacroTask();
-    expect(queue).toEqual(["pipe", "end", "fin", "unpipe", "re-close", "wr-close"]);
+    expect(queue).toEqual([
+      "pipe",
+      "end",
+      "fin",
+      "unpipe",
+      "re-close",
+      "wr-close",
+    ]);
     //? autoDestroy 不会影响 pipe
   });
   test("readable异常", async function () {
@@ -299,7 +311,11 @@ describe("pipe", function () {
     const err = new Error("abc");
     readable.destroy(err);
     await nextMacroTask();
-    expect(queue).toEqual(["pipe", /* "end" */ "re-error", /*  "fin", "unpipe", */ "re-close" /* "wr-close" */]);
+    expect(queue).toEqual([
+      "pipe",
+      /* "end" */ "re-error",
+      /*  "fin", "unpipe", */ "re-close" /* "wr-close" */,
+    ]);
     //? readable 发生异常不会导致 writable 关闭和异常, 也不会触发 unpipe
     //? autoDestroy 不会影响 pipe
     // readable: error -> close
@@ -312,7 +328,12 @@ describe("pipe", function () {
     const err = new Error("abc");
     writable.destroy(err);
     await nextMacroTask();
-    expect(queue).toEqual(["pipe", /*  "end", "fin",  */ "unpipe", /*  "re-close", */ "wr-error", "wr-close"]);
+    expect(queue).toEqual([
+      "pipe",
+      /*  "end", "fin",  */ "unpipe",
+      /*  "re-close", */ "wr-error",
+      "wr-close",
+    ]);
     //? writable 发生异常不会导致 readable 关闭和异常, 但会触发 unpipe
     //? autoDestroy 不会影响 pipe
     // writable: unpipe -> error -> close
@@ -342,8 +363,22 @@ describe("pipe", function () {
     b.push("q", "utf-8");
     b.push(null);
     await nextMacroTask();
-    expect(queue1).toEqual(["pipe", "end", "fin", "unpipe", "wr-close", "re-close"]);
-    expect(queue2).toEqual(["pipe", "end", "fin", "unpipe", "re-close", "wr-close"]);
+    expect(queue1).toEqual([
+      "pipe",
+      "end",
+      "fin",
+      "unpipe",
+      "wr-close",
+      "re-close",
+    ]);
+    expect(queue2).toEqual([
+      "pipe",
+      "end",
+      "fin",
+      "unpipe",
+      "re-close",
+      "wr-close",
+    ]);
   });
   function cerateEventFn(name: string, queue: string[]) {
     return (e: any) => queue.push(name);
@@ -371,7 +406,10 @@ describe("pipe", function () {
 
     return queue;
   }
-  function getStream(write: (chunk: any, enc: string, cb: Callback) => void, autoDestroy?: boolean) {
+  function getStream(
+    write: (chunk: any, enc: string, cb: Callback) => void,
+    autoDestroy?: boolean,
+  ) {
     const readable = new Readable({ read() {}, autoDestroy });
     const writable = new Writable({ write, autoDestroy });
     return { writable, readable, queue: addQueue(readable, writable) };

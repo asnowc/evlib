@@ -23,18 +23,38 @@ describe("autoUnit", function () {
 });
 describe("paseExponentNum", function () {
   test("base", function () {
-    expect(paseExponentNum(125, 10)).toEqual({ decimals: 0.25, int: 1, exponent: 2 } as ExponentFormat);
+    expect(paseExponentNum(125, 10)).toEqual({
+      decimals: 0.25,
+      int: 1,
+      exponent: 2,
+    } as ExponentFormat);
   });
   test("负数", function () {
-    expect(paseExponentNum(-125, 10)).toEqual({ decimals: 0.25, int: -1, exponent: 2 } as ExponentFormat);
+    expect(paseExponentNum(-125, 10)).toEqual({
+      decimals: 0.25,
+      int: -1,
+      exponent: 2,
+    } as ExponentFormat);
   });
   test("小数", function () {
-    expect(paseExponentNum(122.5, 100)).toEqual({ decimals: 0.225, int: 1, exponent: 1 } as ExponentFormat);
+    expect(paseExponentNum(122.5, 100)).toEqual({
+      decimals: 0.225,
+      int: 1,
+      exponent: 1,
+    } as ExponentFormat);
   });
   test("限制指数", function () {
-    expect(paseExponentNum(10000, 10, 2)).toEqual({ decimals: 0, int: 100, exponent: 2 } as ExponentFormat);
+    expect(paseExponentNum(10000, 10, 2)).toEqual({
+      decimals: 0,
+      int: 100,
+      exponent: 2,
+    } as ExponentFormat);
   });
   test("动态进位", function () {
-    expect(paseExponentNum(10000, [2, 5, 10])).toEqual({ decimals: 0, int: 100, exponent: 3 } as ExponentFormat);
+    expect(paseExponentNum(10000, [2, 5, 10])).toEqual({
+      decimals: 0,
+      int: 100,
+      exponent: 3,
+    } as ExponentFormat);
   });
 });

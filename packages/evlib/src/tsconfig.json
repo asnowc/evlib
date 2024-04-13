@@ -1,11 +1,11 @@
 {
-    "extends": "../tsconfig.json",
-    "compilerOptions": {
-        "noEmit": false,
-        "types": [],
-        "declaration": true,
-        "outDir": "../out",
-        "rootDir": "./",
-        "declarationMap": true
-    }
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "types": [],
+    "declaration": true,
+    "outDir": "../out",
+    "rootDir": "./",
+    "declarationMap": true
+  }
 }

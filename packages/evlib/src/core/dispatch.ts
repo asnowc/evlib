@@ -8,14 +8,14 @@ import type { VoidFn, TerminablePromise } from "./type.js";
  * @returns 返回一个函数，可用在定时器触发前取消定时器
  */
 export function setTimer(fn: VoidFn, timeout: number = 0) {
-    let id: number | undefined = timer.setTimeout(function () {
-        id = undefined;
-        fn();
-    }, timeout);
-    return function clear() {
-        timer.clearTimeout(id);
-        id = undefined;
-    };
+  let id: number | undefined = timer.setTimeout(function () {
+    id = undefined;
+    fn();
+  }, timeout);
+  return function clear() {
+    timer.clearTimeout(id);
+    id = undefined;
+  };
 }
 
 /**
@@ -25,14 +25,14 @@ export function setTimer(fn: VoidFn, timeout: number = 0) {
  * @returns 返回一个函数，可用关闭定时器
  */
 export function setInterval(fn: VoidFn, intervalTime: number = 0) {
-    let id: number | undefined = timer.setInterval(function () {
-        id = undefined;
-        fn();
-    }, intervalTime);
-    return function close() {
-        timer.clearInterval(id);
-        id = undefined;
-    };
+  let id: number | undefined = timer.setInterval(function () {
+    id = undefined;
+    fn();
+  }, intervalTime);
+  return function close() {
+    timer.clearInterval(id);
+    id = undefined;
+  };
 }
 
 /**
@@ -40,21 +40,21 @@ export function setInterval(fn: VoidFn, intervalTime: number = 0) {
  * @remarks 返回一个 TerminablePromise, 在指定时间后 resolve, 执行abort() 将执行取消定时, 并拒绝 Promise
  */
 export function afterTime(time?: number): TerminablePromise<void> {
-    let abort!: (reason?: Error) => void;
-    let p: TerminablePromise<void> = new Promise<void>((resolve, reject) => {
-        let id: number | undefined = timer.setTimeout(function () {
-            id = undefined;
-            resolve();
-        }, time);
-        timer.setTimeout(resolve, time);
-        abort = function abort(reason?: Error) {
-            timer.clearTimeout(id);
-            id = undefined;
-            reject(reason);
-        };
-    }) as any;
-    p.abort = abort;
-    return p;
+  let abort!: (reason?: Error) => void;
+  let p: TerminablePromise<void> = new Promise<void>((resolve, reject) => {
+    let id: number | undefined = timer.setTimeout(function () {
+      id = undefined;
+      resolve();
+    }, time);
+    timer.setTimeout(resolve, time);
+    abort = function abort(reason?: Error) {
+      timer.clearTimeout(id);
+      id = undefined;
+      reject(reason);
+    };
+  }) as any;
+  p.abort = abort;
+  return p;
 }
 
 /**

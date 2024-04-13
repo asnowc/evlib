@@ -16,11 +16,18 @@ describe("spawn", function () {
     const args = [jsFile];
 
     const file = await open(path.resolve(dir, args[0]));
-    const process = await spawn(nodeBin, { cwd: dir, args, sharedResource: [file.fd], env: { FD_LIST: "[3]" } });
+    const process = await spawn(nodeBin, {
+      cwd: dir,
+      args,
+      sharedResource: [file.fd],
+      env: { FD_LIST: "[3]" },
+    });
     const stdout = process.stdout!;
     expect(stdout).instanceOf(ReadableStream);
 
-    const res = readAllFromStream(stdout).then((bufList): string => Buffer.concat(bufList).toString());
+    const res = readAllFromStream(stdout).then((bufList): string =>
+      Buffer.concat(bufList).toString(),
+    );
 
     expect(process.pid).toBeTypeOf("number");
     expect(process.spawnFile).toBe(nodeBin);

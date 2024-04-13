@@ -25,7 +25,10 @@ describe("LengthByteParser", function () {
 });
 describe("StepsByteParser", function () {
   test("", function () {
-    const parser = new StepsByteParser({ first: new LengthByteParser(4), final: (data: Uint8Array) => data.join(",") });
+    const parser = new StepsByteParser({
+      first: new LengthByteParser(4),
+      final: (data: Uint8Array) => data.join(","),
+    });
     expect(parser.next(new Uint8Array(4))).toBeTruthy();
     expect(parser.finish().value).toBe("0,0,0,0");
   });

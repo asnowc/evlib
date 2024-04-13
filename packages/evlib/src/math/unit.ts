@@ -1,4 +1,8 @@
-import { ParameterError, NumericalRangeError, ParameterTypeError } from "evlib/errors";
+import {
+  ParameterError,
+  NumericalRangeError,
+  ParameterTypeError,
+} from "evlib/errors";
 import { retainDecimalsFloor } from "./float.js";
 
 /** @public */
@@ -17,7 +21,11 @@ export type ExponentFormat = {
  * decimals: 小数部分
  * exponent: 指数
  */
-export function paseExponentNum(num: number, carry: number, maxExponent?: number): ExponentFormat;
+export function paseExponentNum(
+  num: number,
+  carry: number,
+  maxExponent?: number,
+): ExponentFormat;
 /**
  * @public
  * @remarks 使用动态进位值标准化数字  (int + decimals) * carry ^ exponent
@@ -29,8 +37,13 @@ export function paseExponentNum(num: number, carry: number, maxExponent?: number
  * exponent: 指数
  */
 export function paseExponentNum(num: number, carry: number[]): ExponentFormat;
-export function paseExponentNum(num: number, carry: number | number[], maxExponent: number = Infinity): ExponentFormat {
-  if (isNaN(num) || num === Infinity) throw new ParameterError(0, `Invalid number (${num}) `, "num");
+export function paseExponentNum(
+  num: number,
+  carry: number | number[],
+  maxExponent: number = Infinity,
+): ExponentFormat {
+  if (isNaN(num) || num === Infinity)
+    throw new ParameterError(0, `Invalid number (${num}) `, "num");
 
   let exponent = 0;
   let decimals: number = num % 1;
@@ -48,7 +61,8 @@ export function paseExponentNum(num: number, carry: number | number[], maxExpone
       exponent++;
     }
   } else if (carry instanceof Array) {
-    if (carry.length === 0) throw new ParameterError(1, `Array length cannot be 0`, "carry");
+    if (carry.length === 0)
+      throw new ParameterError(1, `Array length cannot be 0`, "carry");
 
     const carryList = carry;
     for (let i = 0; i < carryList.length && exponent < maxExponent; i++) {
@@ -70,14 +84,22 @@ export const autoUnit = {
    * @param raids - 保留小数位数。
    * @param unit - number 的单位
    */
-  byte(number: number, raids: number = 2, unit?: "B" | "KB" | "MB" | "GB" | "TB" | "PB") {
+  byte(
+    number: number,
+    raids: number = 2,
+    unit?: "B" | "KB" | "MB" | "GB" | "TB" | "PB",
+  ) {
     const unitList = ["B", "KB", "MB", "GB", "TB", "PB"];
     let startIndex = 0;
     if (unit) {
       let index = unitList.findIndex((item) => item === unit);
       if (index > 0) startIndex += index;
     }
-    let { exponent, decimals, int } = paseExponentNum(number, 1024, unitList.length - startIndex);
+    let { exponent, decimals, int } = paseExponentNum(
+      number,
+      1024,
+      unitList.length - startIndex,
+    );
     exponent += startIndex;
 
     if (decimals > 0) int = retainDecimalsFloor(int + decimals, raids);

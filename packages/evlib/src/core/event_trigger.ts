@@ -1,7 +1,9 @@
 import { ParameterTypeError, AbortedError } from "../errors.js";
 import { BaseAbortSignal } from "./internal.js";
 
-class EventTriggerImpl<T> implements Listenable<T>, EventTriggerController<T>, OnceListenable<T> {
+class EventTriggerImpl<T>
+  implements Listenable<T>, EventTriggerController<T>, OnceListenable<T>
+{
   #queue = new Set<Listener<T>>();
   /** 单次触发 */
   #once = new Set<Listener<T>>();
@@ -32,7 +34,8 @@ class EventTriggerImpl<T> implements Listenable<T>, EventTriggerController<T>, O
   }
   on<R extends Listener<T>>(listener: R): R {
     if (this.#done) throw createDoneError();
-    if (typeof listener !== "function") throw new ParameterTypeError(0, "function", typeof listener);
+    if (typeof listener !== "function")
+      throw new ParameterTypeError(0, "function", typeof listener);
     this.#queue.add(listener);
     return listener;
   }
@@ -56,7 +59,9 @@ interface EventTriggerConstructor {
 /** @public */
 export const EventTrigger: EventTriggerConstructor = EventTriggerImpl;
 /** @public */
-export type EventTrigger<T> = Listenable<T> & EventTriggerController<T> & OnceListenable<T>;
+export type EventTrigger<T> = Listenable<T> &
+  EventTriggerController<T> &
+  OnceListenable<T>;
 
 /**
  * @public
@@ -128,7 +133,8 @@ export class OnceEventTrigger<T> implements OnceListenable<T> {
     });
 
     if (signal) {
-      if (signal.aborted) return Promise.reject(signal.reason ?? new AbortedError());
+      if (signal.aborted)
+        return Promise.reject(signal.reason ?? new AbortedError());
 
       const signalListener: SignalListener = {
         key,
@@ -150,12 +156,18 @@ export class OnceEventTrigger<T> implements OnceListenable<T> {
     const item = this.#asyncListeners.get(key);
     if (!item) return false;
     this.#asyncListeners.delete(key);
-    item.signalListener?.signal.removeEventListener("abort", item.signalListener);
+    item.signalListener?.signal.removeEventListener(
+      "abort",
+      item.signalListener,
+    );
     return true;
   }
   then<R extends Listener<T>>(resolve: R, reject?: (arg: any) => void): R {
     if (this.#done) throw createDoneError();
-    this.#asyncListeners.set(resolve, { resolve, reject: reject ?? (() => {}) });
+    this.#asyncListeners.set(resolve, {
+      resolve,
+      reject: reject ?? (() => {}),
+    });
     return resolve;
   }
   emit(arg: T): number {
@@ -163,7 +175,10 @@ export class OnceEventTrigger<T> implements OnceListenable<T> {
     const size = this.#asyncListeners.size;
     for (const handle of this.#asyncListeners.values()) {
       handle.resolve(arg);
-      handle.signalListener?.signal.removeEventListener("abort", handle.signalListener);
+      handle.signalListener?.signal.removeEventListener(
+        "abort",
+        handle.signalListener,
+      );
     }
     this.#asyncListeners.clear();
     return size;
@@ -173,7 +188,10 @@ export class OnceEventTrigger<T> implements OnceListenable<T> {
     const size = this.#asyncListeners.size;
     for (const handle of this.#asyncListeners.values()) {
       handle.reject(err);
-      handle.signalListener?.signal.removeEventListener("abort", handle.signalListener);
+      handle.signalListener?.signal.removeEventListener(
+        "abort",
+        handle.signalListener,
+      );
     }
     this.#asyncListeners.clear();
     return size;

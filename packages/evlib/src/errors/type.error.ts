@@ -9,7 +9,10 @@ export function createTypeErrorDesc(except: string, actual: string) {
 
 /** @public */
 export class TypeError extends Error {
-  constructor(public cause: TypeErrorDesc, msg?: string) {
+  constructor(
+    public cause: TypeErrorDesc,
+    msg?: string,
+  ) {
     if (!msg) msg = "类型不匹配";
     super(msg, { cause });
   }

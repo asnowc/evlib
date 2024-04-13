@@ -1,4 +1,7 @@
-import { readableToByteReader, readableStreamToByteReader } from "@eavid/lib-node/stream";
+import {
+  readableToByteReader,
+  readableStreamToByteReader,
+} from "@eavid/lib-node/stream";
 import { describe, test, expect, vi } from "vitest";
 import {
   ReadableStream,
@@ -46,7 +49,10 @@ describe("createReaderFromWebStream", function () {
   });
   function createMockRead() {
     const source = new MockSource();
-    const stream = new ReadableStream<Uint8Array>(source, new ByteLengthQueuingStrategy({ highWaterMark: 0 }));
+    const stream = new ReadableStream<Uint8Array>(
+      source,
+      new ByteLengthQueuingStrategy({ highWaterMark: 0 }),
+    );
     const { read, cancel } = readableStreamToByteReader(stream);
     return {
       stream,
@@ -74,10 +80,18 @@ describe("createByteReaderFromReadable", function () {
       const { read, readable } = createMockRead();
       readable.push(Buffer.from("abcdefghij"));
       readable.push(null);
-      await expect(read(Buffer.alloc(4)).then((buf) => buf.toString())).resolves.toBe("abcd");
-      await expect(read(Buffer.alloc(2)).then((buf) => buf.toString())).resolves.toBe("ef");
-      await expect(read(Buffer.alloc(2)).then((buf) => buf.toString())).resolves.toBe("gh");
-      await expect(read(Buffer.alloc(2)).then((buf) => buf.toString())).resolves.toBe("ij");
+      await expect(
+        read(Buffer.alloc(4)).then((buf) => buf.toString()),
+      ).resolves.toBe("abcd");
+      await expect(
+        read(Buffer.alloc(2)).then((buf) => buf.toString()),
+      ).resolves.toBe("ef");
+      await expect(
+        read(Buffer.alloc(2)).then((buf) => buf.toString()),
+      ).resolves.toBe("gh");
+      await expect(
+        read(Buffer.alloc(2)).then((buf) => buf.toString()),
+      ).resolves.toBe("ij");
       await expect(read(Buffer.alloc(2), true)).resolves.toBe(null);
     });
     test("需要等待多个chunk", async function () {
@@ -91,17 +105,23 @@ describe("createByteReaderFromReadable", function () {
         readable.push(null);
       }
       await expect(pms.then((buf) => buf.toString())).resolves.toBe("abcd");
-      await expect(read(Buffer.alloc(2)).then((buf) => buf.toString())).resolves.toBe("ee");
+      await expect(
+        read(Buffer.alloc(2)).then((buf) => buf.toString()),
+      ).resolves.toBe("ee");
     });
     test("等待的chunk足够下一个分段", async function () {
       const { read, readable } = createMockRead();
-      const p1 = expect(read(Buffer.alloc(4)).then((buf) => buf.toString())).resolves.toBe("abcd");
+      const p1 = expect(
+        read(Buffer.alloc(4)).then((buf) => buf.toString()),
+      ).resolves.toBe("abcd");
       readable.push(Buffer.from("ab"));
       await afterTime();
       readable.push(Buffer.from("cdefgh"));
       readable.push(null);
       await p1;
-      await expect(read(Buffer.alloc(4)).then((buf) => buf.toString())).resolves.toBe("efgh");
+      await expect(
+        read(Buffer.alloc(4)).then((buf) => buf.toString()),
+      ).resolves.toBe("efgh");
     });
   });
 

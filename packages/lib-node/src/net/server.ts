@@ -62,9 +62,18 @@ export type CreateIpcServerOpts = Omit<IpcServerOpts, "path">;
 /** @public */
 export class Server {
   /** @alpha */
-  static listen(onConn: (conn: Connection) => void, options?: TcpServerOpts): Promise<Server>;
-  static listen(onConn: (conn: SocketStream) => void, options?: IpcServerOpts): Promise<Server>;
-  static async listen(onConn: (conn: any) => void, options: TcpServerOpts | IpcServerOpts = {}) {
+  static listen(
+    onConn: (conn: Connection) => void,
+    options?: TcpServerOpts,
+  ): Promise<Server>;
+  static listen(
+    onConn: (conn: SocketStream) => void,
+    options?: IpcServerOpts,
+  ): Promise<Server>;
+  static async listen(
+    onConn: (conn: any) => void,
+    options: TcpServerOpts | IpcServerOpts = {},
+  ) {
     const type = options.type;
     const onSocketConnect =
       type === "IPC"
@@ -75,11 +84,24 @@ export class Server {
     return server;
   }
 
-  constructor(onConn: (conn: net.Socket) => void, options?: TcpServerOpts | undefined);
-  constructor(onConn: (conn: net.Socket) => void, options?: IpcServerOpts | undefined);
-  constructor(onConn: (conn: net.Socket) => void, options?: TcpServerOpts | IpcServerOpts | undefined);
-  constructor(onConn: (conn: net.Socket) => void, options: TcpServerOpts | IpcServerOpts = {}) {
-    if (typeof onConn !== "function") throw new Error("onConnection must be a function");
+  constructor(
+    onConn: (conn: net.Socket) => void,
+    options?: TcpServerOpts | undefined,
+  );
+  constructor(
+    onConn: (conn: net.Socket) => void,
+    options?: IpcServerOpts | undefined,
+  );
+  constructor(
+    onConn: (conn: net.Socket) => void,
+    options?: TcpServerOpts | IpcServerOpts | undefined,
+  );
+  constructor(
+    onConn: (conn: net.Socket) => void,
+    options: TcpServerOpts | IpcServerOpts = {},
+  ) {
+    if (typeof onConn !== "function")
+      throw new Error("onConnection must be a function");
     const serverOpts: net.ServerOpts = {
       keepAlive: options.keepAlive,
       keepAliveInitialDelay: options.keepAliveInitialDelay,
@@ -160,12 +182,18 @@ export class Server {
   listen(options: ServerListenOpts = {}) {
     return new Promise<void>((resolve, reject) => {
       const defaultOpts = this.#options;
-      const { host = defaultOpts.host, port = defaultOpts.port, path = defaultOpts.path } = options;
+      const {
+        host = defaultOpts.host,
+        port = defaultOpts.port,
+        path = defaultOpts.path,
+      } = options;
       if (this.type === "TCP") {
-        if (typeof port !== "number") throw new Error("TCP Server 必须指定 port");
+        if (typeof port !== "number")
+          throw new Error("TCP Server 必须指定 port");
         this.#server.listen({ ...this.#options, host, port }, resolve);
       } else {
-        if (typeof path !== "string") throw new Error("IPC Server 必须指定 path");
+        if (typeof path !== "string")
+          throw new Error("IPC Server 必须指定 path");
         this.#server.listen({ ...this.#options, path }, resolve);
       }
     });

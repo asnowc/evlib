@@ -7,12 +7,22 @@ import type { Readable } from "stream";
  *
  * @throws
  */
-export function readableRead(stream: Readable, len: number, abortSignal?: AbortSignal): Promise<Buffer> {
-  if (Object.hasOwn(stream, asyncRead)) return Promise.reject(new Error("前一个异步读取解决之前不能再继续调用"));
-  else if (stream.readableLength >= len) return Promise.resolve(stream.read(len));
+export function readableRead(
+  stream: Readable,
+  len: number,
+  abortSignal?: AbortSignal,
+): Promise<Buffer> {
+  if (Object.hasOwn(stream, asyncRead))
+    return Promise.reject(new Error("前一个异步读取解决之前不能再继续调用"));
+  else if (stream.readableLength >= len)
+    return Promise.resolve(stream.read(len));
   return new Promise<Buffer>(function (resolve, reject) {
     abortSignal?.throwIfAborted();
-    Object.defineProperty(stream, asyncRead, { value: true, writable: true, configurable: true });
+    Object.defineProperty(stream, asyncRead, {
+      value: true,
+      writable: true,
+      configurable: true,
+    });
 
     const view = Buffer.allocUnsafe(len);
     let offset = 0;
@@ -60,7 +70,10 @@ const asyncRead = Symbol("asyncRead");
  * @alpha
  * @remarks 读取所有 chunks. 等待流 end 事件触发后解决
  */
-export async function readableReadAll<T>(stream: Readable, abortSignal?: AbortSignal) {
+export async function readableReadAll<T>(
+  stream: Readable,
+  abortSignal?: AbortSignal,
+) {
   return new Promise<T[]>(function (resolve, reject) {
     let dataList: T[] = [];
     function onData(newData: T) {

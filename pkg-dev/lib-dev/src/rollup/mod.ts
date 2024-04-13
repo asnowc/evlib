@@ -2,7 +2,11 @@ import { RollupOptions } from "rollup";
 import { RollupTypescriptOptions } from "@rollup/plugin-typescript";
 import { dePromise } from "../lib/mod.js";
 
-import { typescript, nodeResolve, RollupNodeResolveOptions } from "./plugins.js";
+import {
+  typescript,
+  nodeResolve,
+  RollupNodeResolveOptions,
+} from "./plugins.js";
 export * from "rollup";
 export * as tools from "./tool.js";
 export * as plugins from "./plugins.js";
@@ -28,8 +32,17 @@ export function defineEvConfig(options: ExtraRollupConfig) {
       } else plugin = [];
     }
     if (extra.typescript)
-      plugin.unshift(typescript(typeof extra.typescript === "object" ? extra.typescript : undefined));
-    if (extra.resolve) plugin.unshift(nodeResolve(typeof extra.resolve === "object" ? extra.resolve : undefined));
+      plugin.unshift(
+        typescript(
+          typeof extra.typescript === "object" ? extra.typescript : undefined,
+        ),
+      );
+    if (extra.resolve)
+      plugin.unshift(
+        nodeResolve(
+          typeof extra.resolve === "object" ? extra.resolve : undefined,
+        ),
+      );
     return plugin;
   });
   return rollupOptions;

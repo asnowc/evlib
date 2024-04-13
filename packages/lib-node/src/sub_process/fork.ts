@@ -14,9 +14,11 @@ const exePath = process.execPath;
  */
 export function fork(file: string, options: SpawnOptions = {}) {
   const args = options.args ?? [];
-  return rawSpawn(exePath, { ...options, args: [file, ...args] }, { nodeIPC: true }).then(
-    (cps) => new NodeSubProcess(cps)
-  );
+  return rawSpawn(
+    exePath,
+    { ...options, args: [file, ...args] },
+    { nodeIPC: true },
+  ).then((cps) => new NodeSubProcess(cps));
 }
 
 /**

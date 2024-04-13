@@ -56,7 +56,10 @@ export class LengthByteParser extends ByteParser<Uint8Array> {
 }
 /** @alpha */
 export class StepsByteParser<T> extends ByteParser<T> {
-  constructor(opts: { first: BySteps<any>; final?: (data: any) => T }, ...steps: ((data: any) => BySteps<any>)[]) {
+  constructor(
+    opts: { first: BySteps<any>; final?: (data: any) => T },
+    ...steps: ((data: any) => BySteps<any>)[]
+  ) {
     super();
     this.first = opts.first;
     this.current = opts.first;
@@ -77,7 +80,10 @@ export class StepsByteParser<T> extends ByteParser<T> {
         if (res.residue) return this.next(res.residue);
         return false;
       }
-      this.result = { value: this.final ? this.final(res.value) : res.value, residue: res.residue };
+      this.result = {
+        value: this.final ? this.final(res.value) : res.value,
+        residue: res.residue,
+      };
       this.step = 0;
       this.current = this.first;
       return true;

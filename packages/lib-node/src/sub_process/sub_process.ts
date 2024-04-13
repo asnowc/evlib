@@ -1,10 +1,16 @@
 import * as node_ps from "node:child_process";
-import { readableToReadableStream, writableToWritableStream } from "../stream/stream_transform.js";
+import {
+  readableToReadableStream,
+  writableToWritableStream,
+} from "../stream/stream_transform.js";
 import { WritableStream, ReadableStream } from "node:stream/web";
 import { OnceEventTrigger } from "evlib";
 
 /** @public */
-export type ClosedState = Readonly<{ code: null | number; signal: NodeJS.Signals | null }>;
+export type ClosedState = Readonly<{
+  code: null | number;
+  signal: NodeJS.Signals | null;
+}>;
 /** @public */
 export class SubProcess {
   constructor(protected nodeCps: node_ps.ChildProcess) {
@@ -25,8 +31,12 @@ export class SubProcess {
     this.spawnFile = nodeCps.spawnfile;
     this.spawnargs = nodeCps.spawnargs;
     this.stdin = nodeCps.stdin ? writableToWritableStream(nodeCps.stdin) : null;
-    this.stdout = nodeCps.stdout ? readableToReadableStream(nodeCps.stdout) : null;
-    this.stderr = nodeCps.stderr ? readableToReadableStream(nodeCps.stderr) : null;
+    this.stdout = nodeCps.stdout
+      ? readableToReadableStream(nodeCps.stdout)
+      : null;
+    this.stderr = nodeCps.stderr
+      ? readableToReadableStream(nodeCps.stderr)
+      : null;
     this.stdio = [this.stdin, this.stdout, this.stderr];
     this.pid = nodeCps.pid!;
   }
@@ -42,7 +52,7 @@ export class SubProcess {
   readonly stdio: readonly [
     WritableStream<Buffer> | null,
     ReadableStream<Buffer> | null,
-    ReadableStream<Buffer> | null
+    ReadableStream<Buffer> | null,
   ];
   readonly stdin: null | WritableStream<Buffer>;
   readonly stdout: null | ReadableStream<Buffer>;

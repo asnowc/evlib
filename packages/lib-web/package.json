@@ -1,24 +1,24 @@
 {
-    "name": "@eavid/lib-web",
-    "version": "0.0.1-1",
-    "description": "",
-    "type": "module",
-    "scripts": {
-        "build": "tsc -p ./tsconfig.build.json"
-    },
-    "exports": {
-        "./*": "./out/*.js"
-    },
-    "keywords": [],
-    "author": "Eavid",
-    "license": "MIT",
-    "peerDependencies": {},
-    "files": [
-        "out/**/*.js",
-        "out/**/*.d.ts"
-    ],
-    "publishConfig": {
-        "access": "public",
-        "registry": "https://registry.npmjs.org/"
-    }
+  "name": "@eavid/lib-web",
+  "version": "0.0.1-1",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p ./tsconfig.build.json"
+  },
+  "exports": {
+    "./*": "./out/*.js"
+  },
+  "keywords": [],
+  "author": "Eavid",
+  "license": "MIT",
+  "peerDependencies": {},
+  "files": [
+    "out/**/*.js",
+    "out/**/*.d.ts"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
 }
