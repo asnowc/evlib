@@ -1,5 +1,5 @@
 import * as net from "node:net";
-import { Listenable } from "evlib";
+import { EventTrigger } from "evlib";
 import { DuplexStream } from "../internal/byte_duplex.js";
 /* c8 ignore start */
 /**
@@ -40,7 +40,7 @@ export class Connection extends SocketStream {
     this.remoteAddress = socket.remoteAddress!;
     this.remotePort = socket.remotePort!;
 
-    socket.on("timeout", () => this.$timeout.emit());
+    socket.on("timeout", () => this.timeoutEvent.emit());
   }
 
   /**
@@ -99,7 +99,9 @@ export class Connection extends SocketStream {
   /**
    * @remarks timeout 事件
    */
-  $timeout = new Listenable<void>();
+  readonly timeoutEvent = new EventTrigger<void>();
+  /** @deprecated 改用 timeoutEvent */
+  readonly $timeout = this.timeoutEvent;
 }
 
 /**

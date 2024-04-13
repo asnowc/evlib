@@ -11,7 +11,7 @@ describe.concurrent("byteDuplex", function () {
 
     expect(dpStream.closed).toBeFalsy();
     await dpStream.closeWrite(); //finished事件
-    await dpStream.$closed;
+    await dpStream.watchClose();
     expect(dpStream.closed).toBeTruthy();
     expect(destroy, "Duplex 销毁周期已被执行").toBeCalled();
   });
@@ -25,17 +25,17 @@ describe.concurrent("byteDuplex", function () {
     setTimeout(() => duplex.push(null));
     await expect(dpStream.read(1, true)).resolves.toBeNull();
 
-    await dpStream.$closed;
+    await dpStream.watchClose();
     expect(dpStream.closed).toBeTruthy();
     expect(destroy, "Duplex 销毁周期已被执行").toBeCalled();
   });
   test("dispose", async function () {
-    const { destroy, duplex, dpStream } = createDuplexStream();
+    const { destroy, dpStream } = createDuplexStream();
 
     const err = new Error();
     dpStream.dispose(err);
 
-    const res = await dpStream.$closed;
+    const res = await dpStream.watchClose().catch((err) => err);
     expect(dpStream.closed, "duplexStream closed").toBeTruthy();
     expect(dpStream.writableClosed, "duplexStream.writable closed").toBeTruthy();
     expect(dpStream.readableClosed, "duplexStream.readable closed").toBeTruthy();

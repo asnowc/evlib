@@ -1,5 +1,5 @@
 import * as net from "node:net";
-import { Listenable } from "evlib";
+import { EventTrigger, Listenable, OnceEventTrigger } from "evlib";
 import { Connection, SocketStream } from "./connection.js";
 
 interface ServerOpts {
@@ -129,8 +129,15 @@ export class Server {
   readonly type: "IPC" | "TCP";
   #options: net.ListenOptions;
   #server = new net.Server();
-  $close = new Listenable<void>();
-  $error = new Listenable<Error>();
+  watchClose(signal?: AbortSignal) {
+    return this.$close.getPromise(signal);
+  }
+  readonly closeEvent = new OnceEventTrigger<void>();
+  readonly errorEvent = new EventTrigger<Error>();
+  /** @deprecated 改用 closeEvent */
+  readonly $close = this.closeEvent;
+  /** @deprecated 改用 errorEvent */
+  readonly $error = this.errorEvent;
   /* c8 ignore next 3 */
   ref() {
     this.#server.ref();

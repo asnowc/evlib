@@ -1,6 +1,6 @@
 import { readableToByteReader, ByteReader, readableToReadableStream, writableToWritableStream } from "../stream.js";
 import * as NodeStream from "node:stream";
-import { createEvent, EventCenter } from "evlib";
+import { OnceEventTrigger } from "evlib";
 import { ReadableStream, WritableStream } from "node:stream/web";
 
 /**
@@ -18,8 +18,8 @@ export class DuplexStream<T extends Uint8Array = Uint8Array> {
         (this as any).writableClosed = true;
       }
       const err = this.duplex.errored;
-      if (err) this.$closed.emitError(err);
-      else this.$closed.emit();
+      if (err) this.closeEvent.emitError(err);
+      else this.closeEvent.emit();
     });
     this.readable = readableToReadableStream(duplex);
     this.writable = writableToWritableStream(duplex);
@@ -28,8 +28,12 @@ export class DuplexStream<T extends Uint8Array = Uint8Array> {
   }
   readonly readable: ReadableStream<T>;
   readonly writable: WritableStream<T>;
-
-  $closed: EventCenter<void, Error> = createEvent();
+  protected closeEvent = new OnceEventTrigger<void>();
+  /** @deprecated 改用 closeEvent */
+  $closed = this.closeEvent;
+  watchClose(signal?: AbortSignal): Promise<void> {
+    return this.closeEvent.getPromise(signal);
+  }
   readonly closed: boolean;
   readonly writableClosed: boolean;
 
