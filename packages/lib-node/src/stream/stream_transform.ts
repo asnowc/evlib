@@ -5,7 +5,7 @@ import {
   QueuingStrategy,
   ByteLengthQueuingStrategy,
 } from "node:stream/web";
-import { ReadableSource, ReadableQueue } from "./transform/readable_core.js";
+import { ReadableSource } from "./transform/readable_core.js";
 import { WritableCore } from "./transform/writable_core.js";
 /**
  * @public
@@ -43,13 +43,4 @@ export function writableToWritableStream<T = Uint8Array>(writable: Writable) {
     });
   }
   return new WritableStream<T>(new WritableCore(writable), queuingStrategy);
-}
-/**
- * @public
- * @remarks 将 Readable 转为 异步迭代器。它与 Readable[Symbol.asyncIterable] 行为不同。它会迭代 push 的 chunk
- *
- */
-export function readableToAsyncIterator<T = Uint8Array>(readable: Readable) {
-  const queue = new ReadableQueue<T>(readable);
-  return queue[Symbol.asyncIterator]();
 }

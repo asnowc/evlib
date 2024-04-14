@@ -119,24 +119,6 @@ export class ReadableQueue<T = Uint8Array> {
   };
 
   private onReadableError = this.cancel.bind(this);
-
-  async *[Symbol.asyncIterator](): AsyncGenerator<T, void, undefined> {
-    const readable = this.readable;
-    try {
-      while (!readable.readableEnded) {
-        const value = await new Promise<T>((resolve, reject) => {
-          this.callback = { resolve, reject };
-          this.readable.resume();
-        });
-        yield value;
-      }
-    } catch (error) {
-      if (!this.readable.readableEnded) throw error;
-    }
-    if (this.queue.length) yield* this.queue;
-    this.queue = [];
-    this.onClose?.();
-  }
 }
 export class ReadableSource<T> implements UnderlyingSource {
   private syncChunkGetter!: ReadableQueue<T>;
