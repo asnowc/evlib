@@ -5,98 +5,138 @@ import type {
   ReadableByteStreamController,
 } from "node:stream/web";
 
-export type BufferViewInfo = {
-  view: ArrayBufferView;
-  buf: Uint8Array;
-  /** 偏移 */
-  offset: number;
-  /** 剩余长度 */
-  size: number;
-};
-export type NextChunkResult<T> =
-  | { value: T; done?: false }
-  | { value?: Error | null; done: true };
-
+function createNoMoreDataError() {
+  return new Error("No more Data");
+}
 export class ReadableQueue<T = Uint8Array> {
-  private queue: T[] = [];
-
-  ended = false;
-  get(cb: (chunk: NextChunkResult<T>) => void) {
+  /**
+   * @param resolve 获取到下一个 chunk 时的回调
+   * @param reject 当不存在下一个chunk 时的回调。这可能是 调用 cancel()、readable 发生异常, 则参数是一个 Error 实例。如果是 readable 已经读取结束，则为 undefined 或 null
+   */
+  next(
+    resolve: (chunk: T) => void,
+    reject?: (value: Error | null | undefined) => void
+  ) {
     if (this.callback) throw new Error("重复调用");
-    if (this.queue.length) cb({ value: this.queue.shift() as T });
-    else if (this.readable.closed)
-      cb({ done: true, value: this.readable.errored });
-    else if (this.ended) this.callback = cb;
+    if (this.queue.length) {
+      resolve(this.queue.shift()!);
+      if (this.queue.length === 0) this.onClose?.();
+    } else if (this.isNoMoreData) reject?.(this.readable.errored);
     else {
-      this.callback = cb;
+      this.callback = { resolve, reject };
       this.readable.resume();
     }
   }
-  cancel() {
-    this.readable.off("close", this.onClear);
-    this.readable.off("end", this.onClear);
-    this.readable.off("data", this.onDataAfterEnd);
-    this.readable.off("data", this.onDataBeforeEnd);
-    const cb = this.callback;
-    this.callback = undefined;
+
+  private clear() {
+    this.isNoMoreData = true;
+    // 这可能是 onEnd 触发的， 也可能是onError触发的，也可能是手动触发
     this.readable.pause();
-    return cb;
+    this.readable.off("end", this.onReadableEnd);
+    this.readable.off("error", this.onReadableError);
+    this.readable.off("data", this.onDataAfterPushNull);
+    this.readable.off("data", this.onDataBeforePushNull);
   }
-  private callback?: (chunk: NextChunkResult<T>) => void;
+  private callback?: {
+    resolve: (chunk: T) => void;
+    reject?: (reason?: Error | null) => void;
+  };
+  /**
+   * @param onClose - 在没有更多数据时触发。
+   * @param onAbort - 在被中断时触发。这可以是 Readable 的 error 事件，也可以是手动调用 cancel
+   */
   constructor(
     readonly readable: Readable,
-    onError: (err?: any) => void = () => {},
-    public onClose?: (error?: Error | null) => void,
+    public onClose?: (error?: Error) => void
   ) {
     readable.pause();
     if (readable.listenerCount("readable"))
       readable.removeAllListeners("readable"); //readable事件影响data事件
-    readable.on("data", this.onDataBeforeEnd);
-    readable.on("close", this.onClear);
-    readable.on("error", onError);
-    readable.on("end", this.onClear);
+    readable.on("data", this.onDataBeforePushNull);
+    readable.on("end", this.onReadableEnd);
+    readable.on("error", this.onReadableError);
     this.rawPush = readable.push;
     readable.push = this.onPush;
   }
-  private onPush = (chunk: T) => {
-    if (chunk === null && !this.ended) {
-      this.ended = true;
-      this.readable.on("data", this.onDataAfterEnd);
-      this.readable.off("data", this.onDataBeforeEnd);
+  private readonly onPush = (chunk: T) => {
+    if (chunk === null && !this.isPushedNull) {
+      this.isPushedNull = true;
+      this.readable.on("data", this.onDataAfterPushNull);
+      this.readable.off("data", this.onDataBeforePushNull);
       this.readable.resume();
     }
     return this.rawPush.call(this.readable, chunk);
   };
   private rawPush: (chunk: T) => boolean;
-  private onDataAfterEnd = (chunk: T) => {
+  /** Readable 的 end 或 error 事件发出后变为 true */
+  isNoMoreData = false;
+  /** readable 是否已经 push(null) */
+  isPushedNull = false;
+  /** 缓存队列。 在 Readable push(null) 后, 收集 Readable 中的缓冲区的数据 (优先解决存在的callback)，这样可以不阻止 Readable 的 close 事件 */
+  private queue: T[] = [];
+  private readonly onDataAfterPushNull = (chunk: T) => {
     const cb = this.callback;
     this.callback = undefined;
-    if (cb) cb({ value: chunk });
+    if (cb) cb.resolve(chunk);
     else this.queue.push(chunk);
   };
-  private onDataBeforeEnd = (chunk: T) => {
+  private readonly onDataBeforePushNull = (chunk: T) => {
     const cb = this.callback;
     this.callback = undefined;
-    cb?.({ value: chunk });
+    cb?.resolve(chunk);
     this.readable.pause();
   };
-
-  private onClear = () => {
-    const cb = this.cancel();
+  private rejectCallback(error?: Error) {
+    const cb = this.callback;
     if (cb) {
       this.callback = undefined;
-      cb({ done: true, value: this.readable.errored });
-    } else if (this.queue.length == 0) {
-      this.onClose?.(this.readable.errored); //主动触发
+      cb.reject?.(error);
+    }
+  }
+  /**
+   * @remarks 撤销对 readable 的 控制.
+   */
+  private cancel(reason: any = createNoMoreDataError()) {
+    if (!(reason instanceof Error))
+      reason = new Error("Readable has been aborted");
+    this.clear();
+    if (this.queue.length == 0) {
+      this.onClose?.(reason);
+      this.rejectCallback(reason);
+    }
+  }
+  private onReadableEnd = () => {
+    this.clear();
+    if (this.queue.length == 0) {
+      this.onClose?.(); //主动触发
+      this.rejectCallback();
     }
   };
+
+  private onReadableError = this.cancel.bind(this);
+
+  async *[Symbol.asyncIterator](): AsyncGenerator<T, void, undefined> {
+    const readable = this.readable;
+    try {
+      while (!readable.readableEnded) {
+        const value = await new Promise<T>((resolve, reject) => {
+          this.callback = { resolve, reject };
+          this.readable.resume();
+        });
+        yield value;
+      }
+    } catch (error) {
+      if (!this.readable.readableEnded) throw error;
+    }
+    if (this.queue.length) yield* this.queue;
+    this.queue = [];
+    this.onClose?.();
+  }
 }
 export class ReadableSource<T> implements UnderlyingSource {
   private syncChunkGetter: ReadableQueue<T>;
-  constructor(
-    private readable: Readable,
-    type?: "bytes",
-  ) {
+  iter!: AsyncGenerator<T, void, void>;
+  constructor(private readable: Readable, type?: "bytes") {
     this.syncChunkGetter = new ReadableQueue(readable);
     if (type !== "bytes")
       this.bytesQueueHandler = (ctrl: ReadableStreamController<T>, chunk) =>
@@ -117,16 +157,13 @@ export class ReadableSource<T> implements UnderlyingSource {
     };
   }
   pull(ctrl: ReadableStreamController<T>) {
-    this.syncChunkGetter.get((chunk) => {
-      if (chunk.done) {
-        if (chunk.value) ctrl.error(chunk.value);
-        else ctrl.close();
-      } else this.bytesQueueHandler(ctrl, chunk.value as any);
+    this.syncChunkGetter.next((chunk) => {
+      this.bytesQueueHandler(ctrl, chunk);
     });
   }
   /** cancel将销毁可读流 */
   cancel(
-    reason = new Error("ReadableStream canceled"),
+    reason = new Error("ReadableStream canceled")
   ): void | PromiseLike<void> {
     this.syncChunkGetter.onClose = undefined; //反正cancel 后重复调用 controller.close() 和  controller.error()
     this.readable.destroy(reason);
@@ -134,19 +171,20 @@ export class ReadableSource<T> implements UnderlyingSource {
   /** 可读字节流chunk处理，避免将 node 的 Buffer 的底层 转移*/
   bytesQueueHandler(
     ctrl: ReadableByteStreamController | ReadableStreamController<T>,
-    chunk: Uint8Array,
+    chunk: T
   ) {
     const byobRequest = (ctrl as any).byobRequest as
       | ReadableStreamBYOBRequest
       | undefined;
     if (byobRequest) {
-      if (chunk.buffer === fastArrayBuffer) {
-        const buffer = new Uint8Array(chunk.byteLength);
-        buffer.set(chunk);
-        chunk = buffer;
+      let buf = chunk as Uint8Array;
+      if (buf.buffer === fastArrayBuffer) {
+        const buffer = new Uint8Array(buf.byteLength);
+        buffer.set(buf);
+        buf = buffer;
       }
-      byobRequest.respondWithNewView(chunk);
-      byobRequest.respond(chunk.byteLength);
+      byobRequest.respondWithNewView(buf);
+      byobRequest.respond(buf.byteLength);
     } else {
       ctrl.enqueue(chunk as any);
     }

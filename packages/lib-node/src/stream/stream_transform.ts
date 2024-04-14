@@ -5,7 +5,7 @@ import {
   QueuingStrategy,
   ByteLengthQueuingStrategy,
 } from "node:stream/web";
-import { ReadableSource } from "./transform/readable_core.js";
+import { ReadableSource, ReadableQueue } from "./transform/readable_core.js";
 import { WritableCore } from "./transform/writable_core.js";
 /**
  * @public
@@ -13,7 +13,7 @@ import { WritableCore } from "./transform/writable_core.js";
  * 它的行为与 Readable.toWeb() 的行为不同. Readable.toWeb() 会造成 扩大 highWaterMark 的问题. node v20 目前是这样的
  */
 export function readableToReadableStream<T = Uint8Array>(
-  readable: Readable,
+  readable: Readable
 ): ReadableStream<T> {
   /** highWaterMark 由 readable 处理 */
   let queuingStrategy: QueuingStrategy = { highWaterMark: 0 };
@@ -44,6 +44,12 @@ export function writableToWritableStream<T = Uint8Array>(writable: Writable) {
   }
   return new WritableStream<T>(new WritableCore(writable), queuingStrategy);
 }
-// function transformToTransformStream<T = Uint8Array>(transform: Transform) {
-// return new TransformStream();
-// }
+/**
+ * @public
+ * @remarks 将 Readable 转为 异步迭代器。它与 Readable[Symbol.asyncIterable] 行为不同。它会迭代 push 的 chunk
+ *
+ */
+export function readableToAsyncIterator<T = Uint8Array>(readable: Readable) {
+  const queue = new ReadableQueue<T>(readable);
+  return queue[Symbol.asyncIterator]();
+}

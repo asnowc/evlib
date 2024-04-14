@@ -270,6 +270,9 @@ function readableStreamToByteReader<T extends Uint8Array>(stream: ReadableStream
 };
 
 // @public (undocumented)
+function readableToAsyncIterator<T = Uint8Array>(readable: Readable_2): AsyncGenerator<T, void, undefined>;
+
+// @public (undocumented)
 function readableToByteReader(stream: Readable_2): {
     read: ByteReader;
     cancel(reason?: Error): Buffer | null;
@@ -400,7 +403,8 @@ declare namespace stream {
         readableStreamToByteReader,
         readableToByteReader,
         readableToReadableStream,
-        writableToWritableStream
+        writableToWritableStream,
+        readableToAsyncIterator
     }
 }
 export { stream }
