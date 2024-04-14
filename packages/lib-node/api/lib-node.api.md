@@ -260,9 +260,6 @@ export { process_2 as process }
 // @alpha (undocumented)
 function readableRead(stream: Readable, len: number, abortSignal?: AbortSignal): Promise<Buffer>;
 
-// @alpha (undocumented)
-function readableReadAll<T>(stream: Readable, abortSignal?: AbortSignal): Promise<T[]>;
-
 // @public (undocumented)
 function readableStreamToByteReader<T extends Uint8Array>(stream: ReadableStream<T>): {
     read: ByteReader;
@@ -270,7 +267,7 @@ function readableStreamToByteReader<T extends Uint8Array>(stream: ReadableStream
 };
 
 // @public (undocumented)
-function readableToAsyncIterator<T = Uint8Array>(readable: Readable_2): AsyncGenerator<T, void, undefined>;
+function readableToAsyncIterator<T extends Uint8Array>(readable: Readable_2): AsyncGenerator<T, void, void>;
 
 // @public (undocumented)
 function readableToByteReader(stream: Readable_2): {
@@ -392,7 +389,6 @@ declare namespace stream {
         readAllFromStream,
         ByteReader,
         readableRead,
-        readableReadAll,
         pipeTo,
         bridgingDuplex,
         PipeOptions,
@@ -402,9 +398,9 @@ declare namespace stream {
         BridgingError,
         readableStreamToByteReader,
         readableToByteReader,
+        readableToAsyncIterator,
         readableToReadableStream,
-        writableToWritableStream,
-        readableToAsyncIterator
+        writableToWritableStream
     }
 }
 export { stream }
