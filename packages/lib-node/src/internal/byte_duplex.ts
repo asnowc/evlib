@@ -34,8 +34,6 @@ export class DuplexStream<T extends Uint8Array = Uint8Array> {
   readonly readable: ReadableStream<T>;
   readonly writable: WritableStream<T>;
   protected closeEvent = new OnceEventTrigger<void>();
-  /** @deprecated 改用 closeEvent */
-  $closed = this.closeEvent;
   watchClose(signal?: AbortSignal): Promise<void> {
     return this.closeEvent.getPromise(signal);
   }

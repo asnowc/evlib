@@ -134,10 +134,9 @@ export class ReadableQueue<T = Uint8Array> {
   }
 }
 export class ReadableSource<T> implements UnderlyingSource {
-  private syncChunkGetter: ReadableQueue<T>;
+  private syncChunkGetter!: ReadableQueue<T>;
   iter!: AsyncGenerator<T, void, void>;
   constructor(private readable: Readable, type?: "bytes") {
-    this.syncChunkGetter = new ReadableQueue(readable);
     if (type !== "bytes")
       this.bytesQueueHandler = (ctrl: ReadableStreamController<T>, chunk) =>
         ctrl.enqueue(chunk as T);
@@ -152,6 +151,7 @@ export class ReadableSource<T> implements UnderlyingSource {
       ctrl.error(readable.errored ?? new Error("raw stream is unreadable"));
       return;
     }
+    this.syncChunkGetter = new ReadableQueue(readable);
     this.syncChunkGetter.onClose = (err) => {
       err ? ctrl.error(err) : ctrl.close();
     };
