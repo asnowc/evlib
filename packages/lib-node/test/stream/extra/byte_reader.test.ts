@@ -9,7 +9,7 @@ import {
   ReadableStreamDefaultController,
   ByteLengthQueuingStrategy,
 } from "node:stream/web";
-import { Readable } from "node:stream";
+import { Duplex, Readable } from "node:stream";
 import { afterTime } from "evlib";
 describe("createReaderFromWebStream", function () {
   describe("取消reader", function () {
@@ -123,16 +123,28 @@ describe("createByteReaderFromReadable", function () {
       ).resolves.toBe("efgh");
     });
   });
-
-  test("不安全读取", async function () {
-    const { read, readable } = createMockRead();
-    let pms = read(4);
-    readable.push(Buffer.allocUnsafe(2));
-    readable.push(null);
-    await expect(pms).rejects.toThrowError();
+  test("传入 duplex", async function () {
+    const stream = new Duplex({
+      read(size) {},
+      write(chunk, encoding, callback) {},
+    });
+    const { cancel, read } = readableToByteReader(stream);
+    stream.push(null);
+    await expect(read(2)).rejects.toThrowError();
   });
-
+  test(".destroy(undefined)", async function () {
+    const { read, readable } = createMockRead();
+    readable.destroy();
+    await expect(read(2)).rejects.toThrowError();
+  });
   describe("异常", function () {
+    test("长度不足", async function () {
+      const { read, readable } = createMockRead();
+      let pms = read(4);
+      readable.push(Buffer.allocUnsafe(2));
+      readable.push(null);
+      await expect(pms).rejects.toThrowError();
+    });
     test("结束的流继续读取", async function () {
       const { read, readable } = createMockRead();
       readable.push(null);
@@ -142,7 +154,7 @@ describe("createByteReaderFromReadable", function () {
       const { read } = createMockRead();
       await expect(read(0)).rejects.toThrowError();
     });
-    test("创建reader前流已经结束", async function () {
+    test("创建 reader 前流已经结束", async function () {
       const readable = new Readable({ read(size) {} });
       readable.on("data", () => {});
       readable.push(null);
@@ -150,9 +162,8 @@ describe("createByteReaderFromReadable", function () {
       const { read } = readableToByteReader(readable);
       await expect(read(2)).rejects.toThrowError();
     });
-    test("没有autoDestroy的流", async function () {
+    test("没有 autoDestroy 的流", async function () {
       const readable = new Readable({ read(size) {}, autoDestroy: false });
-      // readable.on("readable", () => {});
       const { cancel, read } = readableToByteReader(readable);
       readable.push("ab", "utf-8");
       setTimeout(() => readable.push(null));

@@ -4,10 +4,8 @@ import type {
   ReadableStreamController,
   ReadableByteStreamController,
 } from "node:stream/web";
+import { createAbortedError } from "../errors.error.js";
 
-function createNoMoreDataError() {
-  return new Error("No more Data");
-}
 export class ReadableQueue<T = Uint8Array> {
   /**
    * @param resolve 获取到下一个 chunk 时的回调
@@ -33,6 +31,7 @@ export class ReadableQueue<T = Uint8Array> {
     // 这可能是 onEnd 触发的， 也可能是onError触发的，也可能是手动触发
     this.readable.pause();
     this.readable.off("end", this.onReadableEnd);
+    this.readable.off("close", this.onReadableEnd);
     this.readable.off("error", this.onReadableError);
     this.readable.off("data", this.onDataAfterPushNull);
     this.readable.off("data", this.onDataBeforePushNull);
@@ -54,6 +53,7 @@ export class ReadableQueue<T = Uint8Array> {
       readable.removeAllListeners("readable"); //readable事件影响data事件
     readable.on("data", this.onDataBeforePushNull);
     readable.on("end", this.onReadableEnd);
+    readable.on("close", this.onReadableEnd); // readable.destroy(undefined) 时会触发 close 事件。此时的 readable.errored===null. 且不会触发 error 事件
     readable.on("error", this.onReadableError);
     this.rawPush = readable.push;
     readable.push = this.onPush;
@@ -96,7 +96,7 @@ export class ReadableQueue<T = Uint8Array> {
   /**
    * @remarks 撤销对 readable 的 控制.
    */
-  private cancel(reason: any = createNoMoreDataError()) {
+  private cancel(reason: any = createAbortedError()) {
     if (!(reason instanceof Error))
       reason = new Error("Readable has been aborted");
     this.clear();
@@ -106,6 +106,11 @@ export class ReadableQueue<T = Uint8Array> {
     }
   }
   private onReadableEnd = () => {
+    if (!this.readable.readableEnded) {
+      // readable.destroy(undefined) 时会触发 close 事件。此时的 readable.errored===null. 且不会触发 error 事件
+      this.cancel();
+      return;
+    }
     this.clear();
     if (this.queue.length == 0) {
       this.onClose?.(); //主动触发
@@ -197,5 +202,3 @@ interface ReadableStreamBYOBRequest {
 }
 
 const fastArrayBuffer = Buffer.allocUnsafe(1).buffer;
-
-export const nodeReadableLock = Symbol("nodeReadableLock");

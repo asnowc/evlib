@@ -6,7 +6,11 @@ import {
 } from "node:stream/web";
 import { WithPromise, withPromise } from "evlib";
 import { NumericalRangeError } from "evlib/errors";
-import { nodeReadableLock } from "../transform/readable_core.js";
+import {
+  createNoMoreDataErr,
+  createAbortedError,
+  createCallAheadError,
+} from "../errors.error.js";
 type WaitingPromise = WithPromise<Uint8Array> & {
   buf?: Uint8Array;
   offset: number;
@@ -26,8 +30,7 @@ export function readableStreamToByteReader<T extends Uint8Array>(
   function read(len_view: number): Promise<Uint8Array>;
   function read(len_view: Uint8Array): Promise<Uint8Array>;
   function read(len_view: number | Uint8Array): Promise<Uint8Array | null> {
-    if (waitCtrl.wait)
-      return Promise.reject(new Error("前一个异步读取解决之前不能再继续调用"));
+    if (waitCtrl.wait) return Promise.reject(createCallAheadError());
     else if (noMoreErr) return Promise.reject(noMoreErr);
     if (typeof len_view === "number") {
       if (len_view <= 0) return Promise.reject(new NumericalRangeError(0));
@@ -58,9 +61,7 @@ export function readableStreamToByteReader<T extends Uint8Array>(
     waitCtrl.reject(noMoreErr);
   }
 
-  function cancel(
-    reason = new Error("Reader has be cancel")
-  ): null | Uint8Array {
+  function cancel(reason = createAbortedError()): null | Uint8Array {
     waitCtrl.reject(reason);
     readable.releaseLock();
     return waitCtrl.takeResidue();
@@ -77,23 +78,13 @@ export function readableToByteReader(stream: Readable): {
   read: ByteReader;
   cancel(reason?: Error): Buffer | null;
 } {
-  if (Object.hasOwn(stream, nodeReadableLock))
-    throw new Error("Readable 被锁定");
-  Object.defineProperty(stream, nodeReadableLock, {
-    value: true,
-    writable: true,
-    configurable: true,
-    enumerable: false,
-  });
-
   let noMoreErr: Error | undefined;
   let wait: WaitingPromise | undefined;
 
   function read(len_view: number): Promise<Uint8Array>;
   function read(len_view: Uint8Array): Promise<Uint8Array>;
   function read(len_view: number | Uint8Array): Promise<Uint8Array | null> {
-    if (wait)
-      return Promise.reject(new Error("前一个异步读取解决之前不能再继续调用"));
+    if (wait) return Promise.reject(createCallAheadError());
     else if (noMoreErr) return Promise.reject(noMoreErr);
     if (typeof len_view === "number") {
       if (len_view <= 0) return Promise.reject(new NumericalRangeError(0));
@@ -135,11 +126,7 @@ export function readableToByteReader(stream: Readable): {
       }
     }
   }
-  function onEnd() {
-    noMoreErr = stream.errored ?? createNoMoreDataErr();
-    clear();
-    rejectWait(noMoreErr);
-  }
+
   stream.pause();
   function rejectWait(reason: Error) {
     if (wait) {
@@ -149,30 +136,30 @@ export function readableToByteReader(stream: Readable): {
   }
   function clear() {
     stream.off("readable", onReadable);
-    stream.off("end", onEnd);
-    stream.off("close", onEnd);
-    stream.off("close", onError);
-    Reflect.deleteProperty(stream, nodeReadableLock);
+    stream.off("end", onAbort);
+    stream.off("close", onAbort);
+    stream.off("error", onAbort);
   }
-  const onError = () => {};
+  function onAbort() {
+    noMoreErr = stream.errored ?? createNoMoreDataErr();
+    clear();
+    rejectWait(noMoreErr);
+  }
   if (stream.readable) {
     stream.on("readable", onReadable);
-    stream.on("end", onEnd);
-    stream.on("close", onEnd);
-    stream.on("error", onError);
+    stream.on("end", onAbort);
+    stream.on("close", onAbort);
+    stream.on("error", onAbort);
   } else noMoreErr = stream.errored ?? createNoMoreDataErr();
 
   return {
-    cancel(reason = new Error("Reader has be cancel")): null {
+    cancel(reason = createAbortedError()): null {
       clear();
       rejectWait(reason);
       return null;
     },
     read,
   };
-}
-function createNoMoreDataErr() {
-  return new Error("no more data");
 }
 
 class WaitingCtrl<T extends Uint8Array> {

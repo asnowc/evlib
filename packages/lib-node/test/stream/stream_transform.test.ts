@@ -4,7 +4,7 @@ import {
   writableToWritableStream,
 } from "../../src/stream/stream_transform.js";
 import { Writable, Readable, Duplex } from "node:stream";
-import { ReadableStreamDefaultReader } from "node:stream/web";
+import { ReadableStream, ReadableStreamDefaultReader } from "node:stream/web";
 import { test, expect, describe, vi } from "vitest";
 
 type WritableOption = NonNullable<ConstructorParameters<typeof Writable>[0]>;
@@ -26,8 +26,7 @@ describe.concurrent("writeable", function () {
       },
     };
     const writeable = new Writable(option);
-    const writerCtrl = writableToWritableStream(writeable);
-    const writer = writerCtrl.getWriter();
+    const writer = writableToWritableStream(writeable).getWriter();
 
     {
       const p1 = writer.write(writeContent.subarray(0, 2));
@@ -38,7 +37,7 @@ describe.concurrent("writeable", function () {
 
     expect(writeQueue.length, "写入了3个chunk").toBe(3);
     expect(Buffer.concat(writeQueue).toString(), "写入的内容一致").toBe(
-      writeContent.toString(),
+      writeContent.toString()
     );
 
     /** 关闭流，等待 writable 的 final 的回调*/
@@ -47,6 +46,18 @@ describe.concurrent("writeable", function () {
     await pms;
     expect(writeable.writable).toBeFalsy();
     expect(writeable.writableFinished).toBeTruthy();
+  });
+  test("传入duplex", async function () {
+    const duplex = new Duplex({
+      read(size) {},
+      write(chunk, encoding, callback) {},
+    });
+    const writer = writableToWritableStream(duplex).getWriter();
+    const onClose = vi.fn();
+    writer.closed.then(onClose);
+    writer.close();
+    await afterTime();
+    expect(onClose).toBeCalled();
   });
   test("highWaterMark", async function () {
     const writeable = new Writable({
@@ -76,13 +87,18 @@ describe.concurrent("writeable", function () {
     expect(writeable.destroyed).toBeTruthy();
   });
   describe("writeable 异常", function () {
-    test("被销毁", async function () {
+    test(".destroy(err)", async function () {
       const writeable = createWriteable();
-      const writerCtrl = writableToWritableStream(writeable);
+      const writer = writableToWritableStream(writeable).getWriter();
       const err = new Error("abc");
       writeable.destroy(err);
-      const writer = writerCtrl.getWriter();
       await expect(writer.closed).rejects.toBe(err);
+    });
+    test(".destroy()", async function () {
+      const writeable = createWriteable();
+      const writer = writableToWritableStream(writeable).getWriter();
+      writeable.destroy();
+      await expect(writer.closed).rejects.toThrow();
     });
     describe("错误状态的 writeable", function () {
       test("writeable errored", async function () {
@@ -127,14 +143,23 @@ describe.concurrent(
       });
 
       const ctrl = readableToReadableStream(readable);
-      const reader = ctrl.getReader();
-      const chunks = await readAll(reader);
+      const chunks = await readAll(ctrl);
 
       expect(chunks.length).toBe(3);
       expect(Buffer.concat(chunks)).toEqual(Buffer.from([3, 2, 1]));
       await afterTime();
       expect(readable.readable).toBeFalsy();
       expect(readable.readableEnded).toBeTruthy();
+    });
+    test("传入 duplex", async function () {
+      const duplex = new Duplex({
+        read(size) {},
+        write(chunk, encoding, callback) {},
+      });
+      const stream = readableToReadableStream(duplex);
+      setTimeout(() => duplex.push(null));
+      const chunks = await readAll(stream);
+      expect(chunks).toEqual([]);
     });
     test("_read() 触发", async function () {
       let total = 12;
@@ -225,7 +250,7 @@ describe.concurrent(
       await expect(reader.read()).resolves.toMatchObject({ done: true });
       expect(readable.readable).toBeFalsy();
     });
-    test("不阻止readable的end 和close 事件", async function () {
+    test("不阻止 readable 的 end 和 close 事件", async function () {
       const { readable, stream, reader } = createReadableStream();
       readable.push("ab");
       setTimeout(() => {
@@ -233,18 +258,25 @@ describe.concurrent(
       });
       const endEvent = new Promise((resolve) => readable.on("end", resolve));
       const closeEvent = new Promise((resolve) =>
-        readable.on("close", resolve),
+        readable.on("close", resolve)
       );
       await Promise.all([endEvent, closeEvent]);
     });
     describe("readable 异常", function () {
-      test("被销毁", async function () {
+      test("readable.destroy(err)", async function () {
         const readable = createReadable();
         const writerCtrl = readableToReadableStream(readable);
         const err = new Error("abc");
         readable.destroy(err);
         const reader = writerCtrl.getReader();
         await expect(reader.closed).rejects.toBe(err);
+      });
+      test("readable.destroy()", async function () {
+        const readable = createReadable();
+        const writerCtrl = readableToReadableStream(readable);
+        readable.destroy();
+        const reader = writerCtrl.getReader();
+        await expect(reader.closed).rejects.toThrow();
       });
       describe("错误状态的 readable", function () {
         test("readable errored", async function () {
@@ -262,7 +294,7 @@ describe.concurrent(
           readable.destroy();
           const stream = readableToReadableStream(readable).getReader();
           await expect(stream.closed).rejects.toThrowError(
-            "raw stream is unreadable",
+            "raw stream is unreadable"
           );
         });
       });
@@ -277,7 +309,7 @@ describe.concurrent(
       return { readable, stream, reader };
     }
   },
-  1000,
+  1000
 );
 
 function createWriteable() {
@@ -293,11 +325,10 @@ function createReadable() {
   });
 }
 
-async function readAll<T>(ctrl: ReadableStreamDefaultReader<T>): Promise<T[]> {
+async function readAll<T>(ctrl: ReadableStream<T>): Promise<T[]> {
   const list: T[] = [];
-  do {
-    const chunk = await ctrl.read();
-    if (chunk.done) return list;
-    else list.push(chunk.value);
-  } while (true);
+  for await (const chunk of ctrl.values()) {
+    list.push(chunk);
+  }
+  return list;
 }

@@ -1,4 +1,5 @@
 import type { Readable } from "stream";
+import { createNoMoreDataErr, createCallAheadError } from "../errors.error.js";
 
 /**
  * @alpha
@@ -10,10 +11,10 @@ import type { Readable } from "stream";
 export function readableRead(
   stream: Readable,
   len: number,
-  abortSignal?: AbortSignal,
+  abortSignal?: AbortSignal
 ): Promise<Buffer> {
   if (Object.hasOwn(stream, asyncRead))
-    return Promise.reject(new Error("前一个异步读取解决之前不能再继续调用"));
+    return Promise.reject(createCallAheadError());
   else if (stream.readableLength >= len)
     return Promise.resolve(stream.read(len));
   return new Promise<Buffer>(function (resolve, reject) {
@@ -43,7 +44,7 @@ export function readableRead(
     }
     function onEnd() {
       clear();
-      reject(new Error("no more data"));
+      reject(createNoMoreDataErr());
     }
     stream.pause();
     stream.on("readable", onReadable);
@@ -72,7 +73,7 @@ const asyncRead = Symbol("asyncRead");
  */
 export async function readableReadAll<T>(
   stream: Readable,
-  abortSignal?: AbortSignal,
+  abortSignal?: AbortSignal
 ) {
   return new Promise<T[]>(function (resolve, reject) {
     let dataList: T[] = [];
