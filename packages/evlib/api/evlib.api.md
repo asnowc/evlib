@@ -131,15 +131,13 @@ declare namespace errors {
 }
 export { errors }
 
-// Warning: (ae-forgotten-export) The symbol "EventTriggerConstructor" needs to be exported by the entry point index.d.ts
-//
 // @public (undocumented)
-const EventTrigger: EventTriggerConstructor;
+const EventTrigger: new <T>() => EventTrigger<T>;
 
 // Warning: (ae-forgotten-export) The symbol "EventTriggerController" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-type EventTrigger<T> = Listenable<T> & EventTriggerController<T> & OnceListenable<T>;
+type EventTrigger<T> = Listenable<T> & EventTriggerController<T>;
 
 // Warning: (ae-forgotten-export) The symbol "ExceptTypeMap" needs to be exported by the entry point index.d.ts
 // Warning: (ae-forgotten-export) The symbol "ExceptTypeTuple" needs to be exported by the entry point index.d.ts
@@ -197,17 +195,17 @@ class LengthByteParser extends ByteParser<Uint8Array> {
 }
 
 // @public (undocumented)
-interface Listenable<T> extends OnceListenable<T> {
+interface Listenable<T> {
     // (undocumented)
     done: boolean;
-    // Warning: (ae-forgotten-export) The symbol "Fn_2" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
-    off(listener: Fn_2): boolean;
+    off(key: object): boolean;
+    // (undocumented)
+    on<R extends Listener<T>>(listener: R): R;
     // Warning: (ae-forgotten-export) The symbol "Listener" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
-    on<R extends Listener<T>>(listener: R): R;
+    then(resolve: Listener<T>): void;
 }
 
 declare namespace math {
@@ -237,25 +235,38 @@ type ObjectKey = string | number | symbol;
 // @public (undocumented)
 class OnceEventTrigger<T> implements OnceListenable<T> {
     // (undocumented)
+    catch(listener: (err: any) => void): void;
+    // (undocumented)
     get done(): boolean;
     // (undocumented)
     emit(arg: T): number;
     // (undocumented)
     emitError(err: any): number;
+    // (undocumented)
+    finally(listener: () => void): void;
     // Warning: (ae-forgotten-export) The symbol "BaseAbortSignal" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
     getPromise(signal?: BaseAbortSignal): Promise<T>;
     // (undocumented)
     off(key: object): boolean;
+    once<R extends Listener<T>>(resolve: R, reject?: (arg: any) => void): R;
     // (undocumented)
-    then<R extends Listener<T>>(resolve: R, reject?: (arg: any) => void): R;
+    then(resolve: Listener<T>, reject?: (arg: any) => void): void;
 }
 
 // @public (undocumented)
 interface OnceListenable<T> {
     // (undocumented)
-    then<R extends Listener<T>>(resolve: R): R;
+    catch<R extends (reason: any) => void>(listener: R): void;
+    // (undocumented)
+    done: boolean;
+    // (undocumented)
+    finally(listener: () => void): void;
+    // (undocumented)
+    off(key: object): boolean;
+    // (undocumented)
+    then(resolve: Listener<T>, reject: (data?: any) => void): void;
 }
 
 // @public (undocumented)

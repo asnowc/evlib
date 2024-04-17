@@ -1,5 +1,5 @@
 import * as net from "node:net";
-import { EventTrigger, Listenable, OnceEventTrigger } from "evlib";
+import { EventTrigger, OnceEventTrigger } from "evlib";
 import { Connection, SocketStream } from "./connection.js";
 
 interface ServerOpts {
