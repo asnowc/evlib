@@ -107,13 +107,32 @@ describe("OnceEventTrigger", function () {
   beforeEach(() => {
     event = new OnceEventTrigger();
   });
-  test("订阅1个", async function () {
+  test("同步订阅成功", function () {
+    const onOk = vi.fn();
+    const onFinally = vi.fn();
+    event.then(onOk);
+    event.finally(onFinally);
+    event.emit(1);
+    expect(onOk).toBeCalledTimes(1);
+    expect(onFinally).toBeCalledTimes(1);
+  });
+  test("同步订阅失败", function () {
+    const onCatch = vi.fn();
+    const onFinally = vi.fn();
+    event.catch(onCatch);
+    event.finally(onFinally);
+    event.emitError(1);
+    expect(onCatch).toBeCalledTimes(1);
+    expect(onFinally).toBeCalledTimes(1);
+  });
+
+  test("订阅1个promise", async function () {
     const res = event.getPromise();
     expect(res, "返回原函数").instanceof(Promise);
     expect(event.emit(1), "订阅者数量").toBe(1);
     await expect(res).resolves.toBe(1);
   });
-  test("订阅多个", async function () {
+  test("订阅多个promise", async function () {
     const listeners = [1, 2, 3, 4].map(() => event.getPromise());
     const data = Symbol();
     expect(event.emit(data), "订阅者数量").toBe(listeners.length);
@@ -128,9 +147,11 @@ describe("OnceEventTrigger", function () {
     let i = 0;
     const fn3 = vi.fn(() => i++);
     const fn4 = vi.fn(() => i++);
-    const fn1 = event.then(vi.fn(() => i++));
+    const fn1 = vi.fn(() => i++);
+    const fn2 = vi.fn(() => i++);
+    event.then(fn1);
     const p1 = event.getPromise().then(fn3);
-    const fn2 = event.then(vi.fn(() => i++));
+    event.then(fn2);
     const p2 = event.getPromise().then(fn4);
     expect(event.emit(12)).toBe(4);
     await p2;
@@ -155,5 +176,54 @@ describe("OnceEventTrigger", function () {
     abc.abort(data);
     await expect(pms).rejects.toBe(data);
     expect(event.done).toBeFalsy();
+  });
+  describe("重复订阅", function () {
+    test("then 之后重复订阅", function () {
+      const key = vi.fn();
+      event.then(key);
+      expect(() => event.then(key)).toThrowError();
+      expect(() => event.catch(key)).toThrowError();
+      expect(() => event.finally(key)).toThrowError();
+    });
+    test("catch 之后重复订阅", function () {
+      const key = vi.fn();
+      event.catch(key);
+      expect(() => event.then(key)).toThrowError();
+      expect(() => event.catch(key)).toThrowError();
+      expect(() => event.finally(key)).toThrowError();
+    });
+    test("finally 之后重复订阅", function () {
+      const key = vi.fn();
+      event.finally(key);
+      expect(() => event.then(key)).toThrowError();
+      expect(() => event.catch(key)).toThrowError();
+      expect(() => event.finally(key)).toThrowError();
+    });
+  });
+  describe("emit 数量", function () {
+    test("emit", function () {
+      event.then(() => {});
+      event.catch(() => {});
+      expect(event.emit("data")).toBe(1);
+    });
+    test("emitError", function () {
+      event.then(() => {});
+      event.catch(() => {});
+      expect(event.emitError(new Error("xx"))).toBe(1);
+    });
+  });
+  test("取消订阅", function () {
+    const thenFn = vi.fn();
+    const finallyFn = vi.fn();
+    const catchFn = vi.fn();
+    event.then(thenFn);
+    event.catch(catchFn);
+    event.finally(finallyFn);
+
+    event.off(thenFn);
+    event.off(catchFn);
+    event.off(finallyFn);
+
+    expect(event.emit(1)).toBe(0);
   });
 });
