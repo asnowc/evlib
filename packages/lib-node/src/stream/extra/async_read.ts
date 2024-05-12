@@ -1,10 +1,7 @@
 import type { Readable } from "stream";
 import { createNoMoreDataErr } from "../errors.error.js";
-/**
+/** 等待流达到len的长度时,读取流,然后返回
  * @alpha
- * @remarks
- * 等待流达到len的长度时,读取流,然后返回
- *
  * @throws
  */
 export function readableRead(

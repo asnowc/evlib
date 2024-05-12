@@ -10,14 +10,13 @@ export type PatchObjectOpts = {
   /** 数组合并策略  */
   arrayStrategy?: "unshift" | "push" | "replace";
 };
-/**
- * @remarks 将 from 的可枚举键深度覆盖到 to
+/** 将 from 的可枚举键深度覆盖到 to
  * @public
  */
 export function patchObject<T = unknown>(
   from: Obj,
   to: Obj,
-  opts: PatchObjectOpts = {},
+  opts: PatchObjectOpts = {}
 ): T {
   for (const [key, val] of Object.entries(from)) {
     if (val === undefined && opts.skipUndefined) continue;
@@ -33,8 +32,7 @@ export function patchObject<T = unknown>(
   }
   return to;
 }
-/**
- * @remarks 对对象数组进行分组
+/** 对对象数组进行分组
  * @beta
  */
 export function groupObject<T extends {}>(data: T[], key: keyof T): Obj<T> {
@@ -51,8 +49,7 @@ export function groupObject<T extends {}>(data: T[], key: keyof T): Obj<T> {
   return res;
 }
 
-/**
- * @remarks 删除值为 undefined 的可枚举的键
+/** 删除值为 undefined 的可枚举的键
  * @param deep - 是否递归遍历删除
  * @public
  */
@@ -68,26 +65,25 @@ export function removeUndefinedKey<T extends Obj>(obj: T, deep = true): T {
   return obj;
 }
 
-/**
+/** 选取指定的可枚举的键值
  * @public
- * @remarks 选取指定的可枚举的键值
  * @param target - 将选择的键值加入到 target 中, 而不是返回新对象
  */
 export function pickObjectKey<P extends {}>(
   obj: Object,
   keys: (keyof P)[] | Set<keyof P>,
-  target?: Object,
+  target?: Object
 ): P;
 /** @public */
 export function pickObjectKey(
   obj: Object,
   keys: string[] | Set<any>,
-  target?: Object,
+  target?: Object
 ): Record<string, unknown>;
 export function pickObjectKey(
   obj: Object,
   keys: any[] | Set<any>,
-  target: Record<string, any> = {},
+  target: Record<string, any> = {}
 ): unknown {
   if (!(keys instanceof Set)) keys = new Set(keys);
   for (const [k, v] of Object.entries(obj)) {
@@ -95,13 +91,12 @@ export function pickObjectKey(
   }
   return target as any;
 }
-/**
+/** 深度克隆对象，支持克隆 Array
  * @public
- * @remarks 深度克隆对象，支持克隆 Array
  */
 export function deepClone<T>(
   obj: T,
-  cloned: Map<any, any> = new Map<any, any>(),
+  cloned: Map<any, any> = new Map<any, any>()
 ): T {
   if (cloned.has(obj)) return cloned.get(obj);
 

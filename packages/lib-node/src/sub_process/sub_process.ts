@@ -52,22 +52,21 @@ export class SubProcess {
   readonly stdio: readonly [
     WritableStream<Buffer> | null,
     ReadableStream<Buffer> | null,
-    ReadableStream<Buffer> | null,
+    ReadableStream<Buffer> | null
   ];
   readonly stdin: null | WritableStream<Buffer>;
   readonly stdout: null | ReadableStream<Buffer>;
   readonly stderr: null | ReadableStream<Buffer>;
 
-  /**
+  /** 在进程结束并且子进程的 stdio 流关闭后触发
    * @alpha
-   * @remarks 在进程结束并且子进程的 stdio 流关闭后触发
    */
   protected readonly closeEvent = new OnceEventTrigger<ClosedState>();
   watchClose(signal?: AbortSignal) {
     return this.closeEvent.getPromise(signal);
   }
   /**
-   * @remarks 触发 'exit' 事件时，子进程 stdio 流可能仍处于打开状态
+   * 触发 'exit' 事件时，子进程 stdio 流可能仍处于打开状态
    */
   protected readonly exitEvent = new OnceEventTrigger<ClosedState>();
   watchExit(signal?: AbortSignal) {

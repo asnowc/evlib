@@ -1,11 +1,11 @@
 import { Readable } from "node:stream";
 import { createAbortedError } from "../errors.error.js";
-/**
- * @public
- * @remarks 将 Readable 转为 异步迭代器。它与 Readable[Symbol.asyncIterable] 行为不同。
+/** 将 Readable 转为 异步迭代器。
+ * @remarks 它与 Readable[Symbol.asyncIterable] 行为不同。
  * 它会迭代 push 的 chunk.
  * 如果调用 .return()，不会调用 Readable.destroy().
  * 如果调用 .throw() 则会调用 Readable.destroy()
+ * @public
  */
 export async function* readableToAsyncIterator<T extends Uint8Array>(
   readable: Readable

@@ -16,11 +16,11 @@ export class SocketStream extends DuplexStream<Buffer> {
     this.socket.unref();
   }
 
-  /** @remarks 接收到的字节数。 */
+  /** 接收到的字节数。 */
   get bytesRead() {
     return this.socket.bytesRead;
   }
-  /** @remarks 发送的字节数 */
+  /** 发送的字节数 */
   get bytesWritten() {
     return this.socket.bytesWritten;
   }
@@ -43,8 +43,8 @@ export class Connection extends SocketStream {
     socket.on("timeout", () => this.timeoutEvent.emit());
   }
 
-  /**
-   * @remarks 通过发送 RST 数据包关闭 TCP 连接并销毁流。
+  /** 通过发送 RST 数据包关闭 TCP 连接并销毁流
+   * @remarks
    * 如果这个 TCP 套接字处于连接状态，它会发送一个 RST 数据包，并在连接后销毁这个 TCP 套接字。
    * 否则，它将调用 socket.destroy 并返回 ERR_SOCKET_CLOSED 错误。
    * @throws ERR_SOCKET_CLOSED
@@ -56,8 +56,8 @@ export class Connection extends SocketStream {
   setKeepAlive(enable?: boolean, delay?: number) {
     this.socket.setKeepAlive(enable, delay);
   }
-  /**
-   * @remarks 启用/禁用 Nagle 算法的使用。
+  /** 启用/禁用 Nagle 算法的使用
+   * @remarks
    * 创建 TCP 连接时，它将启用 Nagle 算法。
    * Nagle 的算法会在数据通过网络发送之前延迟数据。 它试图以延迟为代价来优化吞吐量。
    */
@@ -97,47 +97,43 @@ export class Connection extends SocketStream {
     this.socket.setTimeout(time);
   }
   /**
-   * @remarks timeout 事件
+   * timeout 事件
    */
   readonly timeoutEvent = new EventTrigger<void>();
 }
 
-/**
+/** 创建 tcp 连接的选项
  * @public
- * @remarks 创建 tcp 连接的选项
  */
 export interface TcpConnectConfig {
   port: number;
   /** @defaultValue - localhost */
   host?: string;
-  /** @remarks  IP 栈的版本。值 0 表示允许使用 IPv4 和 IPv6 地址 */
+  /** IP 栈的版本。值 0 表示允许使用 IPv4 和 IPv6 地址 */
   family?: 4 | 6 | 0;
-  /** @remarks 套接字应该使用的本地地址。 */
+  /** 套接字应该使用的本地地址。 */
   localAddress?: string;
-  /** @remarks 套接字应使用的本地端口。 */
+  /** 套接字应使用的本地端口。 */
   localPort?: number;
 }
-/**
+/** 连接的其他可选选项
  * @public
- * @remarks 连接的其他可选选项
  */
 export interface ConnectOptions {
-  /** @remarks 中断连接的信号 */
+  /** 中断连接的信号 */
   signal?: AbortSignal;
 }
 
-/**
+/** 创建TCP连接
  * @alpha
- * @remarks 创建TCP连接
  */
 export function connect(config: TcpConnectConfig, options?: ConnectOptions) {
   return connectSocket(config, options).then(
     (socket) => new Connection(socket)
   );
 }
-/**
+/** 创建一个已连接的 Socket
  * @public
- * @remarks 创建一个已连接的 Socket
  */
 export function connectSocket(
   config: TcpConnectConfig | PipeConfig,
@@ -195,16 +191,16 @@ export function connectSocket(config: any, options: ConnectOptions = {}) {
  * @alpha
  */
 export interface PipeConfig {
-  /** @remarks 管道路径 */
+  /** 管道路径 */
   path: string;
 
   // new Socket 参数:
 
-  /** @remarks 用给定的文件描述符封装现有的管道，否则将创建新的管道 */
+  /** 用给定的文件描述符封装现有的管道，否则将创建新的管道 */
   fd?: number;
-  /** @remarks 允许在套接字上读取，否则将被忽略。 默认值： false */
+  /** 允许在套接字上读取，否则将被忽略。 默认值： false */
   readable?: boolean;
-  /** @remarks 允许在套接字上读取，否则将被忽略。 默认值： false */
+  /** 允许在套接字上读取，否则将被忽略。 默认值： false */
   writable?: boolean;
 }
 /**

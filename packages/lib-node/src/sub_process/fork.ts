@@ -6,10 +6,8 @@ import { SubProcess } from "./sub_process.js";
 import { ChildProcess } from "node:child_process";
 const exePath = process.execPath;
 
-/**
- *
+/** 创建 node 子进程
  * @public
- * @remarks 创建 node 子进程
  * @param file - node 模块的路径
  */
 export function fork(file: string, options: SpawnOptions = {}) {
@@ -43,7 +41,7 @@ export class NodeSubProcess extends SubProcess {
       this.nodeCps.send(msg, handle as any, resolve);
     });
   }
-  /** @remarks 与 node 进程断开通信 */
+  /** 与 node 进程断开通信 */
   disconnect() {
     this.nodeCps.disconnect();
   }

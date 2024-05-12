@@ -1,12 +1,11 @@
-/**
+/** 返回一个 promise 和控制这个 promise 的句柄
  * @public
- * @remarks 返回一个 promise 和控制这个 promise 的句柄
  */
 export function withPromise<T, R = any, E extends object = {}>(
-  handle?: E,
+  handle?: E
 ): WithPromise<T, R> & E;
 export function withPromise(
-  handle: Record<string, any> = {},
+  handle: Record<string, any> = {}
 ): WithPromise<unknown, unknown> {
   handle.promise = new Promise(function (resolve, reject) {
     handle.resolve = resolve;
@@ -15,9 +14,8 @@ export function withPromise(
   return handle as any;
 }
 
-/**
+/** 尽量以同步的方式处理一个可能是 Promise 的值
  * @public
- * @remarks 尽量以同步的方式处理一个可能是 Promise 的值
  */
 export function dePromise<T, R>(val: T | Promise<T>, fn: (val: T) => R) {
   if (val instanceof Promise) return val.then(fn);

@@ -7,8 +7,8 @@ import {
   createWritable,
 } from "../../stream/__mocks__/mock_stream.js";
 
-/**
- * @remarks 用于测试 node 流的生命周期
+/** 用于测试 node 流的生命周期
+ * @remarks
  * readable 周期
  *  construct(cb) >  push null(结束输入) > 读取完毕 >'end' > 'close'
  *
@@ -408,7 +408,7 @@ describe("pipe", function () {
   }
   function getStream(
     write: (chunk: any, enc: string, cb: Callback) => void,
-    autoDestroy?: boolean,
+    autoDestroy?: boolean
   ) {
     const readable = new Readable({ read() {}, autoDestroy });
     const writable = new Writable({ write, autoDestroy });

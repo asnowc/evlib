@@ -2,9 +2,8 @@ import { Stats } from "node:fs";
 import { readdir, stat } from "node:fs/promises";
 import * as path from "node:path";
 
-/**
+/** 获取一个文件夹中的所有文件的绝对路径
  * @public
- * @remarks 获取一个文件夹中的所有文件的绝对路径
  */
 export async function getDirFiles(dir: string): Promise<string[]> {
   const dirInfo = await readdir(dir);
@@ -18,11 +17,11 @@ export async function getDirFiles(dir: string): Promise<string[]> {
     pms.push(
       stat(filePath).then(
         (info) => filterFile(info, filePath),
-        (e) => console.error(e),
-      ),
+        (e) => console.error(e)
+      )
     );
   }
   return Promise.all(pms).then(
-    (list): string[] => list.filter((val) => typeof val === "string") as any,
+    (list): string[] => list.filter((val) => typeof val === "string") as any
   );
 }

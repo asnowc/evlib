@@ -24,7 +24,7 @@ function initShellCmd(command: string, args: string[] = []) {
 
 function toSpawnOptions(
   command: string,
-  options: SpawnOptions & { shell?: string },
+  options: SpawnOptions & { shell?: string }
 ) {
   let { shell, args = [], ...opts } = options;
   if (!shell) {
@@ -34,10 +34,8 @@ function toSpawnOptions(
   } else args = ["-c", command, ...args];
   return [shell, { ...opts, args } as any] as const;
 }
-/**
- * @public
- * @remarks 在shell上执行命令
- * 如果不没有指定 shell 在 windows 上默认为 process.env.ComSpec, 在 unix 上默认为 /bin/sh
+/** 在shell上执行命令
+ * @remarks 如果不没有指定 shell 在 windows 上默认为 process.env.ComSpec, 在 unix 上默认为 /bin/sh
  * @param command - 要执行的命令.
  * @example
  * ```js
@@ -45,14 +43,15 @@ function toSpawnOptions(
  * exec("node a.js arg1". { args:["arg2"] })
  * exec("node a.js",  { args:["arg1", "arg2"] })
  * ```
+ * @public
  */
 export function exec(
   command: string,
-  options: SpawnOptions & { shell?: string } = {},
+  options: SpawnOptions & { shell?: string } = {}
 ): Promise<SubProcess> {
   const [shell, opts] = toSpawnOptions(command, options);
   return rawSpawn(shell, opts, { shell: true }).then(
-    (cps) => new SubProcess(cps),
+    (cps) => new SubProcess(cps)
   );
 }
 /**
@@ -62,7 +61,7 @@ export function exec(
 /** @public */
 export function execSync(
   command: string,
-  options: SpawnSyncOptions & { shell?: string } = {},
+  options: SpawnSyncOptions & { shell?: string } = {}
 ): SpawnSyncResult {
   const [shell, opts] = toSpawnOptions(command, options);
   const result = rawSpawnSync(shell, opts, true);

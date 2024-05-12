@@ -1,6 +1,5 @@
-/**
+/** 格式化输出 error 信息, 递归转换 cause
  * @public
- * @remarks 格式化输出 error 信息, 递归转换 cause
  * @release 1.2.0
  */
 export function toErrorStr(err?: any): string {

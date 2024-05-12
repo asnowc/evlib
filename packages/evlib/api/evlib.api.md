@@ -8,7 +8,7 @@
 class AbortedError extends Error {
 }
 
-// @public (undocumented)
+// @public
 function afterTime(time?: number): TerminablePromise<void>;
 
 declare namespace async {
@@ -46,7 +46,7 @@ abstract class ByteParser<T> implements BySteps<T> {
 // @public (undocumented)
 function checkType<T extends ExceptType>(value: any, except: T, options?: TypeCheckOptions): CheckRes<InferExcept<T>>;
 
-// @public (undocumented)
+// @public
 interface ControllablePromise<T> extends Promise<T> {
     // (undocumented)
     reject(reason?: any): void;
@@ -93,7 +93,7 @@ declare namespace core {
 }
 export { core }
 
-// @public (undocumented)
+// @public
 function createTypeErrorDesc(except: string, actual: string): string;
 
 declare namespace data_struct {
@@ -103,13 +103,13 @@ declare namespace data_struct {
 }
 export { data_struct }
 
-// @public (undocumented)
+// @public
 function deepClone<T>(obj: T, cloned?: Map<any, any>): T;
 
-// @public (undocumented)
+// @public
 function dePromise<T, R>(val: T | Promise<T>, fn: (val: T) => R): R | Promise<R>;
 
-// @public (undocumented)
+// @public
 const ECMA_VERSION: number;
 
 // @alpha (undocumented)
@@ -143,7 +143,7 @@ type EventTrigger<T> = Listenable<T> & EventTriggerController<T>;
 // Warning: (ae-forgotten-export) The symbol "ExceptTypeTuple" needs to be exported by the entry point index.d.ts
 // Warning: (ae-forgotten-export) The symbol "InternalExceptType" needs to be exported by the entry point index.d.ts
 //
-// @public (undocumented)
+// @public
 type ExceptType = TypeCheckFn | BasicType | ExceptTypeMap | ExceptTypeTuple | InternalExceptType;
 
 // @public (undocumented)
@@ -155,13 +155,13 @@ type ExponentFormat = {
 
 // Warning: (ae-forgotten-export) The symbol "BasicType" needs to be exported by the entry point index.d.ts
 //
-// @public (undocumented)
+// @public
 function getBasicType(val: any): BasicType;
 
-// @public (undocumented)
+// @public
 function getClassType(val: any): string;
 
-// @beta (undocumented)
+// @beta
 function groupObject<T extends {}>(data: T[], key: keyof T): Obj<T>;
 
 // Warning: (ae-forgotten-export) The symbol "InferBaseMap" needs to be exported by the entry point index.d.ts
@@ -169,7 +169,7 @@ function groupObject<T extends {}>(data: T[], key: keyof T): Obj<T>;
 // Warning: (ae-forgotten-export) The symbol "Fn" needs to be exported by the entry point index.d.ts
 // Warning: (ae-forgotten-export) The symbol "InferChecker" needs to be exported by the entry point index.d.ts
 //
-// @public (undocumented)
+// @public
 type InferExcept<T> = T extends string ? InferBaseMap[T] : T extends any[] ? InferTuple<T> : T extends Fn ? InferChecker<T> : T extends InternalExceptType<infer E> ? E : T extends object ? {
     [key in keyof T]: InferExcept<T[key]>;
 } : unknown;
@@ -194,17 +194,13 @@ class LengthByteParser extends ByteParser<Uint8Array> {
     readonly total: number;
 }
 
-// @public (undocumented)
+// @public
 interface Listenable<T> {
     // (undocumented)
     done: boolean;
-    // (undocumented)
     off(key: object): boolean;
-    // (undocumented)
     on<R extends Listener<T>>(listener: R): R;
     // Warning: (ae-forgotten-export) The symbol "Listener" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
     then(resolve: Listener<T>): void;
 }
 
@@ -224,7 +220,7 @@ class NotImplementedError extends Error {
     constructor(type?: string);
 }
 
-// @public (undocumented)
+// @public
 class NumericalRangeError extends RangeError {
     constructor(min?: number, max?: number, valueName?: string);
 }
@@ -232,21 +228,17 @@ class NumericalRangeError extends RangeError {
 // @public (undocumented)
 type ObjectKey = string | number | symbol;
 
-// @public (undocumented)
+// @public
 class OnceEventTrigger<T> implements OnceListenable<T> {
     // (undocumented)
     catch(listener: (err: any) => void): void;
     // (undocumented)
     get done(): boolean;
-    // (undocumented)
     emit(arg: T): number;
-    // (undocumented)
     emitError(err: any): number;
     // (undocumented)
     finally(listener: () => void): void;
     // Warning: (ae-forgotten-export) The symbol "BaseAbortSignal" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
     getPromise(signal?: BaseAbortSignal): Promise<T>;
     // (undocumented)
     off(key: object): boolean;
@@ -255,17 +247,12 @@ class OnceEventTrigger<T> implements OnceListenable<T> {
     then(resolve: Listener<T>, reject?: (arg: any) => void): void;
 }
 
-// @public (undocumented)
+// @public
 interface OnceListenable<T> {
-    // (undocumented)
     catch<R extends (reason: any) => void>(listener: R): void;
-    // (undocumented)
     done: boolean;
-    // (undocumented)
     finally(listener: () => void): void;
-    // (undocumented)
     off(key: object): boolean;
-    // (undocumented)
     then(resolve: Listener<T>, reject: (data?: any) => void): void;
 }
 
@@ -289,17 +276,15 @@ function paseExponentNum(num: number, carry: number[]): ExponentFormat;
 class PassiveDataCollector<T, R = void, N = void> {
     // (undocumented)
     close(data: R): void;
-    // (undocumented)
     getAsyncGen(): AsyncGenerator<T, R, N>;
     // (undocumented)
     lock: boolean;
-    // (undocumented)
     yield(data: T): Promise<N>;
 }
 
 // Warning: (ae-forgotten-export) The symbol "Obj" needs to be exported by the entry point index.d.ts
 //
-// @public (undocumented)
+// @public
 function patchObject<T = unknown>(from: Obj, to: Obj, opts?: PatchObjectOpts): T;
 
 // @public (undocumented)
@@ -308,7 +293,7 @@ type PatchObjectOpts = {
     arrayStrategy?: "unshift" | "push" | "replace";
 };
 
-// @public (undocumented)
+// @public
 function pickObjectKey<P extends {}>(obj: Object, keys: (keyof P)[] | Set<keyof P>, target?: Object): P;
 
 // @public (undocumented)
@@ -322,7 +307,7 @@ interface PromiseHandle<T> {
     resolve(data: T): void;
 }
 
-// @public (undocumented)
+// @public
 function removeUndefinedKey<T extends Obj>(obj: T, deep?: boolean): T;
 
 // @public (undocumented)
@@ -331,13 +316,13 @@ function retainDecimalsFloor(num: number, raids?: number): number;
 // @public (undocumented)
 function retainDecimalsRound(num: number, raids?: number): number;
 
-// @public (undocumented)
+// @public
 const runtimeEngine: "node" | "browser" | "deno" | "bun" | "unknown";
 
-// @public (undocumented)
+// @public
 function setInterval(fn: VoidFn, intervalTime?: number): () => void;
 
-// @public (undocumented)
+// @public
 function setTimer(fn: VoidFn, timeout?: number): () => void;
 
 // @alpha (undocumented)
@@ -352,21 +337,21 @@ class StepsByteParser<T> extends ByteParser<T> {
     step: number;
 }
 
-// @public (undocumented)
+// @public
 interface TerminablePromise<T> extends Promise<T> {
     // (undocumented)
     abort(reason?: Error): void;
 }
 
-// @public (undocumented)
+// @public
 class TimeoutError extends Error {
     constructor(time?: number);
 }
 
-// @public (undocumented)
+// @public
 function toErrorStr(err?: any): string;
 
-// @public (undocumented)
+// @public
 const typeChecker: {
     create<T extends ExceptType>(expect: T, opts: Pick<TypeCheckOptions, "checkAll" | "policy">): TypeChecker<T>;
     numberRange(min: number, max?: number): TypeCheckFn<number>;
@@ -382,15 +367,12 @@ const typeChecker: {
 interface TypeCheckFn<T = any> {
     // (undocumented)
     (val: any, option: Readonly<TypeCheckOptions>): Partial<CheckRes<T>> | undefined;
-    // (undocumented)
     baseType?: BasicType;
 }
 
 // @public (undocumented)
 interface TypeCheckOptions {
-    // (undocumented)
     checkAll?: boolean;
-    // (undocumented)
     policy?: "pass" | "delete" | "error";
 }
 
@@ -403,10 +385,9 @@ class TypeError_2 extends Error {
     cause: TypeErrorDesc_2;
 }
 
-// @public (undocumented)
+// @public
 class UniqueKeyMap<T = any> extends Map<number, T> {
     constructor(maxSize: number);
-    // (undocumented)
     allowKeySet(data: T, safe?: undefined | false): number;
     // (undocumented)
     allowKeySet(data: T, safe: true): number | null;
@@ -429,7 +410,7 @@ class UniqueKeyMap<T = any> extends Map<number, T> {
     update(key: number, data: T): boolean;
 }
 
-// @public (undocumented)
+// @public
 interface VoidFn {
     // (undocumented)
     (): void;
@@ -445,16 +426,16 @@ interface WithPromise<T, R = any> {
     resolve(data: T): void;
 }
 
-// @public (undocumented)
+// @public
 function withPromise<T, R = any, E extends object = {}>(handle?: E): WithPromise<T, R> & E;
 
 // Warnings were encountered during analysis:
 //
-// src/core/type_check.ts:370:25 - (ae-forgotten-export) The symbol "TypeChecker" needs to be exported by the entry point index.d.ts
-// src/core/type_check.ts:402:3 - (ae-forgotten-export) The symbol "union" needs to be exported by the entry point index.d.ts
-// src/core/type_check.ts:403:3 - (ae-forgotten-export) The symbol "optional" needs to be exported by the entry point index.d.ts
-// src/core/type_check.ts:404:3 - (ae-forgotten-export) The symbol "array" needs to be exported by the entry point index.d.ts
-// src/core/type_check.ts:405:3 - (ae-forgotten-export) The symbol "record" needs to be exported by the entry point index.d.ts
+// src/core/type_check.ts:361:25 - (ae-forgotten-export) The symbol "TypeChecker" needs to be exported by the entry point index.d.ts
+// src/core/type_check.ts:393:3 - (ae-forgotten-export) The symbol "union" needs to be exported by the entry point index.d.ts
+// src/core/type_check.ts:394:3 - (ae-forgotten-export) The symbol "optional" needs to be exported by the entry point index.d.ts
+// src/core/type_check.ts:395:3 - (ae-forgotten-export) The symbol "array" needs to be exported by the entry point index.d.ts
+// src/core/type_check.ts:396:3 - (ae-forgotten-export) The symbol "record" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

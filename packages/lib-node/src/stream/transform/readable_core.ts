@@ -94,7 +94,7 @@ export class ReadableQueue<T = Uint8Array> {
     }
   }
   /**
-   * @remarks 撤销对 readable 的 控制.
+   * 撤销对 readable 的 控制.
    */
   private cancel(reason: any = createAbortedError()) {
     if (!(reason instanceof Error))

@@ -1,8 +1,7 @@
 declare const window: any;
 declare const Deno: any;
-/**
+/** ECMA年份版本
  * @public
- * @remarks ECMA年份版本
  */
 export const ECMA_VERSION = getESVersion();
 
@@ -37,9 +36,8 @@ function getESVersion(): number {
   }
   return version;
 }
-/**
+/** JS运行时
  * @public
- * @remarks JS运行时
  */
 export const runtimeEngine = getEngine();
 

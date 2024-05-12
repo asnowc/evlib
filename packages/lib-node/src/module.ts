@@ -11,9 +11,8 @@ export interface ModuleMeta {
   pathname: string;
   protocol: string;
 }
-/**
+/** 解析模块信息
  * @public
- * @remarks 解析模块信息
  */
 export function paseModMeta(meta: { url: string }): ModuleMeta {
   const url = new URL(meta.url);

@@ -3,23 +3,23 @@ import { EventTrigger, OnceEventTrigger } from "evlib";
 import { Connection, SocketStream } from "./connection.js";
 
 interface ServerOpts {
-  /** @remarks 可选择覆盖所有 net.Socket' readableHighWaterMark 和 writableHighWaterMark。 默认值： 参见 stream.getDefaultHighWaterMark()。*/
+  /** 可选择覆盖所有 net.Socket' readableHighWaterMark 和 writableHighWaterMark。 默认值： 参见 stream.getDefaultHighWaterMark()。*/
   highWaterMark?: number;
-  /** @remarks 如果设置为 true，则它会在收到新的传入连接后立即禁用 Nagle 算法。*/
+  /** 如果设置为 true，则它会在收到新的传入连接后立即禁用 Nagle 算法。*/
   noDelay?: boolean;
 
-  /** @remarks 如果设置为 true，则它会在接收到新的传入连接后立即在套接字上启用保持活动功能，类似于在 socket.setKeepAlive([enable][, initialDelay]) 中所做的。*/
+  /** 如果设置为 true，则它会在接收到新的传入连接后立即在套接字上启用保持活动功能，类似于在 socket.setKeepAlive([enable][, initialDelay]) 中所做的。*/
   keepAlive?: boolean;
   /**
-   * @remarks 如果设置为正数，它会设置在空闲套接字上发送第一个 keepalive 探测之前的初始延迟。
+   * 如果设置为正数，它会设置在空闲套接字上发送第一个 keepalive 探测之前的初始延迟。
    * @defaultValue 0
    */
   keepAliveInitialDelay?: number;
 
   //listen:
 
-  /**
-   * @remarks 如果 exclusive 是 false（默认值），那么集群工作者将使用相同的底层句柄，允许共享连接处理职责。
+  /** 如果 exclusive 是 false（默认值），那么集群工作者将使用相同的底层句柄，允许共享连接处理职责。
+   * @remarks
    * 当 exclusive 为 true 时，句柄未共享，尝试端口共享会导致错误
    * 当 exclusive 为 true 且底层 handle 共享时，有可能多个 worker 查询一个 handle 具有不同的积压。 在这种情况下，将使用传递给主进程的第一个 backlog
    */
@@ -41,9 +41,9 @@ export interface TcpServerOpts extends ServerOpts {
 export interface IpcServerOpts extends ServerOpts {
   //listen:
 
-  /** @remarks 使管道对所有用户都可读 */
+  /** 使管道对所有用户都可读 */
   readableAll?: boolean;
-  /** @remarks 使管道对所有用户都可写 */
+  /** 使管道对所有用户都可写 */
   writableAll?: boolean;
   type: "IPC";
   path?: string;
@@ -164,13 +164,11 @@ export class Server {
   unref() {
     this.#server.unref();
   }
-  /**
-   * @remarks 默认情况下, 关闭服务器时, 需要等待所有连接关闭, 才能彻底关闭服务器. 如果 disposeQueue 设置为 true, 当有新链接时, 将连接保存, 在执行 close 时会将所有保持的连接销毁
-   */
+  /** 默认情况下, 关闭服务器时, 需要等待所有连接关闭, 才能彻底关闭服务器. 如果 disposeQueue 设置为 true, 当有新链接时, 将连接保存, 在执行 close 时会将所有保持的连接销毁 */
   disposeQueue: boolean = false;
   #connections = new Set<net.Socket>();
   /**
-   * @remarks disposeQueue 中保持连接的数量
+   * disposeQueue 中保持连接的数量
    */
   get keepCount() {
     return this.#connections.size;
@@ -215,7 +213,7 @@ export class Server {
   get listening() {
     return this.#server.listening;
   }
-  /** @remarks 将调用close */
+  /** 将调用close */
   [Symbol.asyncDispose]() {
     return this.close();
   }

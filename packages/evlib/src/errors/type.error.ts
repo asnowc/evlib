@@ -1,6 +1,5 @@
-/**
+/** 创建一个类型错误的描述
  * @public
- * @remarks 创建一个类型错误的描述
  */
 export function createTypeErrorDesc(except: string, actual: string) {
   return `预期: ${except}, 实际: ${actual}`;
@@ -9,10 +8,7 @@ export function createTypeErrorDesc(except: string, actual: string) {
 
 /** @public */
 export class TypeError extends Error {
-  constructor(
-    public cause: TypeErrorDesc,
-    msg?: string,
-  ) {
+  constructor(public cause: TypeErrorDesc, msg?: string) {
     if (!msg) msg = "类型不匹配";
     super(msg, { cause });
   }

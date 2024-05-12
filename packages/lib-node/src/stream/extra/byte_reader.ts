@@ -16,9 +16,8 @@ type WaitingPromise = WithPromise<Uint8Array> & {
   offset: number;
 };
 
-/**
+/** 创建对 Readable 的 StreamScanner
  * @public
- * @remarks 创建对 Readable 的 StreamScanner
  */
 export function readableStreamToByteReader<T extends Uint8Array>(
   stream: ReadableStream<T>
@@ -70,9 +69,8 @@ export function readableStreamToByteReader<T extends Uint8Array>(
   return { cancel, read };
 }
 
-/**
+/** 创建对 Readable 的 Scanner. 它不监听 readable 的 error 事件
  * @public
- * @remarks 创建对 Readable 的 Scanner. 它不监听 readable 的 error 事件
  */
 export function readableToByteReader(stream: Readable): {
   read: ByteReader;

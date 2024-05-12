@@ -20,7 +20,7 @@ import { ReadableStream } from 'node:stream/web';
 import { Writable } from 'node:stream';
 import { WritableStream } from 'node:stream/web';
 
-// @beta (undocumented)
+// @beta
 function bridgingDuplex<A extends Duplex, B extends Duplex>(a: A, b: B, options?: BridgingOptions): Promise<{
     a: A;
     b: B;
@@ -35,15 +35,12 @@ class BridgingError extends Error {
 
 // @public (undocumented)
 interface BridgingOptions {
-    // (undocumented)
     preventDispose?: boolean;
 }
 
 // @public (undocumented)
 interface ByteReader {
-    // (undocumented)
     (len: number): Promise<Uint8Array>;
-    // (undocumented)
     <T extends Uint8Array = Uint8Array>(view: T): Promise<T>;
 }
 
@@ -53,13 +50,12 @@ type ClosedState = Readonly<{
     signal: NodeJS.Signals | null;
 }>;
 
-// @alpha (undocumented)
+// @alpha
 function connect(config: TcpConnectConfig, options?: ConnectOptions): Promise<Connection>;
 
 // @alpha (undocumented)
 class Connection extends SocketStream {
     constructor(socket: net_2.Socket);
-    // (undocumented)
     enableNagle(enable: boolean): void;
     // (undocumented)
     readonly localAddress: string;
@@ -73,20 +69,17 @@ class Connection extends SocketStream {
     readonly remoteFamily: TcpFamily;
     // (undocumented)
     readonly remotePort: number;
-    // (undocumented)
     resetAndDestroy(): void;
     // (undocumented)
     setKeepAlive(enable?: boolean, delay?: number): void;
     // (undocumented)
     get timeout(): number;
     set timeout(time: number);
-    // (undocumented)
     readonly timeoutEvent: EventTrigger<void>;
 }
 
-// @public (undocumented)
+// @public
 interface ConnectOptions {
-    // (undocumented)
     signal?: AbortSignal;
 }
 
@@ -96,7 +89,7 @@ function connectPipe(config: PipeConfig, options?: ConnectOptions): Promise<Sock
 // Warning: (ae-incompatible-release-tags) The symbol "connectSocket" is marked as @public, but its signature references "PipeConfig" which is marked as @alpha
 // Warning: (ae-incompatible-release-tags) The symbol "connectSocket" is marked as @public, but its signature references "PipeConfig" which is marked as @alpha
 //
-// @public (undocumented)
+// @public
 function connectSocket(config: TcpConnectConfig | PipeConfig, options?: ConnectOptions): Promise<net_2.Socket>;
 
 // @public (undocumented)
@@ -105,7 +98,7 @@ type CreateIpcServerOpts = Omit<IpcServerOpts, "path">;
 // @public (undocumented)
 type CreateTcpServerOpts = Omit<TcpServerOpts, "port">;
 
-// @public (undocumented)
+// @public
 function exec(command: string, options?: SpawnOptions & {
     shell?: string;
 }): Promise<SubProcess>;
@@ -118,7 +111,7 @@ function execSync(command: string, options?: SpawnSyncOptions & {
 // Warning: (ae-incompatible-release-tags) The symbol "fork" is marked as @public, but its signature references "NodeSubProcess" which is marked as @beta
 // Warning: (ae-incompatible-release-tags) The symbol "fork" is marked as @public, but its signature references "NodeSubProcess" which is marked as @beta
 //
-// @public (undocumented)
+// @public
 function fork(file: string, options?: SpawnOptions): Promise<NodeSubProcess>;
 
 // Warning: (ae-forgotten-export) The symbol "ServerOpts" needs to be exported by the entry point index.d.ts
@@ -127,11 +120,9 @@ function fork(file: string, options?: SpawnOptions): Promise<NodeSubProcess>;
 interface IpcServerOpts extends ServerOpts {
     // (undocumented)
     path?: string;
-    // (undocumented)
     readableAll?: boolean;
     // (undocumented)
     type: "IPC";
-    // (undocumented)
     writableAll?: boolean;
 }
 
@@ -178,7 +169,6 @@ class NodeSubProcess extends SubProcess {
     constructor(nodeCps: ChildProcess);
     // (undocumented)
     get connected(): boolean;
-    // (undocumented)
     disconnect(): void;
     // (undocumented)
     protected readonly disconnectEvent: OnceEventTrigger<void>;
@@ -192,41 +182,34 @@ class NodeSubProcess extends SubProcess {
     watchDisconnect(signal?: AbortSignal): Promise<void>;
 }
 
-// @public (undocumented)
+// @public
 function paseModMeta(meta: {
     url: string;
 }): ModuleMeta;
 
 // @alpha (undocumented)
 interface PipeConfig {
-    // (undocumented)
     fd?: number;
-    // (undocumented)
     path: string;
-    // (undocumented)
     readable?: boolean;
-    // (undocumented)
     writable?: boolean;
 }
 
 // @beta (undocumented)
 interface PipeOptions {
-    // (undocumented)
     preventReadableDispose?: boolean;
-    // (undocumented)
     preventWritableDispose?: boolean;
-    // (undocumented)
     preventWritableEnd?: boolean;
 }
 
-// @public (undocumented)
+// @public
 class PipeSourceError extends Error {
     constructor(cause: Error);
     // (undocumented)
     cause: Error;
 }
 
-// @public (undocumented)
+// @public
 class PipeTargetError extends Error {
     constructor(cause: Error);
     // (undocumented)
@@ -257,33 +240,32 @@ declare namespace process_2 {
 }
 export { process_2 as process }
 
-// @alpha (undocumented)
+// @alpha
 function readableRead(stream: Readable, len: number, abortSignal?: AbortSignal): Promise<Buffer>;
 
-// @public (undocumented)
+// @public
 function readableStreamToByteReader<T extends Uint8Array>(stream: ReadableStream<T>): {
     read: ByteReader;
     cancel(reason?: Error): Uint8Array | null;
 };
 
-// @public (undocumented)
+// @public
 function readableToAsyncIterator<T extends Uint8Array>(readable: Readable_2): AsyncGenerator<T, void, void>;
 
-// @public (undocumented)
+// @public
 function readableToByteReader(stream: Readable_2): {
     read: ByteReader;
     cancel(reason?: Error): Buffer | null;
 };
 
-// @public (undocumented)
+// @public
 function readableToReadableStream<T = Uint8Array>(readable: Readable_2): ReadableStream<T>;
 
-// @public (undocumented)
+// @public
 function readAllFromStream<T>(stream: ReadableStream<T>): Promise<T[]>;
 
 // @public (undocumented)
 class Server {
-    // (undocumented)
     [Symbol.asyncDispose](): Promise<void>;
     constructor(onConn: (conn: net_2.Socket) => void, options?: TcpServerOpts | undefined);
     constructor(onConn: (conn: net_2.Socket) => void, options?: IpcServerOpts | undefined);
@@ -292,13 +274,11 @@ class Server {
     close(): Promise<void>;
     // (undocumented)
     readonly closeEvent: OnceEventTrigger<void>;
-    // (undocumented)
     disposeQueue: boolean;
     // (undocumented)
     readonly errorEvent: EventTrigger<Error>;
     // @alpha (undocumented)
     get fd(): number | Object;
-    // (undocumented)
     get keepCount(): number;
     // @alpha (undocumented)
     static listen(onConn: (conn: Connection) => void, options?: TcpServerOpts): Promise<Server>;
@@ -336,9 +316,7 @@ interface ServerListenOpts {
 // @alpha (undocumented)
 class SocketStream extends DuplexStream<Buffer> {
     constructor(socket: net_2.Socket);
-    // (undocumented)
     get bytesRead(): number;
-    // (undocumented)
     get bytesWritten(): number;
     // (undocumented)
     ref(): void;
@@ -355,7 +333,6 @@ function spawn(exePath: string, options?: SpawnOptions): Promise<SubProcess>;
 //
 // @public (undocumented)
 interface SpawnOptions extends SpawnCommonOptions {
-    // (undocumented)
     detached?: boolean;
 }
 
@@ -412,12 +389,11 @@ class SubProcess {
     readonly closed: boolean;
     // (undocumented)
     closedState: ClosedState | null;
-    // @alpha (undocumented)
+    // @alpha
     protected readonly closeEvent: OnceEventTrigger<Readonly<{
         code: number | null;
         signal: NodeJS.Signals | null;
     }>>;
-    // (undocumented)
     protected readonly exitEvent: OnceEventTrigger<Readonly<{
         code: number | null;
         signal: NodeJS.Signals | null;
@@ -462,15 +438,12 @@ class SubProcess {
     }>>;
 }
 
-// @public (undocumented)
+// @public
 interface TcpConnectConfig {
-    // (undocumented)
     family?: 4 | 6 | 0;
     // (undocumented)
     host?: string;
-    // (undocumented)
     localAddress?: string;
-    // (undocumented)
     localPort?: number;
     // (undocumented)
     port: number;
@@ -491,7 +464,7 @@ interface TcpServerOpts extends ServerOpts {
     type?: "TCP";
 }
 
-// @public (undocumented)
+// @public
 function writableToWritableStream<T = Uint8Array>(writable: Writable): WritableStream<T>;
 
 // (No @packageDocumentation comment for this package)

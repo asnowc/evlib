@@ -1,13 +1,11 @@
-/**
+/** 空函数类型
  * @public
- * @remarks 空函数类型
  */
 export interface VoidFn {
   (): void;
 }
-/**
+/** 可中断的 Promise
  * @public
- * @remarks 可中断的 Promise
  */
 export interface TerminablePromise<T> extends Promise<T> {
   abort(reason?: Error): void;
@@ -18,9 +16,8 @@ export interface PromiseHandle<T> {
   reject(reason?: any): void;
 }
 
-/**
+/** 可控制的 Promise
  * @public
- * @remarks 可控制的 Promise
  */
 export interface ControllablePromise<T> extends Promise<T> {
   resolve(data: T): void;

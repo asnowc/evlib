@@ -1,9 +1,8 @@
 import * as timer from "./internal.js";
 import type { VoidFn, TerminablePromise } from "./type.js";
 
-/**
+/** 设置一个计时器, 在指定的时间后执行 fn
  * @public
- * @remarks 设置一个计时器, 在指定的时间后执行 fn
  * @param timeout - 定时时间，单位毫秒。
  * @returns 返回一个函数，可用在定时器触发前取消定时器
  */
@@ -18,9 +17,8 @@ export function setTimer(fn: VoidFn, timeout: number = 0) {
   };
 }
 
-/**
+/** 设置定时器
  * @public
- * @remarks 设置定时器
  * @param intervalTime - 间隔时间，单位毫秒
  * @returns 返回一个函数，可用关闭定时器
  */
@@ -35,9 +33,8 @@ export function setInterval(fn: VoidFn, intervalTime: number = 0) {
   };
 }
 
-/**
+/** 返回一个 TerminablePromise, 在指定时间后 resolve, 执行abort() 将执行取消定时, 并拒绝 Promise
  * @public
- * @remarks 返回一个 TerminablePromise, 在指定时间后 resolve, 执行abort() 将执行取消定时, 并拒绝 Promise
  */
 export function afterTime(time?: number): TerminablePromise<void> {
   let abort!: (reason?: Error) => void;
@@ -57,9 +54,8 @@ export function afterTime(time?: number): TerminablePromise<void> {
   return p;
 }
 
-/**
+/** 超时控制器，超时将自动执行 abort()
  * @alpha
- * @remarks 超时控制器，超时将自动执行 abort()
  */
 //class TimeoutController extends AbortController {
 //    private id?: number;

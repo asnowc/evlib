@@ -8,9 +8,9 @@ import * as NodeStream from "node:stream";
 import { OnceEventTrigger } from "evlib";
 import { ReadableStream, WritableStream } from "node:stream/web";
 
-/**
+/** node Duplex 的变种
  * @private
- * @remarks node Duplex 的变种
+ * @remarks
  * duplex end 事件会触发 DuplexStream.readable 的 close
  * duplex finished 事件会触发 DuplexStream.writable 的 close
  */
@@ -49,8 +49,7 @@ export class DuplexStream<T extends Uint8Array = Uint8Array> {
 
   readonly read: ByteReader;
 
-  /**
-   * @remarks 结束写入
+  /** 结束写入
    */
   closeWrite(): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -66,8 +65,7 @@ export class DuplexStream<T extends Uint8Array = Uint8Array> {
     });
   }
 
-  /**
-   * @remarks 销毁流
+  /** 销毁流
    */
   async dispose(reason?: Error): Promise<void> {
     this.duplex.destroy(reason);

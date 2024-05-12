@@ -5,20 +5,20 @@ type WithPromise<R extends {}, T = unknown> = Promise<T> & R;
  * @beta
  */
 export interface PipeOptions {
-  /**
-   * @remarks 当可读流结束时, 阻止目标的关闭
+  /** 当可读流结束时, 阻止目标的关闭
+   * @remarks
    * 对于 Writable, 相当于 end()
    * 对于 WritableStream, 相当于 close()
    */
   preventWritableEnd?: boolean;
-  /**
-   * @remarks 当可读流发生异常时, 阻止目标的中断
+  /** 当可读流发生异常时, 阻止目标的中断
+   * @remarks
    * 对于 Writable, 相当于 destroy()
    * 对于 WritableStream, 相当于 abort()
    */
   preventWritableDispose?: boolean;
-  /**
-   * @remarks 当可写流发生异常时, 阻止可读流的中断
+  /** 当可写流发生异常时, 阻止可读流的中断
+   * @remarks
    * 对于 Writable, 相当于 destroy()
    * 对于 WritableStream, 相当于 cancel()
    */
@@ -33,7 +33,7 @@ export interface PipeOptions {
 export function pipeTo<T extends Readable, R extends Writable>(
   source: T,
   target: R,
-  options: PipeOptions = {},
+  options: PipeOptions = {}
 ): WithPromise<{ abort(reason?: Error): void }, void> {
   let abort;
   const pms: WithPromise<{ abort(reason?: Error): void }, void> =
@@ -96,15 +96,14 @@ export function pipeTo<T extends Readable, R extends Writable>(
   pms.abort = abort!;
   return pms;
 }
-/**
+/** 桥接两个双工流。如果双方正常结束则resolve。如果某一方提前被 关闭/销毁，则reject
  * @beta
- * @remarks 桥接两个双工流。如果双方正常结束则resolve。如果某一方提前被 关闭/销毁，则reject
  * @throws BridgingError
  */
 export function bridgingDuplex<A extends Duplex, B extends Duplex>(
   a: A,
   b: B,
-  options: BridgingOptions = {},
+  options: BridgingOptions = {}
 ): Promise<{ a: A; b: B }> {
   return new Promise(function (resolve, reject) {
     const { preventDispose } = options;
@@ -126,19 +125,18 @@ export function bridgingDuplex<A extends Duplex, B extends Duplex>(
           if (!b.destroyed) b.destroy(err);
         }
         reject(new BridgingError(side, err));
-      },
+      }
     );
   });
 }
 
 /** @public */
 export interface BridgingOptions {
-  /** @remarks 当发生异常时, 阻止销毁另一端 */
+  /** 当发生异常时, 阻止销毁另一端 */
   preventDispose?: boolean;
 }
-/**
+/** 管道的源发生异常
  * @public
- * @remarks 管道的源发生异常
  * @param side - 造成改 Duplex 异常的原因
  */
 export class PipeSourceError extends Error {
@@ -147,9 +145,8 @@ export class PipeSourceError extends Error {
   }
   declare cause: Error;
 }
-/**
+/** 管道的写入端发生异常
  * @public
- * @remarks 管道的写入端发生异常
  * @param side - 造成改 Duplex 异常的原因
  */
 export class PipeTargetError extends Error {
@@ -164,10 +161,7 @@ export class PipeTargetError extends Error {
  * @param side - 造成改 Duplex 异常的原因
  */
 export class BridgingError extends Error {
-  constructor(
-    public side: Duplex,
-    cause: Error,
-  ) {
+  constructor(public side: Duplex, cause: Error) {
     super("bridging error", { cause });
   }
 }

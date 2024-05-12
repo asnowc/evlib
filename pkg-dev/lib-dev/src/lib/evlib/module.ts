@@ -1,16 +1,14 @@
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
-/**
+/** 模块的位置信息
  * @public
- * @remarks 模块的位置信息
  */
 export interface ModulePathInfo {
   dir: string;
   file: string;
 }
-/**
+/** 获取ECMA 模块的位置信息
  * @public
- * @remarks 获取ECMA 模块的位置信息
  */
 export function getModuleInfo({ url }: ImportMeta): ModulePathInfo {
   const file = fileURLToPath(url);

@@ -1,6 +1,5 @@
-/**
+/** 数字范围错误, 通常用于参数校验
  * @public
- * @remarks 数字范围错误, 通常用于参数校验
  */
 export class NumericalRangeError extends RangeError {
   constructor(min?: number, max?: number, valueName = "numerical range") {
