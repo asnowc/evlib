@@ -1,80 +1,70 @@
-import { WithPromise, withPromise } from "../core/mod.js";
+import type { PromiseHandle } from "../core/mod.js";
 
-type AsyncGenWait<T, N> = WithPromise<T> & {
-  nextData: N;
-};
-type DataLink<T, N> = WithPromise<N> & {
+type DataLink<T> = {
   data: T;
-  next?: DataLink<T, N>;
+  next?: DataLink<T>;
 };
-/**
+
+/** 数据收集器。可用于基于事件转为异步迭代器
  * @alpha
  * @remark 将被动数据转为主动的异步迭代器处理模式
  */
-export class PassiveDataCollector<T, R = void, N = void> {
-  private last?: DataLink<T, N>;
-  private head?: DataLink<T, N>;
-  private wait?: AsyncGenWait<T, N>;
-  lock = false;
-  private closed = false;
-  private result?: R;
-  /** 收集同步数据 */
-  yield(data: T): Promise<N> {
-    if (this.wait) {
-      this.wait.resolve(data);
-      let nextData = this.wait.nextData;
-      this.wait = undefined;
-      return Promise.resolve(nextData);
-    } else {
-      let next: DataLink<T, N> = withPromise({ data });
-      if (this.last) this.last.next = next;
-      else this.head = next;
-      this.last = next;
-      return next.promise;
-    }
+export class DataCollector<T, R = void> implements AsyncGenerator<T, R, void> {
+  #last?: DataLink<T>;
+  protected _head?: DataLink<T>;
+  protected push(item: DataLink<T>) {
+    if (this.#last) this.#last.next = item;
+    else this._head = item;
+    this.#last = item;
   }
-  close(data: R) {
-    if (this.closed) return;
-    this.closed = true;
-    if (this.wait) {
-      this.wait.reject(data);
-      this.wait = undefined;
-    }
-    this.result = data;
-  }
-  private *yieldCache() {
-    let ret: N;
-    while (this.head) {
-      try {
-        ret = yield this.head.data;
-        this.head.resolve(ret);
-      } catch (error) {
-        this.head.reject(error);
-      }
-      this.head = this.head.next;
-    }
-    this.last = undefined;
-  }
-  /**
-   * 获取异步迭代器, 在异步迭代器关闭前再次调用会抛出异常.
-   * @returns 返回这个异步迭代器的 next() 必须按顺序调用. 否则抛出异常 */
-  async *getAsyncGen(): AsyncGenerator<T, R, N> {
-    if (this.lock) throw new Error("locked");
-    this.lock = true;
-    let ret: N;
-    if (this.head) yield* this.yieldCache();
 
-    while (!this.closed) {
-      try {
-        this.wait = withPromise({ nextData: ret! });
-        ret = yield this.wait.promise;
-      } catch (r) {
-        this.lock = false;
-        return r as R;
-      }
-      if (this.head) yield* this.yieldCache();
+  protected _wait?: PromiseHandle<IteratorResult<T, R>>;
+  protected _closed = false;
+  protected _result?: R;
+  /** 收集数据 */
+  yield(data: T) {
+    if (this._wait) {
+      this._wait.resolve({ done: false, value: data });
+      this._wait = undefined;
+    } else if (!this._closed) this.push({ data });
+  }
+
+  /** 调用后结束迭代器生成 */
+  close(data: R) {
+    if (this._closed) return;
+    this._closed = true;
+    if (this._wait) {
+      this._wait.resolve({ done: true, value: data });
+      this._wait = undefined;
     }
-    this.lock = false;
-    return this.result!;
+    this._result = data;
+  }
+
+  next(): Promise<IteratorResult<T, R>> {
+    if (this._head) {
+      const item = this._head;
+      this._head = item.next;
+      return Promise.resolve({ value: item.data, done: false });
+    }
+    if (this._closed) {
+      return Promise.resolve({ done: true, value: this._result! });
+    }
+
+    if (this._wait) throw new Error("locked");
+
+    return new Promise<IteratorResult<T, R>>((resolve, reject) => {
+      this._wait = { resolve, reject };
+    });
+  }
+  /** 结束迭代 */
+  return(value: R): Promise<IteratorResult<T, R>> {
+    if (this._closed) value = this._result!;
+    return Promise.resolve({ done: true, value });
+  }
+  throw(e: any): Promise<IteratorResult<T, R>> {
+    return this.return(e);
+  }
+  [Symbol.asyncIterator]() {
+    return this;
   }
 }

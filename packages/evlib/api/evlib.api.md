@@ -14,7 +14,7 @@ function afterTime(time?: number): TerminablePromise<void>;
 declare namespace async {
     export {
         InquiryRequest,
-        PassiveDataCollector,
+        DataCollector,
         ByteParser,
         LengthByteParser,
         StepsByteParser
@@ -102,6 +102,31 @@ declare namespace data_struct {
     }
 }
 export { data_struct }
+
+// @alpha
+class DataCollector<T, R = void> implements AsyncGenerator<T, R, void> {
+    // (undocumented)
+    [Symbol.asyncIterator](): this;
+    close(data: R): void;
+    // (undocumented)
+    protected _closed: boolean;
+    // Warning: (ae-forgotten-export) The symbol "DataLink" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    protected _head?: DataLink<T>;
+    // (undocumented)
+    next(): Promise<IteratorResult<T, R>>;
+    // (undocumented)
+    protected push(item: DataLink<T>): void;
+    // (undocumented)
+    protected _result?: R;
+    return(value: R): Promise<IteratorResult<T, R>>;
+    // (undocumented)
+    throw(e: any): Promise<IteratorResult<T, R>>;
+    // (undocumented)
+    protected _wait?: PromiseHandle<IteratorResult<T, R>>;
+    yield(data: T): void;
+}
 
 // @public
 function deepClone<T>(obj: T, cloned?: Map<any, any>): T;
@@ -271,16 +296,6 @@ function paseExponentNum(num: number, carry: number, maxExponent?: number): Expo
 
 // @public (undocumented)
 function paseExponentNum(num: number, carry: number[]): ExponentFormat;
-
-// @alpha
-class PassiveDataCollector<T, R = void, N = void> {
-    // (undocumented)
-    close(data: R): void;
-    getAsyncGen(): AsyncGenerator<T, R, N>;
-    // (undocumented)
-    lock: boolean;
-    yield(data: T): Promise<N>;
-}
 
 // Warning: (ae-forgotten-export) The symbol "Obj" needs to be exported by the entry point index.d.ts
 //
