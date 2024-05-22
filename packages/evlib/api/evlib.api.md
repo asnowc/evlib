@@ -41,6 +41,14 @@ abstract class ByteParser<T> implements BySteps<T> {
     protected result?: ParserResult<T>;
 }
 
+// Warning: (ae-forgotten-export) The symbol "Fn_2" needs to be exported by the entry point index.d.ts
+//
+// @public
+type CallChian<T extends Fn_2 = Fn_2> = {
+    (...args: Parameters<T>): ReturnType<T>;
+    [key: string | number | symbol]: CallChian<T>;
+};
+
 // Warning: (ae-forgotten-export) The symbol "CheckRes" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
@@ -92,6 +100,20 @@ declare namespace core {
     }
 }
 export { core }
+
+// Warning: (ae-forgotten-export) The symbol "ProxyTarget" needs to be exported by the entry point index.d.ts
+//
+// @public
+function createObjectChain<T extends Fn_2 = Fn_2>(createProxy?: () => ProxyTarget<T>): CallChian<T>;
+
+// @public
+function createObjectChain(createProxy?: () => object): ObjectChian;
+
+// @public
+function createObjectChain<T extends Fn_2 = Fn_2>(key: string, extend?: object, createProxy?: () => ProxyTarget<T>): CallChian<T>;
+
+// @public
+function createObjectChain(key: string, extend?: object, createProxy?: () => object): ObjectChian;
 
 // @public
 function createTypeErrorDesc(except: string, actual: string): string;
@@ -184,6 +206,9 @@ type ExponentFormat = {
 function getBasicType(val: any): BasicType;
 
 // @public
+function getChainPath(obj: object): string[];
+
+// @public
 function getClassType(val: any): string;
 
 // @beta
@@ -249,6 +274,21 @@ class NotImplementedError extends Error {
 class NumericalRangeError extends RangeError {
     constructor(min?: number, max?: number, valueName?: string);
 }
+
+declare namespace object {
+    export {
+        getChainPath,
+        createObjectChain,
+        ObjectChian,
+        CallChian
+    }
+}
+export { object }
+
+// @public
+type ObjectChian = {
+    [key: string | number | symbol]: ObjectChian;
+};
 
 // @public (undocumented)
 type ObjectKey = string | number | symbol;
