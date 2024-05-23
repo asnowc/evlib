@@ -19,15 +19,19 @@ describe("DataCollector", function () {
     await expect(getGen(collector.next())).resolves.toBe(4);
     await expect(getGen(collector.next())).resolves.toBe(0);
   });
-
   test("缓存", async function () {
     const collector = new DataCollector<number, number>();
     collector.yield(4);
-    collector.yield(3);
-    collector.close(0);
+    collector.yield(3); //此时缓存两个
     await expect(getGen(collector.next())).resolves.toBe(4);
     await expect(getGen(collector.next())).resolves.toBe(3);
-    await expect(getGen(collector.next())).resolves.toBe(0);
+    collector.yield(0);
+    collector.yield(1);
+
+    await expect(getGen(collector.next())).resolves.toEqual(0);
+    setTimeout(() => collector.close(99));
+    await expect(getGen(collector.next())).resolves.toEqual(1);
+    await expect(collector.next()).resolves.toEqual({ done: true, value: 99 });
   });
   test("for await", async function () {
     const collector = new DataCollector<number, number>();

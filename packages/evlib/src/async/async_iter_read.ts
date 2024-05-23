@@ -11,54 +11,55 @@ type DataLink<T> = {
  */
 export class DataCollector<T, R = void> implements AsyncGenerator<T, R, void> {
   #last?: DataLink<T>;
-  protected _head?: DataLink<T>;
-  protected push(item: DataLink<T>) {
+  #head?: DataLink<T>;
+  #push(item: DataLink<T>) {
     if (this.#last) this.#last.next = item;
-    else this._head = item;
+    else this.#head = item;
     this.#last = item;
   }
 
-  protected _wait?: PromiseHandle<IteratorResult<T, R>>;
-  protected _closed = false;
-  protected _result?: R;
+  #wait?: PromiseHandle<IteratorResult<T, R>>;
+  #closed = false;
+  #result?: R;
   /** 收集数据 */
   yield(data: T) {
-    if (this._wait) {
-      this._wait.resolve({ done: false, value: data });
-      this._wait = undefined;
-    } else if (!this._closed) this.push({ data });
+    if (this.#wait) {
+      this.#wait.resolve({ done: false, value: data });
+      this.#wait = undefined;
+    } else if (!this.#closed) this.#push({ data });
   }
 
   /** 调用后结束迭代器生成 */
   close(data: R) {
-    if (this._closed) return;
-    this._closed = true;
-    if (this._wait) {
-      this._wait.resolve({ done: true, value: data });
-      this._wait = undefined;
+    if (this.#closed) return;
+    this.#closed = true;
+    if (this.#wait) {
+      this.#wait.resolve({ done: true, value: data });
+      this.#wait = undefined;
     }
-    this._result = data;
+    this.#result = data;
   }
 
   next(): Promise<IteratorResult<T, R>> {
-    if (this._head) {
-      const item = this._head;
-      this._head = item.next;
+    if (this.#head) {
+      const item = this.#head;
+      this.#head = item.next;
+      if (!this.#head) this.#last = undefined;
       return Promise.resolve({ value: item.data, done: false });
     }
-    if (this._closed) {
-      return Promise.resolve({ done: true, value: this._result! });
+    if (this.#closed) {
+      return Promise.resolve({ done: true, value: this.#result! });
     }
 
-    if (this._wait) throw new Error("locked");
+    if (this.#wait) throw new Error("locked");
 
     return new Promise<IteratorResult<T, R>>((resolve, reject) => {
-      this._wait = { resolve, reject };
+      this.#wait = { resolve, reject };
     });
   }
   /** 结束迭代 */
   return(value: R): Promise<IteratorResult<T, R>> {
-    if (this._closed) value = this._result!;
+    if (this.#closed) value = this.#result!;
     return Promise.resolve({ done: true, value });
   }
   throw(e: any): Promise<IteratorResult<T, R>> {
