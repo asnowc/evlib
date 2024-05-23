@@ -41,6 +41,12 @@ abstract class ByteParser<T> implements BySteps<T> {
     protected result?: ParserResult<T>;
 }
 
+// @public
+interface CacheQueue<T> extends Queue<T> {
+    maxSize: number;
+    size: number;
+}
+
 // Warning: (ae-forgotten-export) The symbol "Fn_2" needs to be exported by the entry point index.d.ts
 //
 // @public
@@ -120,33 +126,29 @@ function createTypeErrorDesc(except: string, actual: string): string;
 
 declare namespace data_struct {
     export {
-        UniqueKeyMap
+        UniqueKeyMap,
+        eachLinkedList,
+        getLinkedListByIndex,
+        SinglyLinkList,
+        DoublyLinkList,
+        Queue,
+        CacheQueue,
+        LinkedQueue,
+        LinkedCacheQueue
     }
 }
 export { data_struct }
 
-// @alpha
+// @public
 class DataCollector<T, R = void> implements AsyncGenerator<T, R, void> {
     // (undocumented)
     [Symbol.asyncIterator](): this;
     close(data: R): void;
     // (undocumented)
-    protected _closed: boolean;
-    // Warning: (ae-forgotten-export) The symbol "DataLink" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
-    protected _head?: DataLink<T>;
-    // (undocumented)
     next(): Promise<IteratorResult<T, R>>;
-    // (undocumented)
-    protected push(item: DataLink<T>): void;
-    // (undocumented)
-    protected _result?: R;
     return(value: R): Promise<IteratorResult<T, R>>;
     // (undocumented)
     throw(e: any): Promise<IteratorResult<T, R>>;
-    // (undocumented)
-    protected _wait?: PromiseHandle<IteratorResult<T, R>>;
     yield(data: T): void;
 }
 
@@ -155,6 +157,15 @@ function deepClone<T>(obj: T, cloned?: Map<any, any>): T;
 
 // @public
 function dePromise<T, R>(val: T | Promise<T>, fn: (val: T) => R): R | Promise<R>;
+
+// @public (undocumented)
+type DoublyLinkList = {
+    before?: DoublyLinkList;
+    next?: DoublyLinkList;
+};
+
+// @public
+function eachLinkedList<T extends SinglyLinkList>(link?: T): Generator<T, void, unknown>;
 
 // @public
 const ECMA_VERSION: number;
@@ -211,6 +222,9 @@ function getChainPath(obj: object): string[];
 // @public
 function getClassType(val: any): string;
 
+// @public
+function getLinkedListByIndex<T extends SinglyLinkList>(link: T, index: number): T;
+
 // @beta
 function groupObject<T extends {}>(data: T[], key: keyof T): Obj<T>;
 
@@ -242,6 +256,34 @@ class LengthByteParser extends ByteParser<Uint8Array> {
     next(buf: Uint8Array): boolean;
     // (undocumented)
     readonly total: number;
+}
+
+// @public
+class LinkedCacheQueue<T extends SinglyLinkList> extends LinkedQueue<T> {
+    constructor(maxSize: number);
+    // (undocumented)
+    get maxSize(): number;
+    set maxSize(maxSize: number);
+    // (undocumented)
+    push(data: T): void;
+}
+
+// @public
+class LinkedQueue<T extends SinglyLinkList> {
+    // (undocumented)
+    [Symbol.iterator](): Generator<T, void, unknown>;
+    constructor();
+    // (undocumented)
+    head?: T;
+    // (undocumented)
+    last?: T;
+    // (undocumented)
+    push(data: T): void;
+    shift(): T;
+    // (undocumented)
+    size: number;
+    // (undocumented)
+    unshift(data: T): void;
 }
 
 // @public
@@ -362,6 +404,14 @@ interface PromiseHandle<T> {
     resolve(data: T): void;
 }
 
+// @public (undocumented)
+interface Queue<T> {
+    // (undocumented)
+    push(data: T): void;
+    // (undocumented)
+    shift(): T;
+}
+
 // @public
 function removeUndefinedKey<T extends Obj>(obj: T, deep?: boolean): T;
 
@@ -379,6 +429,11 @@ function setInterval(fn: VoidFn, intervalTime?: number): () => void;
 
 // @public
 function setTimer(fn: VoidFn, timeout?: number): () => void;
+
+// @public (undocumented)
+type SinglyLinkList = {
+    next?: SinglyLinkList;
+};
 
 // @alpha (undocumented)
 class StepsByteParser<T> extends ByteParser<T> {

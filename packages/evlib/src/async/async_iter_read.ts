@@ -6,7 +6,7 @@ type DataLink<T> = {
 };
 
 /** 数据收集器。可用于基于事件转为异步迭代器
- * @alpha
+ * @public
  * @remark 将被动数据转为主动的异步迭代器处理模式
  */
 export class DataCollector<T, R = void> implements AsyncGenerator<T, R, void> {
