@@ -1,5 +1,5 @@
 import { Readable } from "node:stream";
-import { createAbortedError } from "../errors.error.js";
+import { createAbortedError } from "../errors.error.ts";
 /** 将 Readable 转为 异步迭代器。
  * @remarks 它与 Readable[Symbol.asyncIterable] 行为不同。
  * 它会迭代 push 的 chunk.

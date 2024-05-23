@@ -3,7 +3,7 @@ import {
   NumericalRangeError,
   ParameterTypeError,
 } from "evlib/errors";
-import { retainDecimalsFloor } from "./float.js";
+import { retainDecimalsFloor } from "./float.ts";
 
 /** @public */
 export type ExponentFormat = {

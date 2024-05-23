@@ -1,2 +1,2 @@
-export * from "./net/connection.js";
-export * from "./net/server.js";
+export * from "./net/connection.ts";
+export * from "./net/server.ts";

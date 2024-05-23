@@ -1,5 +1,5 @@
-import { ParameterTypeError, AbortedError } from "../errors.js";
-import { BaseAbortSignal } from "./internal.js";
+import { ParameterTypeError, AbortedError } from "../errors.ts";
+import { BaseAbortSignal } from "./internal.ts";
 
 class EventTriggerImpl<T> implements Listenable<T>, EventTriggerController<T> {
   #queue = new Set<Listener<T>>();

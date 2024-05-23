@@ -1,6 +1,6 @@
 import * as net from "node:net";
 import { EventTrigger } from "evlib";
-import { DuplexStream } from "../internal/byte_duplex.js";
+import { DuplexStream } from "../internal/byte_duplex.ts";
 /* c8 ignore start */
 /**
  * @alpha

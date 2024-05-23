@@ -1,5 +1,5 @@
 import type { Readable } from "stream";
-import { createNoMoreDataErr } from "../errors.error.js";
+import { createNoMoreDataErr } from "../errors.error.ts";
 /** 等待流达到len的长度时,读取流,然后返回
  * @alpha
  * @throws

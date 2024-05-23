@@ -1,8 +1,8 @@
-import { rawSpawn } from "./private.js";
-import { SpawnOptions } from "./type.js";
+import { rawSpawn } from "./private.ts";
+import { SpawnOptions } from "./type.ts";
 import { OnceEventTrigger, EventTrigger } from "evlib";
-import { Handle } from "../internal/handle.js";
-import { SubProcess } from "./sub_process.js";
+import { Handle } from "../internal/handle.ts";
+import { SubProcess } from "./sub_process.ts";
 import { ChildProcess } from "node:child_process";
 const exePath = process.execPath;
 

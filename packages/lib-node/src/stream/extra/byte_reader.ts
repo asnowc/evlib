@@ -1,5 +1,5 @@
 import { Readable } from "node:stream";
-import type { ByteReader } from "../byte_reader.js";
+import type { ByteReader } from "../byte_reader.ts";
 import {
   ReadableStream,
   ReadableStreamDefaultReadResult,
@@ -10,7 +10,7 @@ import {
   createNoMoreDataErr,
   createAbortedError,
   createCallAheadError,
-} from "../errors.error.js";
+} from "../errors.error.ts";
 type WaitingPromise = WithPromise<Uint8Array> & {
   buf?: Uint8Array;
   offset: number;

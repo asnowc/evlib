@@ -1,4 +1,4 @@
-import { DuplexStream } from "../../src/internal/byte_duplex.js";
+import { DuplexStream } from "../../src/internal/byte_duplex.ts";
 import { Duplex } from "node:stream";
 import { describe, expect, vi, test } from "vitest";
 import { afterTime } from "evlib";

@@ -3,7 +3,8 @@
   "compilerOptions": {
     "baseUrl": ".",
     "target": "ES2022",
-    "noEmit": true
+    "noEmit": true,
+    "allowImportingTsExtensions": false
   },
   "exclude": ["node_modules", "out"]
 }

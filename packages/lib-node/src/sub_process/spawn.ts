@@ -1,6 +1,6 @@
-import { SubProcess } from "./sub_process.js";
-import { rawSpawnSync, rawSpawn } from "./private.js";
-import { SpawnOptions, SpawnSyncOptions, SpawnSyncResult } from "./type.js";
+import { SubProcess } from "./sub_process.ts";
+import { rawSpawnSync, rawSpawn } from "./private.ts";
+import { SpawnOptions, SpawnSyncOptions, SpawnSyncResult } from "./type.ts";
 
 /** @public */
 export function spawn(

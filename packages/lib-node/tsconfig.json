@@ -3,7 +3,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@eavid/lib-node/*": ["./src/*.js"], // 导入包名提示
+      "@eavid/lib-node/*": ["./src/*.ts"], // 导入包名提示
       "@src/*": ["./src/*"],
       "#evlib": ["evlib"] //方便复制模块
     },

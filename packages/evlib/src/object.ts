@@ -1,1 +1,1 @@
-export * from "./object/call_chain.js";
+export * from "./object/call_chain.ts";

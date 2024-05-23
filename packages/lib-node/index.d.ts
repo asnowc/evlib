@@ -1,5 +1,5 @@
-import * as net from "./dist/net.js";
+import * as net from "./dist/net.ts";
 import * as process from "./dist/sub_process.ts";
-import * as stream from "./dist/stream.js";
-import * as module from "./dist/module.js";
+import * as stream from "./dist/stream.ts";
+import * as module from "./dist/module.ts";
 export { net, process, stream, module };

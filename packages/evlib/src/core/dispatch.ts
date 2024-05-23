@@ -1,5 +1,5 @@
-import * as timer from "./internal.js";
-import type { VoidFn, TerminablePromise } from "./type.js";
+import * as timer from "./internal.ts";
+import type { VoidFn, TerminablePromise } from "./type.ts";
 
 /** 设置一个计时器, 在指定的时间后执行 fn
  * @public

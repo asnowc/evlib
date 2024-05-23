@@ -1,10 +1,10 @@
 import * as cps from "node:child_process";
-import type { Handle } from "../internal/handle.js";
+import type { Handle } from "../internal/handle.ts";
 import type {
   SpawnOptions,
   SpawnSyncOptions,
   SpawnSyncResult,
-} from "./type.js";
+} from "./type.ts";
 
 export function rawSpawn(
   exePath: string,

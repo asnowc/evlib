@@ -2,7 +2,7 @@ import {
   SinglyLinkList,
   eachLinkedList,
   getLinkedListByIndex,
-} from "./linked_list.js";
+} from "./linked_list.ts";
 
 /** @public */
 export interface Queue<T> {

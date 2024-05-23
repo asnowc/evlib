@@ -1,4 +1,4 @@
-import { err } from "../tool/err.js";
+import { err } from "../tool/err.ts";
 let POSIX = true;
 export function getPOSIXDefault() {
   return POSIX;

@@ -2,7 +2,7 @@ import { afterTime } from "evlib";
 import {
   readableToReadableStream,
   writableToWritableStream,
-} from "../../src/stream/stream_transform.js";
+} from "../../src/stream/stream_transform.ts";
 import { Writable, Readable, Duplex } from "node:stream";
 import { ReadableStream, ReadableStreamDefaultReader } from "node:stream/web";
 import { test, expect, describe, vi } from "vitest";

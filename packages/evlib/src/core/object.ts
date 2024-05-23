@@ -1,6 +1,6 @@
 import { ParameterTypeError, ParameterError } from "evlib/errors";
-import { getBasicType } from "./type_check.js";
-import { ObjectKey } from "./type.js";
+import { getBasicType } from "./type_check.ts";
+import { ObjectKey } from "./type.ts";
 
 type Obj<V = any> = Record<ObjectKey, V>;
 /** @public */

@@ -1,6 +1,6 @@
 import { it, expect, describe } from "vitest";
 import { checkType, typeChecker } from "evlib";
-import "./assests/type_check.assert.js";
+import "./assests/type_check.assert.ts";
 const optional = typeChecker.optional;
 describe("基本", function () {
   describe("基础类型检测", function () {

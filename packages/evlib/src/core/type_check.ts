@@ -1,4 +1,4 @@
-import { ParameterError, createTypeErrorDesc } from "../errors.js";
+import { ParameterError, createTypeErrorDesc } from "../errors.ts";
 /**
  * 如果 对象的字段预期类型为可选, 并且实际存在字段为undefined, 则在deleteSurplus为true是将字段删除
  */

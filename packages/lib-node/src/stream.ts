@@ -13,6 +13,6 @@ export async function readAllFromStream<T>(
   return list;
 }
 
-export * from "./stream/byte_reader.js";
-export * from "./stream/extra/mod.js";
-export * from "./stream/stream_transform.js";
+export * from "./stream/byte_reader.ts";
+export * from "./stream/extra/mod.ts";
+export * from "./stream/stream_transform.ts";

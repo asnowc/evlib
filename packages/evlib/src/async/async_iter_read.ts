@@ -1,4 +1,4 @@
-import type { PromiseHandle } from "../core/mod.js";
+import type { PromiseHandle } from "../core/mod.ts";
 
 type DataLink<T> = {
   data: T;

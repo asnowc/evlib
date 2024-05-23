@@ -5,7 +5,7 @@ import {
   createDuplex,
   createReadable,
   createWritable,
-} from "../../stream/__mocks__/mock_stream.js";
+} from "../../stream/__mocks__/mock_stream.ts";
 
 /** 用于测试 node 流的生命周期
  * @remarks

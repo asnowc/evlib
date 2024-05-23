@@ -4,7 +4,7 @@ import type {
   ReadableStreamController,
   ReadableByteStreamController,
 } from "node:stream/web";
-import { createAbortedError } from "../errors.error.js";
+import { createAbortedError } from "../errors.error.ts";
 
 export class ReadableQueue<T = Uint8Array> {
   /**

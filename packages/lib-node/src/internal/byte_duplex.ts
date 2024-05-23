@@ -3,7 +3,7 @@ import {
   ByteReader,
   readableToReadableStream,
   writableToWritableStream,
-} from "../stream.js";
+} from "../stream.ts";
 import * as NodeStream from "node:stream";
 import { OnceEventTrigger } from "evlib";
 import { ReadableStream, WritableStream } from "node:stream/web";

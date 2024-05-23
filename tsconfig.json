@@ -5,6 +5,8 @@
     "moduleResolution": "nodenext",
     "isolatedModules": true,
     "lib": ["ESNext"],
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
     "skipDefaultLibCheck": true,
     "strict": true
   }

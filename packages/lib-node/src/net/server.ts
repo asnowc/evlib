@@ -1,6 +1,6 @@
 import * as net from "node:net";
 import { EventTrigger, OnceEventTrigger } from "evlib";
-import { Connection, SocketStream } from "./connection.js";
+import { Connection, SocketStream } from "./connection.ts";
 
 interface ServerOpts {
   /** 可选择覆盖所有 net.Socket' readableHighWaterMark 和 writableHighWaterMark。 默认值： 参见 stream.getDefaultHighWaterMark()。*/

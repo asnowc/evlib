@@ -14,7 +14,7 @@ import {
   DuplexOpts,
   ReadableOpts,
   WritableOpts,
-} from "../__mocks__/mock_stream.js";
+} from "../__mocks__/mock_stream.ts";
 import { afterTime } from "evlib";
 
 class TestRead extends Readable {

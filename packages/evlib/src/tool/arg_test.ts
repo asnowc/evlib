@@ -20,7 +20,7 @@
  ** @argTest.type(argTest.unionType("symbol",Promise))                  //? 或者使用实现接口的封装
  */
 
-import { err } from "../tool/err.js";
+import { err } from "../tool/err.ts";
 type propDescription = Parameters<typeof Object.defineProperty>[2];
 /** 参数检查装饰器类型 */
 type argTestDecorator = (

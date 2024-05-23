@@ -1,6 +1,6 @@
-import { SpawnOptions, SpawnSyncOptions, SpawnSyncResult } from "./type.js";
-import { SubProcess } from "./sub_process.js";
-import { rawSpawn, rawSpawnSync } from "./private.js";
+import { SpawnOptions, SpawnSyncOptions, SpawnSyncResult } from "./type.ts";
+import { SubProcess } from "./sub_process.ts";
+import { rawSpawn, rawSpawnSync } from "./private.ts";
 
 const platform = process.platform;
 

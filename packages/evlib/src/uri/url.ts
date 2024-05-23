@@ -19,9 +19,9 @@ WHATWG 网址格式
 port 0~65535
 */
 
-import { err } from "../tool/err.js";
-import { Path, getPOSIXDefault } from "./path.js";
-import * as punyCode from "./puny_code.js";
+import { err } from "../tool/err.ts";
+import { Path, getPOSIXDefault } from "./path.ts";
+import * as punyCode from "./puny_code.ts";
 const POSIX = getPOSIXDefault();
 
 export function domainToASCII(domain: string) {

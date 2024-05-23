@@ -3,7 +3,7 @@ import { describe, test, expect, vi } from "vitest";
 import {
   createReadable,
   createWritable,
-} from "../../stream/__mocks__/mock_stream.js";
+} from "../../stream/__mocks__/mock_stream.ts";
 import { afterTime } from "evlib";
 
 export type Stream = Duplex | Readable | Writable;

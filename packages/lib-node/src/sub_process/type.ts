@@ -1,4 +1,4 @@
-import { Handle } from "../internal/handle.js";
+import { Handle } from "../internal/handle.ts";
 
 type StdioFlag = "pipe" | "overlapped" | "ignore";
 type Stdio = StdioFlag | Handle | number;

@@ -1,1 +1,1 @@
-export * from "./sub_process/mod.js";
+export * from "./sub_process/mod.ts";

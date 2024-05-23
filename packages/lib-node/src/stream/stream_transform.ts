@@ -5,8 +5,8 @@ import {
   QueuingStrategy,
   ByteLengthQueuingStrategy,
 } from "node:stream/web";
-import { ReadableSource } from "./transform/readable_core.js";
-import { WritableCore } from "./transform/writable_core.js";
+import { ReadableSource } from "./transform/readable_core.ts";
+import { WritableCore } from "./transform/writable_core.ts";
 /** 将 node 的 Readable 转换为 ReadableStream
  * @remarks 它的行为与 Readable.toWeb() 的行为不同. Readable.toWeb() 会造成 扩大 highWaterMark 的问题. node v20 目前是这样的
  * @public

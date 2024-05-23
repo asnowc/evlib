@@ -2,7 +2,7 @@ import * as node_ps from "node:child_process";
 import {
   readableToReadableStream,
   writableToWritableStream,
-} from "../stream/stream_transform.js";
+} from "../stream/stream_transform.ts";
 import { WritableStream, ReadableStream } from "node:stream/web";
 import { OnceEventTrigger } from "evlib";
 
