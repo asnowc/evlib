@@ -22,7 +22,7 @@ jobs:
         uses: asnowc/actions@setup-node/v2
         with:
           node_v: ${{matrix.node-version}}
-          pnpm_v: 8
+          pnpm_v: 9
           run_install: true
       - name: Build
         run: pnpm ci:build
@@ -51,7 +51,7 @@ jobs:
         uses: asnowc/actions@setup-node/v2
         with:
           node_v: 20
-          pnpm_v: 8
+          pnpm_v: 9
           run_install: true
       - name: Build
         run: pnpm ci:build
