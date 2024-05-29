@@ -1,9 +1,4 @@
-import {
-  LinkedQueue,
-  LinkedCacheQueue,
-  Queue,
-  eachLinkedList,
-} from "evlib/data_struct";
+import { LinkedQueue, LinkedCacheQueue } from "evlib/data_struct";
 import { test, describe, expect } from "vitest";
 describe("LinkedQueue", function () {
   test("push 1-shift 1", function () {
@@ -19,6 +14,16 @@ describe("LinkedQueue", function () {
     expect(queue.head).toBeUndefined();
     expect(queue.last).toBeUndefined();
     expect(queue.size).toBe(0);
+  });
+  test("shift", function () {
+    const queue = new LinkedQueue<any>();
+    queue.push({});
+    queue.push({});
+    queue.push({});
+    expect(queue.shift().next, "不应存在 next 属性").toBeUndefined();
+    queue.shift();
+    queue.shift();
+    expect(() => queue.shift(), "长度为0，尝试出队会抛出异常").toThrowError();
   });
   test("push多个", function () {
     const queue = new LinkedQueue<TestLink>();

@@ -31,7 +31,6 @@ export interface CacheQueue<T> extends Queue<T> {
  * @public
  */
 export class LinkedQueue<T extends object> {
-  constructor() {}
   last?: SinglyLinkList<T>;
   head?: SinglyLinkList<T>;
   size: number = 0;
@@ -54,7 +53,9 @@ export class LinkedQueue<T extends object> {
   shift(): T {
     const head = this.head!;
     this.head = head.next;
-    if (!head.next) this.last = undefined;
+    if (head.next) head.next = undefined;
+    else this.last = undefined;
+
     this.size--;
     return head;
   }
