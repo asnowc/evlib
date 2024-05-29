@@ -159,13 +159,13 @@ function deepClone<T>(obj: T, cloned?: Map<any, any>): T;
 function dePromise<T, R>(val: T | Promise<T>, fn: (val: T) => R): R | Promise<R>;
 
 // @public (undocumented)
-type DoublyLinkList = {
-    before?: DoublyLinkList;
-    next?: DoublyLinkList;
+type DoublyLinkList<T extends object = {}> = {
+    before?: DoublyLinkList<T>;
+    next?: DoublyLinkList<T>;
 };
 
 // @public
-function eachLinkedList<T extends SinglyLinkList>(link?: T): Generator<T, void, unknown>;
+function eachLinkedList<T extends object>(link?: SinglyLinkList<T>): Generator<SinglyLinkList<T>, void, unknown>;
 
 // @public
 const ECMA_VERSION: number;
@@ -223,7 +223,7 @@ function getChainPath(obj: object): string[];
 function getClassType(val: any): string;
 
 // @public
-function getLinkedListByIndex<T extends SinglyLinkList>(link: T, index: number): T;
+function getLinkedListByIndex<T extends object>(link: SinglyLinkList<T>, index: number): SinglyLinkList<T>;
 
 // @beta
 function groupObject<T extends {}>(data: T[], key: keyof T): Obj<T>;
@@ -259,7 +259,7 @@ class LengthByteParser extends ByteParser<Uint8Array> {
 }
 
 // @public
-class LinkedCacheQueue<T extends SinglyLinkList> extends LinkedQueue<T> {
+class LinkedCacheQueue<T extends object> extends LinkedQueue<T> {
     constructor(maxSize: number);
     // (undocumented)
     get maxSize(): number;
@@ -269,14 +269,13 @@ class LinkedCacheQueue<T extends SinglyLinkList> extends LinkedQueue<T> {
 }
 
 // @public
-class LinkedQueue<T extends SinglyLinkList> {
+class LinkedQueue<T extends object> {
     // (undocumented)
-    [Symbol.iterator](): Generator<T, void, unknown>;
-    constructor();
+    [Symbol.iterator](): Generator<SinglyLinkList<T>, void, unknown>;
     // (undocumented)
-    head?: T;
+    head?: SinglyLinkList<T>;
     // (undocumented)
-    last?: T;
+    last?: SinglyLinkList<T>;
     // (undocumented)
     push(data: T): void;
     shift(): T;
@@ -293,6 +292,7 @@ interface Listenable<T> {
     off(key: object): boolean;
     on<R extends Listener<T>>(listener: R): R;
     // Warning: (ae-forgotten-export) The symbol "Listener" needs to be exported by the entry point index.d.ts
+    once<R extends Listener<T>>(resolve: R): R;
     then(resolve: Listener<T>): void;
 }
 
@@ -360,7 +360,8 @@ interface OnceListenable<T> {
     done: boolean;
     finally(listener: () => void): void;
     off(key: object): boolean;
-    then(resolve: Listener<T>, reject: (data?: any) => void): void;
+    once<R extends Listener<T>>(resolve: R): R;
+    then(resolve: Listener<T>, reject?: (data?: any) => void): void;
 }
 
 // @public (undocumented)
@@ -406,9 +407,8 @@ interface PromiseHandle<T> {
 
 // @public (undocumented)
 interface Queue<T> {
-    // (undocumented)
+    head?: T;
     push(data: T): void;
-    // (undocumented)
     shift(): T;
 }
 
@@ -431,8 +431,8 @@ function setInterval(fn: VoidFn, intervalTime?: number): () => void;
 function setTimer(fn: VoidFn, timeout?: number): () => void;
 
 // @public (undocumented)
-type SinglyLinkList = {
-    next?: SinglyLinkList;
+type SinglyLinkList<T extends object = {}> = T & {
+    next?: SinglyLinkList<T>;
 };
 
 // @alpha (undocumented)
