@@ -6,7 +6,11 @@ import {
 
 /** @public */
 export interface Queue<T> {
+  /** 队头 */
+  head?: T;
+  /** 入队 */
   push(data: T): void;
+  /** 出队 */
   shift(): T;
 }
 
@@ -23,20 +27,23 @@ export interface CacheQueue<T> extends Queue<T> {
 
 /**
  * 链表队列
+ * @typeParam T - 它不应包含 next 属性，否则在入队后会被覆盖
  * @public
  */
-export class LinkedQueue<T extends SinglyLinkList> {
+export class LinkedQueue<T extends object> {
   constructor() {}
-  last?: T;
-  head?: T;
+  last?: SinglyLinkList<T>;
+  head?: SinglyLinkList<T>;
   size: number = 0;
+
   push(data: T) {
     if (this.last) this.last.next = data;
     else this.head = data;
     this.last = data;
     this.size++;
   }
-  unshift(data: T) {
+  unshift(data: T): void;
+  unshift(data: SinglyLinkList<T>) {
     if (!this.head) this.last = data;
     data.next = this.head;
     this.head = data;
@@ -46,7 +53,7 @@ export class LinkedQueue<T extends SinglyLinkList> {
   /** 出队，返回队头。你需要确保队头存在，否则抛出异常 */
   shift(): T {
     const head = this.head!;
-    this.head = head.next as T;
+    this.head = head.next;
     if (!head.next) this.last = undefined;
     this.size--;
     return head;
@@ -60,7 +67,7 @@ export class LinkedQueue<T extends SinglyLinkList> {
  * 链式缓存队列。如果push后队列长度超过指定长度，队头会被挤出
  * @public
  */
-export class LinkedCacheQueue<T extends SinglyLinkList> extends LinkedQueue<T> {
+export class LinkedCacheQueue<T extends object> extends LinkedQueue<T> {
   constructor(maxSize: number) {
     super();
     this.#maxSize = maxSize;
