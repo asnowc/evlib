@@ -21,7 +21,6 @@ class EventTriggerImpl<T> implements Listenable<T>, EventTriggerController<T> {
     }
     return size;
   }
-  /** then 的别名，它会返回 resolve 函数 */
   once<R extends Listener<T>>(resolve: R): R {
     if (this.#done) throw createDoneError();
     else {
@@ -64,6 +63,8 @@ export type EventTrigger<T> = Listenable<T> & EventTriggerController<T>;
  * @public
  */
 export interface Listenable<T> {
+  /** then 的别名，它会返回 resolve 函数 */
+  once<R extends Listener<T>>(resolve: R): R;
   /** 与on()类似, 在触发前取消订阅, 可使用 await 语法等待
    * @remarks
    * 如果 listener 之前已经订阅, 否则忽略
@@ -100,12 +101,14 @@ type Fn = (...args: any[]) => any;
  * @public
  */
 export interface OnceListenable<T> {
+  /** then 的别名，它会返回 resolve 函数 */
+  once<R extends Listener<T>>(resolve: R): R;
   /** 订阅事件。
    * @remarks
    * 如果 listener 之前已经订阅, 否则抛出异常
    * 如果事件已触发完成则抛出异常
    */
-  then(resolve: Listener<T>, reject: (data?: any) => void): void;
+  then(resolve: Listener<T>, reject?: (data?: any) => void): void;
   /** 这个是订阅 emitError() 触发的事件 */
   catch<R extends (reason: any) => void>(listener: R): void;
   /** 无论最终是 emit 还是 emitError. 都会被触发 */
