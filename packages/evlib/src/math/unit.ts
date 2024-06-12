@@ -11,9 +11,8 @@ export type ExponentFormat = {
   decimals: number;
   exponent: number;
 };
-/**
+/** 将数字标准化  (int + decimals) * carry ^ exponent
  * @public
- * @remarks 标准化数字  (int + decimals) * carry ^ exponent
  * @param carry - 进位值
  * @param maxExponent - 指数上限，默认无上限（直到 int 小于 carry）
  * @returns
@@ -24,11 +23,10 @@ export type ExponentFormat = {
 export function paseExponentNum(
   num: number,
   carry: number,
-  maxExponent?: number,
+  maxExponent?: number
 ): ExponentFormat;
-/**
+/** 使用动态进位值标准化数字  (int + decimals) * carry ^ exponent
  * @public
- * @remarks 使用动态进位值标准化数字  (int + decimals) * carry ^ exponent
  * @param carry - 一个数组（每次进位的数值）
  * @param maxExponent - 指数上限，默认无上限（直到 int 小于 carry）
  * @returns
@@ -40,7 +38,7 @@ export function paseExponentNum(num: number, carry: number[]): ExponentFormat;
 export function paseExponentNum(
   num: number,
   carry: number | number[],
-  maxExponent: number = Infinity,
+  maxExponent: number = Infinity
 ): ExponentFormat {
   if (isNaN(num) || num === Infinity)
     throw new ParameterError(0, `Invalid number (${num}) `, "num");
@@ -78,8 +76,7 @@ export function paseExponentNum(
 
 /** @public */
 export const autoUnit = {
-  /**
-   * @remarks 标准化字节单位
+  /**  标准化字节单位
    * @param number - 字节数值
    * @param raids - 保留小数位数。
    * @param unit - number 的单位
@@ -87,7 +84,7 @@ export const autoUnit = {
   byte(
     number: number,
     raids: number = 2,
-    unit?: "B" | "KB" | "MB" | "GB" | "TB" | "PB",
+    unit?: "B" | "KB" | "MB" | "GB" | "TB" | "PB"
   ) {
     const unitList = ["B", "KB", "MB", "GB", "TB", "PB"];
     let startIndex = 0;
@@ -98,7 +95,7 @@ export const autoUnit = {
     let { exponent, decimals, int } = paseExponentNum(
       number,
       1024,
-      unitList.length - startIndex,
+      unitList.length - startIndex
     );
     exponent += startIndex;
 
