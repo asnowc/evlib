@@ -18,8 +18,8 @@ test("Readable.toWeb", async function () {
   await afterTime();
   expect(
     stream.readableLength,
-    "消费者实际并未读取, 造成 readable 扩大了 highWaterMark",
-  ).toBe(0);
+    "消费者实际并未读取, 造成 readable 扩大了 highWaterMark"
+  ).toBe(3); // nodejs fix by v22
   stream.push(data);
   stream.push(data); //5 个chunk
 
@@ -29,8 +29,8 @@ test("Readable.toWeb", async function () {
 
   expect(
     stream.readableLength,
-    "前5个 chunk 被缓存在 readableStream 的队列中, 剩下两个长度为 3 的 chunk 在 readable 的队列中",
-  ).toBe(6);
+    "前3个 chunk 被缓存在 readableStream 的队列中, 剩下 5个 chunk 在 readable 的队列中"
+  ).toBe(15);
 });
 test("Writable.toWeb", async function () {
   const mockWrite = vi.fn((a, b, cb) => afterTime(100).then(cb));
@@ -47,7 +47,7 @@ test("Writable.toWeb", async function () {
   await writer.write(data);
   expect(
     mockOpts.write,
-    "mockWrite 异步写入,造成 第二次 write时 写入队列后直接 resolve",
+    "mockWrite 异步写入,造成 第二次 write时 写入队列后直接 resolve"
   ).toBeCalledTimes(1);
   await writer.close();
 });
