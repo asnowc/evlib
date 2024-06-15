@@ -4,6 +4,7 @@ on:
     branches:
       - main
       - develop
+      - feat/*
 env:
   ARTIFACT_NAME: dist
 jobs:
@@ -11,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [18, 20]
+        node-version: [18, 20, 22]
     runs-on: ubuntu-latest
     outputs:
       publish: ${{steps.check_tag.outputs.tags}}
@@ -29,9 +30,10 @@ jobs:
       - name: Unit test
         run: pnpm ci:test
       - name: Check api
-        if: ${{matrix.node-version==20 && github.ref_name=='main'}}
+        if: ${{matrix.node-version==22 && github.ref_name=='main'}}
         run: pnpm ci:api-extractor
       - name: Check Tags
+        if: ${{matrix.node-version==22 && github.ref_name=='main'}}
         id: check_tag
         uses: asnowc/actions@check-tags/v1
         with:
