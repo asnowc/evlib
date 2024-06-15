@@ -107,6 +107,9 @@ declare namespace core {
 }
 export { core }
 
+// @public
+function createList<T>(fn: (index: number) => T, size: number, startIndex?: number): T[];
+
 // Warning: (ae-forgotten-export) The symbol "ProxyTarget" needs to be exported by the entry point index.d.ts
 //
 // @public
@@ -134,7 +137,8 @@ declare namespace data_struct {
         Queue,
         CacheQueue,
         LinkedQueue,
-        LinkedCacheQueue
+        LinkedCacheQueue,
+        LoopUniqueId
     }
 }
 export { data_struct }
@@ -259,19 +263,22 @@ class LengthByteParser extends ByteParser<Uint8Array> {
 }
 
 // @public
-class LinkedCacheQueue<T extends object> extends LinkedQueue<T> {
+class LinkedCacheQueue<T extends object> extends LinkedQueue<T> implements CacheQueue<T> {
     constructor(maxSize: number);
     // (undocumented)
     get maxSize(): number;
     set maxSize(maxSize: number);
     // (undocumented)
     push(data: T): void;
+    // (undocumented)
+    unshift(data: T): void;
 }
 
 // @public
-class LinkedQueue<T extends object> {
+class LinkedQueue<T extends object> implements Queue<T> {
     // (undocumented)
     [Symbol.iterator](): Generator<SinglyLinkList<T>, void, unknown>;
+    clear(): void;
     // (undocumented)
     head?: SinglyLinkList<T>;
     // (undocumented)
@@ -281,7 +288,6 @@ class LinkedQueue<T extends object> {
     shift(): T;
     // (undocumented)
     size: number;
-    // (undocumented)
     unshift(data: T): void;
 }
 
@@ -296,16 +302,37 @@ interface Listenable<T> {
     then(resolve: Listener<T>): void;
 }
 
+// @public
+class LoopUniqueId {
+    constructor(min?: number, max?: number);
+    // (undocumented)
+    max: number;
+    // (undocumented)
+    min: number;
+    next(): number;
+    // (undocumented)
+    reset(): void;
+}
+
 declare namespace math {
     export {
         retainDecimalsFloor,
         retainDecimalsRound,
         paseExponentNum,
         ExponentFormat,
-        autoUnit
+        autoUnit,
+        randomInt
     }
 }
 export { math }
+
+declare namespace mock {
+    export {
+        createList,
+        randomString
+    }
+}
+export { mock }
 
 // @public (undocumented)
 class NotImplementedError extends Error {
@@ -374,10 +401,10 @@ class ParameterTypeError extends ParameterError {
     constructor(index: number, except: string, actual: string, name?: string);
 }
 
-// @public (undocumented)
+// @public
 function paseExponentNum(num: number, carry: number, maxExponent?: number): ExponentFormat;
 
-// @public (undocumented)
+// @public
 function paseExponentNum(num: number, carry: number[]): ExponentFormat;
 
 // Warning: (ae-forgotten-export) The symbol "Obj" needs to be exported by the entry point index.d.ts
@@ -411,6 +438,15 @@ interface Queue<T> {
     push(data: T): void;
     shift(): T;
 }
+
+// @public
+function randomInt(max: number): number;
+
+// @public
+function randomInt(min: number, max: number): number;
+
+// @public
+function randomString(len: number, minUnicode?: number, maxUnicode?: number): string;
 
 // @public
 function removeUndefinedKey<T extends Obj>(obj: T, deep?: boolean): T;
@@ -498,9 +534,13 @@ class TypeError_2 extends Error {
 // @public
 class UniqueKeyMap<T = any> extends Map<number, T> {
     constructor(maxSize: number);
+    allocKeySet(data: T, safe?: undefined | false): number;
+    // (undocumented)
+    allocKeySet(data: T, safe?: boolean): number | null;
+    // @deprecated
     allowKeySet(data: T, safe?: undefined | false): number;
     // (undocumented)
-    allowKeySet(data: T, safe: true): number | null;
+    allowKeySet(data: T, safe?: boolean): number | null;
     // (undocumented)
     clear(): void;
     // (undocumented)

@@ -1,16 +1,16 @@
 {
   "name": "evlib",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "",
   "type": "module",
   "author": "Eavid",
   "license": "MIT",
   "scripts": {
-    "build": "pnpm rollup -c",
+    "build": "pnpm rollup -c && pnpm api:check-local",
     "publish:try": "pnpm publish --no-git-checks --dry-run",
     "ci:build": "pnpm build",
     "ci:api-extractor": "api-extractor run -v",
-    "api:extractor-local": "pnpm ci:api-extractor -l"
+    "api:check-local": "pnpm ci:api-extractor -l"
   },
   "exports": {
     ".": "./dist/core/mod.js",
