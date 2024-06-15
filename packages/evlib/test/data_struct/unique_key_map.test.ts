@@ -13,7 +13,7 @@ describe("UniqueKeyMap", function () {
       expect(map.freeRange, "指针范围为0").toBe(10);
     });
     it("申请唯一key", function () {
-      firstId = map.allowKeySet("a")!;
+      firstId = map.allocKeySet("a")!;
       expect(firstId, "id为0").toBe(0);
       expect(map).toMatchObject({ size: 1, freeSize: 9 });
       expect(map.freeRange).toBe(9);
@@ -47,11 +47,11 @@ describe("UniqueKeyMap", function () {
     });
     it("内存已满继续申请内存", function () {
       let heap = new UniqueKeyMap(3);
-      expect(heap.allowKeySet("a"), "返回id为：0").toBe(0);
-      expect(heap.allowKeySet("a"), "返回id为：1").toBe(1);
-      expect(heap.allowKeySet("a"), "返回id为：2").toBe(2);
-      expect(heap.allowKeySet("a", true)).toBeNull();
-      expect(() => heap.allowKeySet("a")).toThrowError();
+      expect(heap.allocKeySet("a"), "返回id为：0").toBe(0);
+      expect(heap.allocKeySet("a"), "返回id为：1").toBe(1);
+      expect(heap.allocKeySet("a"), "返回id为：2").toBe(2);
+      expect(heap.allocKeySet("a", true)).toBeNull();
+      expect(() => heap.allocKeySet("a")).toThrowError();
     });
     it("设置未申请内存", function () {
       let heap = new UniqueKeyMap(3);
@@ -61,7 +61,7 @@ describe("UniqueKeyMap", function () {
   it("clear()", function () {
     const heap = new UniqueKeyMap(5);
     for (let i = 0; i < heap.maxSize; i++) {
-      heap.allowKeySet(i);
+      heap.allocKeySet(i);
     }
     heap.delete(3);
     heap.delete(1);
@@ -73,9 +73,9 @@ describe("UniqueKeyMap", function () {
   });
   it("update", function () {
     const heap = new UniqueKeyMap(5);
-    heap.allowKeySet("1");
-    heap.allowKeySet("2");
-    const key = heap.allowKeySet("3")!;
+    heap.allocKeySet("1");
+    heap.allocKeySet("2");
+    const key = heap.allocKeySet("3")!;
 
     expect(heap.update(key, "9")).toBeTruthy();
     expect(heap.get(key)).toBe("9");
@@ -83,8 +83,8 @@ describe("UniqueKeyMap", function () {
   });
   it("take", function () {
     const heap = new UniqueKeyMap(5);
-    const key = heap.allowKeySet("1")!;
-    heap.allowKeySet("2");
+    const key = heap.allocKeySet("1")!;
+    heap.allocKeySet("2");
     expect(heap.take(key)).toBe("1");
     expect(heap.has(key)).toBeFalsy();
     expect(heap.size).toBe(1);
@@ -103,7 +103,7 @@ describe("UniqueKeyMap", function () {
       fillHeap(heap);
 
       heap.delete(3);
-      expect(heap.allowKeySet("q")).toBe(3);
+      expect(heap.allocKeySet("q")).toBe(3);
     });
     it("last指针超过到末端", function () {
       const heap = new UniqueKeyMap(4);
@@ -111,7 +111,7 @@ describe("UniqueKeyMap", function () {
       heap.delete(0);
       heap.delete(1);
 
-      expect(heap.allowKeySet(1)).toBe(0);
+      expect(heap.allocKeySet(1)).toBe(0);
       expect(heap.startPointer, "startPointer").toBe(2);
       expect(heap.lastPointer, "lastPointer").toBe(1);
     });
@@ -121,8 +121,8 @@ describe("UniqueKeyMap", function () {
       for (let i = 0; i < 3; i++) {
         expect(heap.delete(i)).toBeTruthy();
       }
-      heap.allowKeySet(); //0
-      heap.allowKeySet(); //1  lastPointer=2
+      heap.allocKeySet(); //0
+      heap.allocKeySet(); //1  lastPointer=2
 
       heap.delete(3);
 
@@ -144,13 +144,13 @@ describe("UniqueKeyMap", function () {
       const heap = new UniqueKeyMap(4);
       fillHeap(heap);
       heap.delete(0);
-      heap.allowKeySet(1);
+      heap.allocKeySet(1);
       expect(heap.freeRange).toBe(0);
     });
     it("偏移0内存", function () {
       const heap = new UniqueKeyMap(4);
-      heap.allowKeySet(1);
-      heap.allowKeySet(2);
+      heap.allocKeySet(1);
+      heap.allocKeySet(2);
       heap.delete(0);
       heap.delete(1);
       expect(heap.freeRange).toBe(4);
@@ -160,7 +160,7 @@ describe("UniqueKeyMap", function () {
     let set = new Set();
     let heap = new UniqueKeyMap(10);
     for (let i = 0; i < heap.maxSize; i++) {
-      let id = heap.allowKeySet(i);
+      let id = heap.allocKeySet(i);
       expect(set.has(id), i.toString()).toBeFalsy();
     }
   });
@@ -168,5 +168,5 @@ describe("UniqueKeyMap", function () {
 
 function fillHeap(heap: UniqueKeyMap) {
   let max = heap.maxSize;
-  for (let i = 0; i < max; i++) heap.allowKeySet(i);
+  for (let i = 0; i < max; i++) heap.allocKeySet(i);
 }

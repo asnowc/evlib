@@ -40,10 +40,20 @@ export class UniqueKeyMap<T = any> extends Map<number, T> {
   /** 申请一个未使用的key
    * @returns number 唯一key
    * @returns null key已满
+   * @deprecated 改用 allocKeySet
    */
   allowKeySet(data: T, safe?: undefined | false): number;
-  allowKeySet(data: T, safe: true): number | null;
+  allowKeySet(data: T, safe?: boolean): number | null;
   allowKeySet(data: T, safe?: boolean): number | null {
+    return this.allocKeySet(data, safe);
+  }
+  /** 申请一个未使用的key
+   * @returns number 唯一key
+   * @returns null key已满
+   */
+  allocKeySet(data: T, safe?: undefined | false): number;
+  allocKeySet(data: T, safe?: boolean): number | null;
+  allocKeySet(data: T, safe?: boolean): number | null {
     let key = this.findFreePointer();
     if (key !== null) super.set(key, data);
     else if (safe) return key;
@@ -62,6 +72,11 @@ export class UniqueKeyMap<T = any> extends Map<number, T> {
         this.#startPointer = this.movePointerAdd(this.#startPointer);
       else if (key === this.movePointerSub(this.#lastPointer))
         this.#lastPointer = key;
+      if (this.startPointer === this.#lastPointer) {
+        this.#startPointer = 0;
+        this.#lastPointer = 0;
+        this.#lastPointer = 0;
+      }
       return true;
     }
     return false;
