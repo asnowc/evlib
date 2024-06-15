@@ -30,17 +30,17 @@ export interface CacheQueue<T> extends Queue<T> {
  * @typeParam T - 它不应包含 next 属性，否则在入队后会被覆盖
  * @public
  */
-export class LinkedQueue<T extends object> {
+export class LinkedQueue<T extends object> implements Queue<T> {
   last?: SinglyLinkList<T>;
   head?: SinglyLinkList<T>;
   size: number = 0;
-
   push(data: T) {
     if (this.last) this.last.next = data;
     else this.head = data;
     this.last = data;
     this.size++;
   }
+  /** 插队到队头 */
   unshift(data: T): void;
   unshift(data: SinglyLinkList<T>) {
     if (!this.head) this.last = data;
@@ -59,6 +59,12 @@ export class LinkedQueue<T extends object> {
     this.size--;
     return head;
   }
+  /** 清空队列 */
+  clear() {
+    this.last = undefined;
+    this.head = undefined;
+    this.size = 0;
+  }
   [Symbol.iterator]() {
     return eachLinkedList(this.head);
   }
@@ -68,7 +74,10 @@ export class LinkedQueue<T extends object> {
  * 链式缓存队列。如果push后队列长度超过指定长度，队头会被挤出
  * @public
  */
-export class LinkedCacheQueue<T extends object> extends LinkedQueue<T> {
+export class LinkedCacheQueue<T extends object>
+  extends LinkedQueue<T>
+  implements CacheQueue<T>
+{
   constructor(maxSize: number) {
     super();
     this.#maxSize = maxSize;
@@ -88,6 +97,11 @@ export class LinkedCacheQueue<T extends object> extends LinkedQueue<T> {
       this.head = getLinkedListByIndex(this.head!, this.size - maxSize);
     }
     this.#maxSize = maxSize;
+  }
+  unshift(data: T): void;
+  unshift(data: SinglyLinkList<T>): void {
+    if (this.#maxSize === this.size) return;
+    super.unshift(data);
   }
   push(data: T): void {
     if (this.#maxSize <= 0) return;

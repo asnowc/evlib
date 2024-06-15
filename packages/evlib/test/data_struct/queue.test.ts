@@ -1,6 +1,17 @@
 import { LinkedQueue, LinkedCacheQueue } from "evlib/data_struct";
 import { test, describe, expect } from "vitest";
 describe("LinkedQueue", function () {
+  test("构造", function () {
+    const queue = new LinkedQueue();
+    const data = [1, 2, 3, 4];
+    for (const item of data) {
+      queue.push({ data: item });
+    }
+    expect(queue.size).toBe(4);
+    queue.clear();
+    expect(queue.size).toBe(0);
+    expect(Array.from(queue).length).toBe(0);
+  });
   test("push 1-shift 1", function () {
     const queue = new LinkedQueue();
     const item = {};
