@@ -39,19 +39,26 @@ export class UniqueKeyMap<T = any> extends Map<number, T> {
 
   /** 申请一个未使用的key
    * @returns number 唯一key
-   * @returns null key已满
    * @deprecated 改用 allocKeySet
    */
   allowKeySet(data: T, safe?: undefined | false): number;
+  /**
+   * @deprecated 改用 allocKeySet
+   * @returns number 唯一key
+   * @returns null: key 已满
+   */
   allowKeySet(data: T, safe?: boolean): number | null;
   allowKeySet(data: T, safe?: boolean): number | null {
     return this.allocKeySet(data, safe);
   }
   /** 申请一个未使用的key
    * @returns number 唯一key
-   * @returns null key已满
    */
   allocKeySet(data: T, safe?: undefined | false): number;
+  /** 申请一个未使用的key
+   * @returns number 唯一key
+   * @returns null key已满
+   */
   allocKeySet(data: T, safe?: boolean): number | null;
   allocKeySet(data: T, safe?: boolean): number | null {
     let key = this.findFreePointer();
