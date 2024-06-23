@@ -1,4 +1,4 @@
-import { it, expect, describe } from "vitest";
+import { it, expect, describe, test } from "vitest";
 import { checkType, typeChecker } from "evlib";
 import "./assests/type_check.assert.ts";
 const optional = typeChecker.optional;
@@ -19,7 +19,7 @@ describe("基本", function () {
     it("基本", function () {
       let obj = { s: 3, i: "s", q: undefined };
       expect(
-        checkType(obj, { s: "number", i: "string", q: "undefined" }),
+        checkType(obj, { s: "number", i: "string", q: "undefined" })
       ).toCheckPass();
       expect(obj).toEqual({ s: 3, i: "s", q: undefined });
     });
@@ -28,7 +28,7 @@ describe("基本", function () {
       let checkRes = checkType(
         obj,
         { s: "number", i: "string" },
-        { policy: "delete" },
+        { policy: "delete" }
       );
       expect(checkRes).toCheckPass();
       expect(obj).toEqual({ s: 3, i: "s" });
@@ -38,7 +38,7 @@ describe("基本", function () {
       let checkRes = checkType(
         obj,
         { s: "number", i: "string" },
-        { policy: "delete" },
+        { policy: "delete" }
       );
       expect(checkRes).toCheckPass();
       expect(obj).toEqual({ s: 3, i: "s", q: undefined });
@@ -54,7 +54,7 @@ describe("基本", function () {
       let checkRes = checkType(
         obj,
         { s: "number", i: "string", q: "number", y: "number" },
-        { checkAll: true },
+        { checkAll: true }
       );
       expect(checkRes.error).has.keys(["q", "y"]);
       expect(obj).toEqual({ s: 3, i: "s", q: undefined });
@@ -64,7 +64,7 @@ describe("基本", function () {
       let checkRes = checkType(
         obj,
         { s: "number", i: "string", q: "number", y: "number" },
-        { checkAll: false },
+        { checkAll: false }
       );
       let checkRes2 = checkType(obj, {
         s: "number",
@@ -80,10 +80,10 @@ describe("基本", function () {
     it("使用自定义函数判断", function () {
       let obj = { s: 3, i: "s" };
       expect(
-        checkType(obj, { s: "number", i: (a: any) => ({ error: "sd" }) }),
+        checkType(obj, { s: "number", i: (a: any) => ({ error: "sd" }) })
       ).toCheckFail({ i: "sd" });
       expect(
-        checkType(obj, { s: "number", i: (a: any) => undefined }),
+        checkType(obj, { s: "number", i: (a: any) => undefined })
       ).toCheckPass();
     });
     it("预期类型不一致", function () {
@@ -92,13 +92,13 @@ describe("基本", function () {
         checkType(
           obj,
           { s: "string", y: {}, q: "undefined" },
-          { checkAll: true },
+          { checkAll: true }
         ),
-        "预期类型不一致",
+        "预期类型不一致"
       ).toCheckFailWithField(["s", "y"]);
       expect(
         checkType(obj, { s: "string", y: (a: any) => undefined }),
-        "预期类型不一致",
+        "预期类型不一致"
       ).toCheckFailWithField(["s"]);
     });
     it("预期不存在", function () {
@@ -132,14 +132,14 @@ describe("基本", function () {
     it("仅匹配预期提供字段", function () {
       let val = [1, "d", null];
       expect(
-        checkType(val, ["number", "string"], { policy: "pass" }),
+        checkType(val, ["number", "string"], { policy: "pass" })
       ).toCheckPass();
       expect(val).toEqual([1, "d", null]);
     });
     it("移除多余", function () {
       let val = [1, "d", null];
       expect(
-        checkType(val, ["number", "string"], { policy: "delete" }),
+        checkType(val, ["number", "string"], { policy: "delete" })
       ).toCheckPass();
       expect(val).toEqual([1, "d"]);
     });
@@ -149,7 +149,7 @@ describe("嵌套", function () {
   it("仅检测", function () {
     let res = checkType(
       { s: 3, i: { q: "s", c: undefined } },
-      { s: "number", i: { q: "string", c: "undefined" } },
+      { s: "number", i: { q: "string", c: "undefined" } }
     );
     expect(res).toCheckPass();
   });
@@ -158,7 +158,7 @@ describe("嵌套", function () {
     let res = checkType(
       obj,
       { s: "number", i: { q: "string", c: "undefined" } },
-      { policy: "delete" },
+      { policy: "delete" }
     );
     expect(res).toCheckPass();
     expect(obj).toEqual({ s: 3, i: { q: "s", c: undefined } });
@@ -174,28 +174,28 @@ describe("内置测试函数", function () {
         {
           s: typeChecker.union(["number", "string"]),
           i: typeChecker.union(["string", (a) => undefined]),
-        },
-      ),
+        }
+      )
     ).toCheckPass();
     expect(
-      checkType({ s: 3 }, { s: typeChecker.union(["bigint", "string"]) }),
+      checkType({ s: 3 }, { s: typeChecker.union(["bigint", "string"]) })
     ).toCheckFailWithField(["s"]);
   });
   describe("可选", function () {
     describe("自定义可选", function () {
       it("不存在的可选", function () {
         expect(
-          checkType({ s: 3 }, { s: "number", q: optional("string") }),
+          checkType({ s: 3 }, { s: "number", q: optional("string") })
         ).toCheckPass();
       });
       it("正确的可选", function () {
         expect(
-          checkType({ s: 3, q: 8 }, { s: "number", q: optional("string") }),
+          checkType({ s: 3, q: 8 }, { s: "number", q: optional("string") })
         ).toCheckFailWithField(["q"]);
       });
       it("错误的可选", function () {
         expect(
-          checkType({ s: 3, q: "sd" }, { s: "number", q: optional("string") }),
+          checkType({ s: 3, q: "sd" }, { s: "number", q: optional("string") })
         ).toCheckPass();
       });
     });
@@ -205,8 +205,8 @@ describe("内置测试函数", function () {
         checkType(
           object,
           { s: "number", q: optional("string") },
-          { policy: "delete" },
-        ),
+          { policy: "delete" }
+        )
       ).toCheckPass();
       expect(object, "q应该被删除").not.has.key("q");
     });
@@ -214,20 +214,20 @@ describe("内置测试函数", function () {
       expect(
         checkType(
           { s: 3, i: "s" },
-          { s: "number", i: "string", q: optional.string },
-        ),
+          { s: "number", i: "string", q: optional.string }
+        )
       ).toCheckPass();
       expect(
         checkType(
           { s: 3, i: "s", q: 8 },
-          { s: "number", i: "string", q: optional.string },
-        ),
+          { s: "number", i: "string", q: optional.string }
+        )
       ).toCheckFailWithField(["q"]);
       expect(
         checkType(
           { s: 3, i: "s", q: "sd" },
-          { s: "number", i: "string", q: optional.string },
-        ),
+          { s: "number", i: "string", q: optional.string }
+        )
       ).toCheckPass();
     });
   });
@@ -275,7 +275,7 @@ describe("内置测试函数", function () {
       let res: CheckRes = checkType(
         { a: [2, 4, 56, 78] },
         { a: typeChecker.arrayType("number", 2) },
-        { policy: "delete" },
+        { policy: "delete" }
       );
       expect(res).toCheckPass();
 
@@ -287,6 +287,58 @@ describe("内置测试函数", function () {
       });
       expect(res).toCheckFailWithField(["2", "length"]);
     });
+  });
+});
+describe("自定义校验函数", function () {
+  test("转换值", function () {
+    const obj = 10;
+    const { value, error } = checkType(obj, (val) => {
+      return { value: val / 2 };
+    });
+    expect(value, "值已被替换成").toBe(5);
+    expect(error).toBeUndefined();
+  });
+  test("对象属性替换", function () {
+    const obj = { aa: 10 };
+    const { value, error } = checkType(obj, {
+      aa: (val) => {
+        return { value: val / 2 };
+      },
+    });
+    expect(value.aa, "值已被替换成").toBe(5);
+    expect(error).toBeUndefined();
+  });
+  test("record属性替换", function () {
+    const obj = { aa: 10 };
+    const { value, error } = checkType(
+      obj,
+      typeChecker.record((val) => ({ value: val / 2 }))
+    );
+    expect(value.aa, "值已被替换成").toBe(5);
+    expect(error).toBeUndefined();
+  });
+  test("数组替换", function () {
+    const obj = [10, 20];
+    const { value, error } = checkType(
+      obj,
+      typeChecker.arrayType((val: any) => ({ value: val / 2 }))
+    );
+    expect(value, "值已被替换成").toEqual([5, 10]);
+    expect(error).toBeUndefined();
+  });
+  test("元组替换", function () {
+    const obj = [10, 20];
+    const { value, error } = checkType(obj, ["number", () => ({ value: 10 })]);
+    expect(value, "值已被替换成").toEqual([10, 10]);
+    expect(error).toBeUndefined();
+  });
+  test("校验不通过", function () {
+    const obj = 9;
+    const { value, error } = checkType(obj, (val) => ({
+      error: "xxx",
+    }));
+    expect(value, "值已被替换成8").toBe(9);
+    expect(error).toBe("xxx");
   });
 });
 type CheckRes<T = any> = {

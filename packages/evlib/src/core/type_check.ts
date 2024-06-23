@@ -6,7 +6,7 @@ function checkObject(
   doc: Record<string, any>,
   except: ExceptTypeMap,
   options: TypeCheckOptions
-): CheckRes {
+): TypeCheckResult {
   const error: Record<string, TypeErrorDesc> = {};
   const { checkAll } = options;
   const deleteSurplus = options.policy === "delete";
@@ -43,6 +43,7 @@ function checkObject(
       if (!checkAll) return { error, value: doc };
       else isErr = true;
     }
+    if (res.value !== undefined) doc[testKey] = res.value;
     keys?.delete(testKey);
   }
   if (keys?.size) {
@@ -60,7 +61,7 @@ function checkTuple<T = unknown>(
   arr: any[],
   except: ExceptType[],
   options: TypeCheckOptions
-): CheckRes<T[]> {
+): TypeCheckResult<T[]> {
   const error: Record<string, TypeErrorDesc> = {};
   const { checkAll } = options;
   const deleteSurplus = options.policy === "delete";
@@ -89,6 +90,7 @@ function checkTuple<T = unknown>(
         if (!checkAll) return { error, value: arr };
         else isErr = true;
       }
+      if (res.value !== undefined) arr[i] = res.value;
     }
   } else
     return {
@@ -103,7 +105,7 @@ function checkArray(
   val: any[],
   type: ExceptType,
   checkAll?: boolean
-): Partial<CheckRes> | undefined {
+): Partial<TypeCheckResult> | undefined {
   let errCount = 0;
   let errors: any = {};
 
@@ -122,7 +124,7 @@ function checkRecord(
   val: Record<string, any>,
   type: ExceptType,
   checkAll?: boolean
-): Partial<CheckRes> | undefined {
+): Partial<TypeCheckResult> | undefined {
   let errCount = 0;
   let errors: any = {};
   const list = Object.keys(val);
@@ -135,6 +137,7 @@ function checkRecord(
       errCount++;
       if (!checkAll) return { error: errors };
     }
+    if (res.value !== undefined) val[key] = res.value;
   }
   if (errCount) return { error: errors };
 }
@@ -144,12 +147,12 @@ export function checkType<T extends ExceptType>(
   value: any,
   except: T,
   options?: TypeCheckOptions
-): CheckRes<InferExcept<T>>;
+): TypeCheckResult<InferExcept<T>>;
 export function checkType(
   value: any,
   expect: ExceptType,
   opts: TypeCheckOptions = {}
-): CheckRes<unknown> {
+): TypeCheckResult<unknown> {
   if (expect === null)
     throw new ParameterError(
       2,
@@ -166,12 +169,12 @@ function internalCheckType<T extends ExceptType>(
   value: any,
   except: T,
   options?: TypeCheckOptions
-): CheckRes<InferExcept<T>>;
+): TypeCheckResult<InferExcept<T>>;
 function internalCheckType(
   value: any,
   expect: ExceptType,
   opts: TypeCheckOptions = {}
-): CheckRes<unknown> {
+): TypeCheckResult<unknown> {
   switch (typeof expect) {
     case "string":
       let actualType = getBasicType(value);
@@ -186,7 +189,7 @@ function internalCheckType(
         };
       const res = expect(value, opts) ?? { value };
       if (!Object.hasOwn(res, "value")) res.value = value;
-      return res as CheckRes;
+      return res as TypeCheckResult;
     }
     case "object": {
       if (expect !== null) {
@@ -267,11 +270,18 @@ export interface TypeCheckOptions {
 /** @public */
 export interface TypeCheckFn<T = any> {
   (val: any, option: Readonly<TypeCheckOptions>):
-    | Partial<CheckRes<T>>
+    | TypeCheckFnCheckResult<T>
     | undefined;
   /** 前置类型, 前置类型匹配才会执行检测函数, 如果不匹配, 检测直接不通过 */
   baseType?: BasicType;
 }
+/** @public */
+export type TypeCheckFnCheckResult<T = unknown> = {
+  error?: TypeErrorDesc;
+  /** 要替换的值 */
+  value?: T;
+};
+
 /** 生成可选类型检测器
  * @__NO_SIDE_EFFECTS__
  * @public
@@ -398,7 +408,7 @@ export const typeChecker = {
   arrayType<T extends ExceptType>(
     type: T,
     length?: number
-  ): TypeCheckFn<InferExcept<T>> {
+  ): TypeCheckFn<InferExcept<T>[]> {
     const checkFn: TypeCheckFn = function checkFn(val: any, options) {
       const { checkAll } = options;
       const deleteSurplus = options.policy === "delete";
@@ -421,6 +431,7 @@ export const typeChecker = {
             if (!checkAll) return { error: errors };
             errCount++;
           }
+          if (res.value !== undefined) val[i] = res.value;
         }
         if (errCount) return { error: errors };
       } else return { error: createTypeErrorDesc("Array", getClassType(val)) };
@@ -460,8 +471,10 @@ export type ExceptType =
   | ExceptTypeTuple
   | InternalExceptType;
 
-type TypeErrorDesc = string | { [key: string]: TypeErrorDesc };
-type CheckRes<T = unknown> = {
+/** @public */
+export type TypeErrorDesc = string | { [key: string]: TypeErrorDesc };
+/** @public */
+export type TypeCheckResult<T = unknown> = {
   error?: TypeErrorDesc;
   /** 要替换的值 */
   value: T;
@@ -497,7 +510,7 @@ export type InferExcept<T> = T extends string
 
 type InferChecker<T extends Fn> = T extends (
   ...args: any
-) => Partial<CheckRes<infer V>> | undefined
+) => Partial<TypeCheckResult<infer V>> | undefined
   ? V
   : unknown;
 type InferTuple<T extends any[]> = T extends [infer P, ...infer Q]
