@@ -1,17 +1,15 @@
-import { defineConfig } from "vitest/config";
+import { defineProject } from "vitest/config";
 import path from "node:path";
 
-const root = path.resolve(__dirname, "packages");
-
-const evlibExclude: string[] = [
-  "packages/evlib/src/errors",
-  "packages/evlib/src/*.ts",
-];
-export default defineConfig({
+const root = path.resolve(__dirname);
+export default defineProject({
   test: {
+    alias: [
+      { find: /^evlib$/, replacement: path.resolve(root, "src/core/mod.ts") },
+      { find: /^evlib(?=\/[^\/]+$)/, replacement: path.resolve(root, "src") }, //只匹配 evlib/xxxx ; 不匹配 evlib/xxx/xxx
+    ],
     coverage: {
-      exclude: ["**/__mocks__", "**/*.assert.ts", "**/*.js", ...evlibExclude],
-      include: ["packages/*/src/*/*.ts"],
+      include: ["src/***.ts"],
     },
   },
 });

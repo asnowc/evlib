@@ -5,8 +5,6 @@ on:
       - main
       - develop
       - feat/*
-env:
-  ARTIFACT_NAME: dist
 jobs:
   build:
     strategy:
@@ -29,25 +27,20 @@ jobs:
         run: pnpm ci:build
       - name: Unit test
         run: pnpm ci:test
-      - name: Check api
-        if: ${{matrix.node-version==22 && github.ref_name=='main'}}
-        run: pnpm ci:api-extractor
       - name: Check Tags
         if: ${{matrix.node-version==22 && github.ref_name=='main'}}
         id: check_tag
         uses: asnowc/actions@check-tags/v1
         with:
-          file: .
-          preset: pnpm-workspace
+          file: package.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   publish:
-    permissions:
-      contents: write
-      id-token: write
     needs: build
     if: ${{needs.build.outputs.publish&&github.ref_name=='main'}}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -60,6 +53,8 @@ jobs:
           run_install: true
       - name: Build
         run: pnpm ci:build
+      - name: Check api
+        run: pnpm ci:api-extractor
       - name: Setup Deno
         uses: denoland/setup-deno@v1
         with:
@@ -71,7 +66,7 @@ jobs:
             import { tagsPublishFlow } from "https://cdn.jsdelivr.net/gh/dnpack/action-script@0.3.x/cmd/github_repo.ts";
             import { execCmdSync } from "https://cdn.jsdelivr.net/gh/dnpack/action-script@0.3.x/lib.ts";
 
-            await tagsPublishFlow("NEW_TAGS", () => execCmdSync("pnpm", ["publish", "-r"], { exitIfFail: true }));
+            await tagsPublishFlow("NEW_TAGS", () => execCmdSync("pnpm", ["publish"], { exitIfFail: true }));
           args: -A --no-lock
         env:
           NEW_TAGS: ${{needs.build.outputs.publish}}

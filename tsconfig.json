@@ -8,6 +8,13 @@
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "skipDefaultLibCheck": true,
-    "strict": true
+    "strict": true,
+
+    "baseUrl": ".",
+    "paths": {
+      "evlib/*": ["./src/*.js"],
+      "evlib": ["./src/core/mod.js"]
+    },
+    "allowJs": true
   }
 }

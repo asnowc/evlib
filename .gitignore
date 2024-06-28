@@ -1,9 +1,4 @@
 node_modules
 temp/
-/coverage
-
-/packages/*/dist
-/packages/*/out
-/packages/*/types
-/pkg-dev/*/dist
-/pkg-dev/*/out
+coverage/
+dist/

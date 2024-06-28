@@ -92,7 +92,7 @@ declare namespace core {
         TypeCheckFnCheckResult,
         InferExcept,
         setTimer,
-        setInterval,
+        setInterval_2 as setInterval,
         afterTime,
         withPromise,
         dePromise,
@@ -476,7 +476,7 @@ function retainDecimalsRound(num: number, raids?: number): number;
 const runtimeEngine: "node" | "browser" | "deno" | "bun" | "unknown";
 
 // @public
-function setInterval(fn: VoidFn, intervalTime?: number): () => void;
+function setInterval_2(fn: VoidFn, intervalTime?: number): () => void;
 
 // @public
 function setTimer(fn: VoidFn, timeout?: number): () => void;
@@ -528,11 +528,11 @@ interface TypeChecker<T = unknown> {
 const typeChecker: {
     numberRange(min: number, max?: number): TypeCheckFn<number>;
     instanceof<T extends new (...args: any[]) => any>(obj: T): TypeCheckFn<InstanceType<T>>;
-    union<T_1 extends ExceptType[]>(types: ExceptType[]): TypeCheckFn<InferExcept<T_1>> | TypeChecker<InferExcept<T_1>>;
+    union<T extends ExceptType[]>(types: ExceptType[]): TypeCheckFn<InferExcept<T>> | TypeChecker<InferExcept<T>>;
     optional: typeof optional;
     array: typeof array;
     record: typeof record;
-    arrayType<T_2 extends ExceptType>(type: T_2, length?: number): TypeCheckFn<InferExcept<T_2>[]>;
+    arrayType<T extends ExceptType>(type: T, length?: number): TypeCheckFn<InferExcept<T>[]>;
 };
 
 // @public (undocumented)
@@ -617,9 +617,9 @@ function withPromise<T, R = any, E extends object = {}>(handle?: E): WithPromise
 
 // Warnings were encountered during analysis:
 //
-// src/core/type_check/type_checker.ts:167:24 - (ae-forgotten-export) The symbol "optional" needs to be exported by the entry point index.d.ts
-// src/core/type_check/type_checker.ts:167:24 - (ae-forgotten-export) The symbol "array" needs to be exported by the entry point index.d.ts
-// src/core/type_check/type_checker.ts:167:24 - (ae-forgotten-export) The symbol "record" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:168:63 - (ae-forgotten-export) The symbol "optional" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:168:63 - (ae-forgotten-export) The symbol "array" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:168:63 - (ae-forgotten-export) The symbol "record" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 
