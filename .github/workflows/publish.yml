@@ -23,7 +23,7 @@ jobs:
       - name: Build
         run: pnpm run ci:build
       - name: Check Api
-        run: pnpm run api:check
+        run: pnpm run ci:api-extract
       - name: Publish
         run: pnpm publish --no-git-checks
         env:
