@@ -1,0 +1,20 @@
+{
+  "name": "@asn/evlib",
+  "version": "2.6.0",
+  "tasks": {
+    "doc:gen": "deno doc --output=temp --html src/core/mod.ts src/async.ts src/data_struct.ts src/math.ts src/object.ts"
+  },
+  "exports": {
+    ".": "./src/core/mod.ts",
+    "./async": "./src/async.ts",
+    "./data_struct": "./src/data_struct.ts",
+    "./math": "./src/math.ts",
+    "./mock": "./src/mock.ts",
+    "./object": "./src/object.ts"
+  },
+  "publish": {
+    "include": ["LICENSE", "README.md", "src/**/*.ts"]
+  },
+  "nodeModulesDir": false,
+  "lock": false
+}

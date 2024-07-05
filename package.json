@@ -1,19 +1,17 @@
 {
   "name": "evlib",
-  "version": "2.5.1",
-  "description": "",
+  "version": "2.6.0",
+  "description": "一个 JS 函数库，包含了常用的函数、常用数据结构和设计模式的实现",
   "type": "module",
-  "author": "Eavid",
-  "license": "MIT",
   "scripts": {
-    "build": "pnpm rollup -c",
+    "build": "pnpm rollup -c && pnpm api:extract-local",
     "publish:try": "pnpm publish --no-git-checks --dry-run",
     "ci:build": "pnpm build",
-    "ci:api-extractor": "api-extractor run -c api-extractor.jsonc -v",
+    "ci:api-extract": "api-extractor run -c api-extractor.jsonc -v",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage --ui",
     "ci:test": "vitest run",
-    "api:extractor-local": "pnpm ci:api-extractor -l"
+    "api:extract-local": "pnpm ci:api-extract -l"
   },
   "exports": {
     ".": "./dist/core/mod.js",
@@ -31,8 +29,18 @@
   },
   "publishConfig": {
     "access": "public",
-    "registry": "https://registry.npmjs.org/"
+    "registry": "https://registry.npmjs.org/",
+    "provenance": true
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/asnowc/evlib"
+  },
+  "author": {
+    "name": "Eavid",
+    "url": "https://github.com/eavidy"
+  },
+  "license": "MIT",
   "files": [
     "dist/**/*.js",
     "dist/**/*.d.ts"
