@@ -19,10 +19,10 @@ export class UniqueKeyMap<T = any> extends Map<number, T> {
   #lastPointer = 0;
   #assignPointer = 0; //碎片遍历指针
 
-  get freeSize() {
+  get freeSize(): number {
     return this.maxSize - this.size;
   }
-  get freeRange() {
+  get freeRange(): number {
     if (this.#startPointer === this.#lastPointer)
       return this.size === 0 ? this.maxSize : 0;
 
@@ -30,10 +30,10 @@ export class UniqueKeyMap<T = any> extends Map<number, T> {
       return this.maxSize - (this.#lastPointer - this.#startPointer);
     return this.#startPointer - this.#lastPointer;
   }
-  get startPointer() {
+  get startPointer(): number {
     return this.#startPointer;
   }
-  get lastPointer() {
+  get lastPointer(): number {
     return this.#lastPointer;
   }
 
@@ -73,7 +73,7 @@ export class UniqueKeyMap<T = any> extends Map<number, T> {
     this.delete(key);
     return data;
   }
-  delete(key: number) {
+  delete(key: number): boolean {
     if (super.delete(key)) {
       if (key === this.#startPointer)
         this.#startPointer = this.movePointerAdd(this.#startPointer);

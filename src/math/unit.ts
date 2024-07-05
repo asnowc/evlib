@@ -1,4 +1,8 @@
-import { ParameterError, NumericalRangeError, ParameterTypeError } from "../core/errors.ts";
+import {
+  ParameterError,
+  NumericalRangeError,
+  ParameterTypeError,
+} from "../core/errors.ts";
 import { retainDecimalsFloor } from "./float.ts";
 
 /** @public */
@@ -70,33 +74,46 @@ export function paseExponentNum(
   return { int: negative ? -1 * num : num, decimals, exponent };
 }
 
-/** @public */
-export const autoUnit = {
-  /**  标准化字节单位
-   * @param number - 字节数值
-   * @param raids - 保留小数位数。
-   * @param unit - number 的单位
-   */
-  byte(
+/**
+ * 标准化字节单位
+ * @param number - 字节数值
+ * @param raids - 保留小数位数。
+ * @param unit - number 的单位
+ * @public
+ */
+export function autoUnitByte(
+  number: number,
+  raids: number = 2,
+  unit?: "B" | "KB" | "MB" | "GB" | "TB" | "PB"
+): string {
+  const unitList = ["B", "KB", "MB", "GB", "TB", "PB"];
+  let startIndex = 0;
+  if (unit) {
+    let index = unitList.findIndex((item) => item === unit);
+    if (index > 0) startIndex += index;
+  }
+  let { exponent, decimals, int } = paseExponentNum(
+    number,
+    1024,
+    unitList.length - startIndex
+  );
+  exponent += startIndex;
+
+  if (decimals > 0) int = retainDecimalsFloor(int + decimals, raids);
+
+  return int + unitList[exponent];
+}
+/**
+ * @public
+ * @deprecated 已废弃
+ */
+export const autoUnit: {
+  /** @deprecated autoUnitByte  */
+  byte: (
     number: number,
-    raids: number = 2,
+    raids?: number,
     unit?: "B" | "KB" | "MB" | "GB" | "TB" | "PB"
-  ) {
-    const unitList = ["B", "KB", "MB", "GB", "TB", "PB"];
-    let startIndex = 0;
-    if (unit) {
-      let index = unitList.findIndex((item) => item === unit);
-      if (index > 0) startIndex += index;
-    }
-    let { exponent, decimals, int } = paseExponentNum(
-      number,
-      1024,
-      unitList.length - startIndex
-    );
-    exponent += startIndex;
-
-    if (decimals > 0) int = retainDecimalsFloor(int + decimals, raids);
-
-    return int + unitList[exponent];
-  },
+  ) => string;
+} = {
+  byte: autoUnitByte,
 };

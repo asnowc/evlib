@@ -6,7 +6,7 @@ import type { VoidFn, TerminablePromise } from "./type.ts";
  * @param timeout - 定时时间，单位毫秒。
  * @returns 返回一个函数，可用在定时器触发前取消定时器
  */
-export function setTimer(fn: VoidFn, timeout: number = 0) {
+export function setTimer(fn: VoidFn, timeout: number = 0): () => void {
   let id: number | undefined = timer.setTimeout(function () {
     id = undefined;
     fn();
@@ -22,7 +22,7 @@ export function setTimer(fn: VoidFn, timeout: number = 0) {
  * @param intervalTime - 间隔时间，单位毫秒
  * @returns 返回一个函数，可用关闭定时器
  */
-export function setInterval(fn: VoidFn, intervalTime: number = 0) {
+export function setInterval(fn: VoidFn, intervalTime: number = 0): () => void {
   let id: number | undefined = timer.setInterval(function () {
     id = undefined;
     fn();

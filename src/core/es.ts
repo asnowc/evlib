@@ -3,7 +3,7 @@ declare const Deno: any;
 /** ECMA年份版本
  * @public
  */
-export const ECMA_VERSION = getESVersion();
+export const ECMA_VERSION: number = getESVersion();
 
 /*@__NO_SIDE_EFFECTS__*/
 function getESVersion(): number {
@@ -39,10 +39,10 @@ function getESVersion(): number {
 /** JS运行时
  * @public
  */
-export const runtimeEngine = getEngine();
-
+export const runtimeEngine: "node" | "browser" | "deno" | "bun" | "unknown" =
+  getEngine();
 /*@__NO_SIDE_EFFECTS__*/
-function getEngine(): "node" | "browser" | "deno" | "bun" | "unknown" {
+function getEngine(): typeof runtimeEngine {
   try {
     if (typeof Deno.version.deno === "string") return "deno";
   } catch (error) {}

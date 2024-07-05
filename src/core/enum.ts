@@ -1,5 +1,7 @@
 /** @alpha */
-export const Enum = {
+export const Enum: {
+  getKeys(enumObj: Record<string, string | number>): string[];
+} = {
   getKeys(enumObj: Record<string, string | number>): string[] {
     let keys = Object.keys(enumObj);
 

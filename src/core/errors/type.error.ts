@@ -1,7 +1,7 @@
 /** 创建一个类型错误的描述
  * @public
  */
-export function createTypeErrorDesc(except: string, actual: string) {
+export function createTypeErrorDesc(except: string, actual: string): string {
   return `预期: ${except}, 实际: ${actual}`;
   //return `Except: ${except}, actual: ${actual}`;
 }

@@ -32,5 +32,9 @@ type TypeCheckResult<T = unknown> = {
 };
 
 export * from "./type_check/get_type.ts";
-export * from "./type_check/type_checker.ts";
+
+/** 预定义的检测函数工厂
+ * @public
+ */
+export * as typeChecker from "./type_check/type_checker.ts";
 export * from "./type_check/type.ts";

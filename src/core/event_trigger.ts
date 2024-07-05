@@ -138,12 +138,12 @@ type AsyncListenerList<T> = Map<object, AsyncListenerInfo<T>>;
 export class OnceEventTrigger<T> implements OnceListenable<T> {
   #asyncListeners: AsyncListenerList<T> = new Map();
   #done = false;
-  get done() {
+  get done(): boolean {
     return this.#done;
   }
   /** promise 模式的订阅
    */
-  getPromise(signal?: BaseAbortSignal) {
+  getPromise(signal?: BaseAbortSignal): Promise<T> {
     if (this.#done) return Promise.reject(createDoneError());
     let item!: AsyncListenerInfo<T>;
     const prom = new Promise<T>(function (resolve, reject) {
@@ -169,7 +169,7 @@ export class OnceEventTrigger<T> implements OnceListenable<T> {
     this.#asyncListeners.set(key, item!);
     return prom;
   }
-  off(key: object) {
+  off(key: object): boolean {
     const item = this.#asyncListeners.get(key);
     if (!item) return false;
     this.#asyncListeners.delete(key);

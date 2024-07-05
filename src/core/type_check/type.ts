@@ -21,6 +21,8 @@ export interface TypeCheckFn<T = any> {
   /** 前置类型, 前置类型匹配才会执行检测函数, 如果不匹配, 检测直接不通过 */
   baseType?: BasicType;
 }
+/** @public */
+export type CustomChecker<T = unknown> = TypeChecker<T> | TypeCheckFn<T>;
 
 /** @public */
 export type BasicType =

@@ -9,13 +9,13 @@ export class LoopUniqueId {
   }
   #value: number;
   /** 生成下一个id */
-  next() {
+  next(): number {
     let v = this.#value;
     if (v >= this.max) this.#value = this.min;
     else this.#value++;
     return v;
   }
-  reset() {
+  reset(): void {
     this.#value = this.min;
   }
 }

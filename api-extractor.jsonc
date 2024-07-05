@@ -31,19 +31,5 @@
 
   "tsdocMetadata": {
     "enabled": false
-  },
-  "messages": {
-    "tsdocMessageReporting": {
-      "default": {
-        "logLevel": "error"
-        // "addToApiReportFile": false
-      },
-      "tsdoc-undefined-tag": {
-        "logLevel": "none"
-      },
-      "tsdoc-malformed-tag-name": {
-        "logLevel": "none"
-      }
-    }
   }
 }

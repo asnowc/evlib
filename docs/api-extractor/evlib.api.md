@@ -11,6 +11,14 @@ class AbortedError extends Error {
 // @public
 function afterTime(time?: number): TerminablePromise<void>;
 
+// Warning: (ae-forgotten-export) The symbol "ArrayChecker" needs to be exported by the entry point index.d.ts
+//
+// @public
+const array: ArrayChecker;
+
+// @public
+function arrayType<T extends ExceptType>(type: T, length?: number): TypeCheckFn<InferExcept<T>[]>;
+
 declare namespace async {
     export {
         InquiryRequest,
@@ -22,10 +30,13 @@ declare namespace async {
 }
 export { async }
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 const autoUnit: {
-    byte(number: number, raids?: number, unit?: "B" | "KB" | "MB" | "GB" | "TB" | "PB"): string;
+    byte: (number: number, raids?: number, unit?: "B" | "KB" | "MB" | "GB" | "TB" | "PB") => string;
 };
+
+// @public
+function autoUnitByte(number: number, raids?: number, unit?: "B" | "KB" | "MB" | "GB" | "TB" | "PB"): string;
 
 // @public (undocumented)
 type BasicType = "string" | "number" | "bigint" | "boolean" | "symbol" | "undefined" | "object" | "function" | "null";
@@ -76,13 +87,14 @@ declare namespace core {
         ECMA_VERSION,
         runtimeEngine,
         checkType,
+        typeChecker,
         getBasicType,
         getClassType,
-        typeChecker,
         TYPE_CHECK_FN,
         TypeChecker,
         TypeErrorDesc,
         TypeCheckFn,
+        CustomChecker,
         BasicType,
         ExceptTypeTuple,
         ExceptTypeMap,
@@ -146,6 +158,9 @@ function createObjectChain(key: string, extend?: object, createProxy?: () => obj
 // @public
 function createTypeErrorDesc(except: string, actual: string): string;
 
+// @public (undocumented)
+type CustomChecker<T = unknown> = TypeChecker<T> | TypeCheckFn<T>;
+
 declare namespace data_struct {
     export {
         UniqueKeyMap,
@@ -165,7 +180,7 @@ export { data_struct }
 // @public
 class DataCollector<T, R = void> implements AsyncGenerator<T, R, void> {
     // (undocumented)
-    [Symbol.asyncIterator](): this;
+    [Symbol.asyncIterator](): AsyncGenerator<T, R, void>;
     close(data: R): void;
     // (undocumented)
     next(): Promise<IteratorResult<T, R>>;
@@ -188,7 +203,7 @@ type DoublyLinkList<T extends object = {}> = {
 };
 
 // @public
-function eachLinkedList<T extends object>(link?: SinglyLinkList<T>): Generator<SinglyLinkList<T>, void, unknown>;
+function eachLinkedList<T extends object>(link?: SinglyLinkList<T>): Generator<SinglyLinkList<T>, void, void>;
 
 // @public
 const ECMA_VERSION: number;
@@ -276,6 +291,9 @@ class InquiryRequest<AcceptReturn = unknown, RejectReturn = unknown, AcceptArgs 
     get status(): boolean | undefined;
 }
 
+// @public
+function instanceOf<T extends new (...args: any[]) => any>(obj: T): TypeCheckFn<InstanceType<T>>;
+
 // @alpha (undocumented)
 class LengthByteParser extends ByteParser<Uint8Array> {
     constructor(total: number);
@@ -300,7 +318,7 @@ class LinkedCacheQueue<T extends object> extends LinkedQueue<T> implements Cache
 // @public
 class LinkedQueue<T extends object> implements Queue<T> {
     // (undocumented)
-    [Symbol.iterator](): Generator<SinglyLinkList<T>, void, unknown>;
+    [Symbol.iterator](): Generator<SinglyLinkList<T>, void, void>;
     clear(): void;
     // (undocumented)
     head?: SinglyLinkList<T>;
@@ -342,6 +360,7 @@ declare namespace math {
         retainDecimalsFloor,
         retainDecimalsRound,
         paseExponentNum,
+        autoUnitByte,
         ExponentFormat,
         autoUnit,
         randomInt
@@ -361,6 +380,9 @@ export { mock }
 class NotImplementedError extends Error {
     constructor(type?: string);
 }
+
+// @public
+function numberRange(min: number, max?: number): TypeCheckFn<number>;
 
 // @public
 class NumericalRangeError extends RangeError {
@@ -413,6 +435,11 @@ interface OnceListenable<T> {
     once<R extends Listener<T>>(resolve: R): R;
     then(resolve: Listener<T>, reject?: (data?: any) => void): void;
 }
+
+// Warning: (ae-forgotten-export) The symbol "OptionalChecker" needs to be exported by the entry point index.d.ts
+//
+// @public
+const optional: OptionalChecker;
 
 // @public (undocumented)
 class ParameterError extends Error {
@@ -470,6 +497,11 @@ function randomInt(min: number, max: number): number;
 
 // @public
 function randomString(len: number, minUnicode?: number, maxUnicode?: number): string;
+
+// Warning: (ae-forgotten-export) The symbol "RecordChecker" needs to be exported by the entry point index.d.ts
+//
+// @public
+const record: RecordChecker;
 
 // @public
 function removeUndefinedKey<T extends Obj>(obj: T, deep?: boolean): T;
@@ -532,16 +564,18 @@ interface TypeChecker<T = unknown> {
     optional?: boolean;
 }
 
-// @public
-const typeChecker: {
-    numberRange(min: number, max?: number): TypeCheckFn<number>;
-    instanceof<T extends new (...args: any[]) => any>(obj: T): TypeCheckFn<InstanceType<T>>;
-    union<T extends ExceptType[]>(types: ExceptType[]): TypeCheckFn<InferExcept<T>> | TypeChecker<InferExcept<T>>;
-    optional: typeof optional;
-    array: typeof array;
-    record: typeof record;
-    arrayType<T extends ExceptType>(type: T, length?: number): TypeCheckFn<InferExcept<T>[]>;
-};
+declare namespace typeChecker {
+    export {
+        numberRange,
+        instanceOf,
+        union,
+        arrayType,
+        optional,
+        array,
+        record,
+        instanceOf as instanceof
+    }
+}
 
 // @public (undocumented)
 interface TypeCheckFn<T = any> {
@@ -575,6 +609,9 @@ class TypeError_2 extends Error {
 type TypeErrorDesc = string | {
     [key: string]: TypeErrorDesc;
 };
+
+// @public
+function union<T extends ExceptType[]>(types: ExceptType[]): TypeCheckFn<InferExcept<T>> | TypeChecker<InferExcept<T>>;
 
 // @public
 class UniqueKeyMap<T = any> extends Map<number, T> {
@@ -622,12 +659,6 @@ interface WithPromise<T, R = any> {
 
 // @public
 function withPromise<T, R = any, E extends object = {}>(handle?: E): WithPromise<T, R> & E;
-
-// Warnings were encountered during analysis:
-//
-// src/core/type_check/type_checker.ts:162:63 - (ae-forgotten-export) The symbol "optional" needs to be exported by the entry point index.d.ts
-// src/core/type_check/type_checker.ts:162:63 - (ae-forgotten-export) The symbol "array" needs to be exported by the entry point index.d.ts
-// src/core/type_check/type_checker.ts:162:63 - (ae-forgotten-export) The symbol "record" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

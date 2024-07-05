@@ -65,7 +65,7 @@ export class LinkedQueue<T extends object> implements Queue<T> {
     this.head = undefined;
     this.size = 0;
   }
-  [Symbol.iterator]() {
+  [Symbol.iterator](): Generator<SinglyLinkList<T>, void, void> {
     return eachLinkedList(this.head);
   }
 }
@@ -83,7 +83,7 @@ export class LinkedCacheQueue<T extends object>
     this.#maxSize = maxSize;
   }
   #maxSize: number;
-  get maxSize() {
+  get maxSize(): number {
     return this.#maxSize;
   }
   set maxSize(maxSize: number) {

@@ -3,11 +3,11 @@ export class InquiryRequest<
   AcceptReturn = unknown,
   RejectReturn = unknown,
   AcceptArgs extends any[] = [],
-  RejectArgs extends any[] = [],
+  RejectArgs extends any[] = []
 > {
   constructor(
     acceptCb: (...args: AcceptArgs) => AcceptReturn,
-    rejectCb: (...args: RejectArgs) => RejectReturn,
+    rejectCb: (...args: RejectArgs) => RejectReturn
   ) {
     this.#acceptCb = acceptCb;
     this.#rejectCb = rejectCb;
@@ -16,7 +16,7 @@ export class InquiryRequest<
   #rejectCb?: (...args: RejectArgs) => RejectReturn;
   /** true: 已接受，false：已拒绝 */
   #status?: boolean;
-  get status() {
+  get status(): boolean | undefined {
     return this.#status;
   }
   private fin(status: boolean) {

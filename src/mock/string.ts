@@ -6,7 +6,7 @@ export function randomString(
   len: number,
   minUnicode: number = 0,
   maxUnicode: number = 0x1fff
-) {
+): string {
   if (len < 4095) {
     const unicode = new Array(len);
     for (let i = 0; i < unicode.length; i++) {

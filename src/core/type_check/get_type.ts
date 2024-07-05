@@ -9,7 +9,7 @@ export function getBasicType(val: any): BasicType {
 /** 获取对象的类名, 如果val为基础类型, 则返回基础类型
  * @public
  */
-export function getClassType(val: any) {
+export function getClassType(val: any): string {
   let basicType = getBasicType(val);
   if (basicType === "object") {
     let type: string = val.constructor?.name ?? "Object";

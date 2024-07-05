@@ -1,6 +1,5 @@
 /** 格式化输出 error 信息, 递归转换 cause
  * @public
- * @release 1.2.0
  */
 export function toErrorStr(err?: any): string {
   if (err === null || err === undefined) return String(err);

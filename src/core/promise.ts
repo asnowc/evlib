@@ -17,7 +17,10 @@ export function withPromise(
 /** 尽量以同步的方式处理一个可能是 Promise 的值
  * @public
  */
-export function dePromise<T, R>(val: T | Promise<T>, fn: (val: T) => R) {
+export function dePromise<T, R>(
+  val: T | Promise<T>,
+  fn: (val: T) => R
+): R | Promise<R> {
   if (val instanceof Promise) return val.then(fn);
   return fn(val);
 }
