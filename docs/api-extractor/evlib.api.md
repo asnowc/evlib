@@ -113,7 +113,15 @@ declare namespace core {
         EventTrigger,
         Listenable,
         OnceListenable,
-        OnceEventTrigger
+        OnceEventTrigger,
+        NumericalRangeError,
+        TimeoutError,
+        createTypeErrorDesc,
+        TypeError_2 as TypeError,
+        ParameterError,
+        ParameterTypeError,
+        NotImplementedError,
+        AbortedError
     }
 }
 export { core }
@@ -192,14 +200,14 @@ const Enum: {
 
 declare namespace errors {
     export {
+        AbortedError,
+        NotImplementedError,
         NumericalRangeError,
-        TimeoutError,
-        createTypeErrorDesc,
-        TypeError_2 as TypeError,
         ParameterError,
         ParameterTypeError,
-        NotImplementedError,
-        AbortedError
+        TimeoutError,
+        TypeError_2 as TypeError,
+        createTypeErrorDesc
     }
 }
 export { errors }
@@ -617,9 +625,9 @@ function withPromise<T, R = any, E extends object = {}>(handle?: E): WithPromise
 
 // Warnings were encountered during analysis:
 //
-// src/core/type_check/type_checker.ts:168:63 - (ae-forgotten-export) The symbol "optional" needs to be exported by the entry point index.d.ts
-// src/core/type_check/type_checker.ts:168:63 - (ae-forgotten-export) The symbol "array" needs to be exported by the entry point index.d.ts
-// src/core/type_check/type_checker.ts:168:63 - (ae-forgotten-export) The symbol "record" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:162:63 - (ae-forgotten-export) The symbol "optional" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:162:63 - (ae-forgotten-export) The symbol "array" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:162:63 - (ae-forgotten-export) The symbol "record" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

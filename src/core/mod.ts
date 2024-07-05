@@ -7,3 +7,4 @@ export * from "./enum.ts";
 export * from "./object.ts";
 export * from "./to_string.ts";
 export * from "./event_trigger.ts";
+export * from "./errors.ts"

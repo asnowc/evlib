@@ -1,8 +1,4 @@
-import {
-  ParameterError,
-  NumericalRangeError,
-  ParameterTypeError,
-} from "evlib/errors";
+import { ParameterError, NumericalRangeError, ParameterTypeError } from "../core/errors.ts";
 import { retainDecimalsFloor } from "./float.ts";
 
 /** @public */

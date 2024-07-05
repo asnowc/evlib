@@ -1,4 +1,4 @@
-import { ParameterError, createTypeErrorDesc } from "../../errors.ts";
+import { ParameterError, createTypeErrorDesc } from "../errors.ts";
 import { getBasicType, getClassType } from "./get_type.ts";
 import type {
   ExceptType,

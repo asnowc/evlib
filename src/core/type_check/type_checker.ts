@@ -1,4 +1,4 @@
-import { createTypeErrorDesc } from "../../errors/type.error.ts";
+import { createTypeErrorDesc } from "../errors.ts";
 import { getClassType } from "./get_type.ts";
 import { internalCheckType } from "./check_base.ts";
 import {
@@ -57,7 +57,6 @@ function checkRecord<T>(
 }
 /*  @__NO_SIDE_EFFECTS__ */
 /** 生成可选类型检测器
- * @public
  */
 function optional<T extends ExceptType>(
   type: T
@@ -78,9 +77,7 @@ optional.symbol = optional("symbol");
 optional.object = optional("object");
 optional.function = optional("function");
 /*  @__NO_SIDE_EFFECTS__ */
-/** 生成可同类数组检测器
- * @public
- */
+/** 生成可同类数组检测器 */
 function array<T extends ExceptType>(type: T): TypeChecker<InferExcept<T[]>> {
   return {
     [TYPE_CHECK_FN](val, checkOpts) {
@@ -95,10 +92,8 @@ array.bigint = array("bigint");
 array.symbol = array("symbol");
 array.object = array("object");
 array.function = array("function");
-/** 生成可同类属性检测器
- * @__NO_SIDE_EFFECTS__
- * @public
- */
+/* @__NO_SIDE_EFFECTS_ */
+/** 生成可同类属性检测器 */
 function record<T extends ExceptType>(
   type: T
 ): TypeChecker<Record<string, InferExcept<T>>> {
@@ -161,7 +156,6 @@ export const typeChecker = {
     checkFn.baseType = "object";
     return checkFn;
   },
-  /* @__NO_SIDE_EFFECTS__ */
   /** 生成联合类型检测函数  */
   union<T extends ExceptType[]>(
     types: ExceptType[]

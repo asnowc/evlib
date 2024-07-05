@@ -1,4 +1,4 @@
-import { NumericalRangeError } from "../errors/validation.error.ts";
+import { NumericalRangeError } from "../core/errors.ts";
 
 /** 自动控制 key 的 Map
  * @remarks 双指针控制已使用的key的范围, 当双指针已满时, 会遍历扫描碎片空间

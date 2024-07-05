@@ -1,4 +1,4 @@
-import { ParameterTypeError, ParameterError } from "evlib/errors";
+import { ParameterTypeError } from "evlib";
 import { getBasicType } from "./type_check.ts";
 import { ObjectKey } from "./type.ts";
 
