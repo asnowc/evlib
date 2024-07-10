@@ -11,14 +11,6 @@ class AbortedError extends Error {
 // @public
 function afterTime(time?: number): TerminablePromise<void>;
 
-// Warning: (ae-forgotten-export) The symbol "ArrayChecker" needs to be exported by the entry point index.d.ts
-//
-// @public
-const array: ArrayChecker;
-
-// @public
-function arrayType<T extends ExceptType>(type: T, length?: number): TypeCheckFn<InferExcept<T>[]>;
-
 declare namespace async {
     export {
         InquiryRequest,
@@ -87,9 +79,9 @@ declare namespace core {
         ECMA_VERSION,
         runtimeEngine,
         checkType,
-        typeChecker,
         getBasicType,
         getClassType,
+        typeChecker,
         TYPE_CHECK_FN,
         TypeChecker,
         TypeErrorDesc,
@@ -291,9 +283,6 @@ class InquiryRequest<AcceptReturn = unknown, RejectReturn = unknown, AcceptArgs 
     get status(): boolean | undefined;
 }
 
-// @public
-function instanceOf<T extends new (...args: any[]) => any>(obj: T): TypeCheckFn<InstanceType<T>>;
-
 // @alpha (undocumented)
 class LengthByteParser extends ByteParser<Uint8Array> {
     constructor(total: number);
@@ -382,9 +371,6 @@ class NotImplementedError extends Error {
 }
 
 // @public
-function numberRange(min: number, max?: number): TypeCheckFn<number>;
-
-// @public
 class NumericalRangeError extends RangeError {
     constructor(min?: number, max?: number, valueName?: string);
 }
@@ -435,11 +421,6 @@ interface OnceListenable<T> {
     once<R extends Listener<T>>(resolve: R): R;
     then(resolve: Listener<T>, reject?: (data?: any) => void): void;
 }
-
-// Warning: (ae-forgotten-export) The symbol "OptionalChecker" needs to be exported by the entry point index.d.ts
-//
-// @public
-const optional: OptionalChecker;
 
 // @public (undocumented)
 class ParameterError extends Error {
@@ -497,11 +478,6 @@ function randomInt(min: number, max: number): number;
 
 // @public
 function randomString(len: number, minUnicode?: number, maxUnicode?: number): string;
-
-// Warning: (ae-forgotten-export) The symbol "RecordChecker" needs to be exported by the entry point index.d.ts
-//
-// @public
-const record: RecordChecker;
 
 // @public
 function removeUndefinedKey<T extends Obj>(obj: T, deep?: boolean): T;
@@ -564,18 +540,17 @@ interface TypeChecker<T = unknown> {
     optional?: boolean;
 }
 
-declare namespace typeChecker {
-    export {
-        numberRange,
-        instanceOf,
-        union,
-        arrayType,
-        optional,
-        array,
-        record,
-        instanceOf as instanceof
-    }
-}
+// @public
+const typeChecker: {
+    record: RecordChecker;
+    array: ArrayChecker;
+    optional: OptionalChecker;
+    numberRange: typeof numberRange;
+    instanceof: typeof instanceOf;
+    instanceOf: typeof instanceOf;
+    union: typeof union;
+    arrayType: typeof arrayType;
+};
 
 // @public (undocumented)
 interface TypeCheckFn<T = any> {
@@ -609,9 +584,6 @@ class TypeError_2 extends Error {
 type TypeErrorDesc = string | {
     [key: string]: TypeErrorDesc;
 };
-
-// @public
-function union<T extends ExceptType[]>(types: ExceptType[]): TypeCheckFn<InferExcept<T>> | TypeChecker<InferExcept<T>>;
 
 // @public
 class UniqueKeyMap<T = any> extends Map<number, T> {
@@ -659,6 +631,16 @@ interface WithPromise<T, R = any> {
 
 // @public
 function withPromise<T, R = any, E extends object = {}>(handle?: E): WithPromise<T, R> & E;
+
+// Warnings were encountered during analysis:
+//
+// src/core/type_check/type_checker.ts:249:25 - (ae-forgotten-export) The symbol "RecordChecker" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:249:25 - (ae-forgotten-export) The symbol "ArrayChecker" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:249:25 - (ae-forgotten-export) The symbol "OptionalChecker" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:249:25 - (ae-forgotten-export) The symbol "numberRange" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:255:3 - (ae-forgotten-export) The symbol "instanceOf" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:257:3 - (ae-forgotten-export) The symbol "union" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:258:3 - (ae-forgotten-export) The symbol "arrayType" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

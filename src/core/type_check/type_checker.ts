@@ -2,21 +2,21 @@ import { createTypeErrorDesc } from "../errors.ts";
 import { getClassType } from "./get_type.ts";
 import { internalCheckType } from "./check_base.ts";
 import {
+  CustomChecker,
   ExceptType,
   InferExcept,
+  TYPE_CHECK_FN,
   TypeChecker,
   TypeCheckFn,
-  TypeErrorDesc,
-  TYPE_CHECK_FN,
   TypeCheckFnCheckResult,
   TypeCheckOptions,
-  CustomChecker,
+  TypeErrorDesc,
 } from "./type.ts";
 
 function checkArray<T>(
   val: any[],
   type: ExceptType,
-  checkAll?: boolean
+  checkAll?: boolean,
 ): TypeCheckFnCheckResult<T[]> {
   let errCount = 0;
   let errors: any = {};
@@ -37,7 +37,7 @@ function checkArray<T>(
 function checkRecord<T>(
   val: Record<string, any>,
   type: ExceptType,
-  checkAll?: boolean
+  checkAll?: boolean,
 ): TypeCheckFnCheckResult<Record<string, T>> {
   let errCount = 0;
   let errors: any = {};
@@ -69,18 +69,19 @@ interface OptionalChecker {
 /** 生成可选类型检测器
  * @public
  */
-export const optional: OptionalChecker =
-  /*  @__NO_SIDE_EFFECTS__ */ function optional<T extends ExceptType>(
-    type: T
-  ): TypeCheckFn<InferExcept<T>> | TypeChecker<InferExcept<T>> {
-    return {
-      optional: true,
-      [TYPE_CHECK_FN](val, checkOpts) {
-        if (val === undefined) return;
-        return internalCheckType(val, type, checkOpts);
-      },
-    };
+const optional: OptionalChecker = /*  @__NO_SIDE_EFFECTS__ */ function optional<
+  T extends ExceptType,
+>(
+  type: T,
+): TypeCheckFn<InferExcept<T>> | TypeChecker<InferExcept<T>> {
+  return {
+    optional: true,
+    [TYPE_CHECK_FN](val, checkOpts) {
+      if (val === undefined) return;
+      return internalCheckType(val, type, checkOpts);
+    },
   };
+};
 optional.number = optional("number");
 optional.string = optional("string");
 optional.boolean = optional("boolean");
@@ -104,8 +105,8 @@ interface ArrayChecker {
  * 生成可同类数组检测器
  * @public
  */
-export const array: ArrayChecker = /*  @__NO_SIDE_EFFECTS__ */ function array<
-  T extends ExceptType
+const array: ArrayChecker = /*  @__NO_SIDE_EFFECTS__ */ function array<
+  T extends ExceptType,
 >(type: T): TypeChecker<InferExcept<T>[]> {
   return {
     [TYPE_CHECK_FN](val, checkOpts) {
@@ -134,16 +135,17 @@ interface RecordChecker {
 /** 生成可同类属性检测器
  * @public */
 
-export const record: RecordChecker =
-  /*  @__NO_SIDE_EFFECTS__ */ function record<T extends ExceptType>(
-    type: T
-  ): TypeChecker<Record<string, InferExcept<T>>> {
-    return {
-      [TYPE_CHECK_FN](val, checkOpts) {
-        return checkRecord(val, type, checkOpts.checkAll);
-      },
-    };
+const record: RecordChecker = /*  @__NO_SIDE_EFFECTS__ */ function record<
+  T extends ExceptType,
+>(
+  type: T,
+): TypeChecker<Record<string, InferExcept<T>>> {
+  return {
+    [TYPE_CHECK_FN](val, checkOpts) {
+      return checkRecord(val, type, checkOpts.checkAll);
+    },
   };
+};
 record.number = record("number");
 record.string = record("string");
 record.boolean = record("boolean");
@@ -156,7 +158,7 @@ class Union<T> implements TypeChecker<T> {
   constructor(readonly types: ExceptType[]) {}
   [TYPE_CHECK_FN](
     val: any,
-    option: Readonly<TypeCheckOptions>
+    option: Readonly<TypeCheckOptions>,
   ): TypeCheckFnCheckResult<T>;
   [TYPE_CHECK_FN](val: any, option: Readonly<TypeCheckOptions>) {
     let errors: TypeErrorDesc[] = [];
@@ -170,7 +172,7 @@ class Union<T> implements TypeChecker<T> {
 }
 /** 生成数字范围检测函数
  * @public */
-export function numberRange(min: number, max = Infinity): TypeCheckFn<number> {
+function numberRange(min: number, max = Infinity): TypeCheckFn<number> {
   const checkFn: TypeCheckFn = function checkFn(val: number, option) {
     if (val > max || val < min) {
       return {
@@ -184,8 +186,8 @@ export function numberRange(min: number, max = Infinity): TypeCheckFn<number> {
 
 /** 生成实例类型检测函数
  * @public */
-export function instanceOf<T extends new (...args: any[]) => any>(
-  obj: T
+function instanceOf<T extends new (...args: any[]) => any>(
+  obj: T,
 ): TypeCheckFn<InstanceType<T>> {
   if (typeof obj !== "function") throw new Error();
   const checkFn: TypeCheckFn = function checkFn(val: object) {
@@ -195,22 +197,19 @@ export function instanceOf<T extends new (...args: any[]) => any>(
   checkFn.baseType = "object";
   return checkFn;
 }
-export {
-  /** @deprecated 改用 instanceOf代替 */
-  instanceOf as instanceof,
-};
+
 /** 生成联合类型检测函数
  * @public  */
-export function union<T extends ExceptType[]>(
-  types: ExceptType[]
+function union<T extends ExceptType[]>(
+  types: ExceptType[],
 ): TypeCheckFn<InferExcept<T>> | TypeChecker<InferExcept<T>> {
   return new Union(types);
 }
 /** 生成数组类型检测函数
  * @public */
-export function arrayType<T extends ExceptType>(
+function arrayType<T extends ExceptType>(
   type: T,
-  length?: number
+  length?: number,
 ): TypeCheckFn<InferExcept<T>[]> {
   const checkFn: TypeCheckFn = function checkFn(val: any, options) {
     const { checkAll } = options;
@@ -243,3 +242,18 @@ export function arrayType<T extends ExceptType>(
   checkFn.baseType = "object";
   return checkFn;
 }
+
+/** 预定义的检测函数工厂
+ * @public
+ */
+export const typeChecker = {
+  record,
+  array,
+  optional,
+  numberRange,
+  /** @deprecated 改用 instanceOf代替 */
+  instanceof: instanceOf,
+  instanceOf,
+  union,
+  arrayType,
+};

@@ -1,13 +1,13 @@
-import { ParameterError, createTypeErrorDesc } from "../errors.ts";
+import { createTypeErrorDesc, ParameterError } from "../errors.ts";
 import { getBasicType, getClassType } from "./get_type.ts";
 import type {
   ExceptType,
   ExceptTypeObject,
   InferExcept,
-  TypeCheckOptions,
-  TypeCheckFnCheckResult,
-  TypeErrorDesc,
   TypeChecker,
+  TypeCheckFnCheckResult,
+  TypeCheckOptions,
+  TypeErrorDesc,
 } from "./type.ts";
 import { TYPE_CHECK_FN } from "./type.ts";
 /**
@@ -16,7 +16,7 @@ import { TYPE_CHECK_FN } from "./type.ts";
 function checkObject(
   doc: Record<string, any>,
   except: ExceptTypeObject,
-  options: TypeCheckOptions
+  options: TypeCheckOptions,
 ): TypeCheckFnCheckResult {
   const error: Record<string, TypeErrorDesc> = {};
   const { checkAll } = options;
@@ -25,8 +25,9 @@ function checkObject(
 
   let isErr = false;
 
-  let keys =
-    deleteSurplus || !checkProvidedOnly ? new Set(Object.keys(doc)) : undefined;
+  let keys = deleteSurplus || !checkProvidedOnly
+    ? new Set(Object.keys(doc))
+    : undefined;
 
   let exist: boolean;
   for (let [testKey, exceptType] of Object.entries(except)) {
@@ -59,10 +60,11 @@ function checkObject(
     keys?.delete(testKey);
   }
   if (keys?.size) {
-    if (deleteSurplus) for (const key of keys) delete doc[key];
+    if (deleteSurplus) { for (const key of keys) delete doc[key]; }
     else if (!checkProvidedOnly) {
-      for (const key of keys)
+      for (const key of keys) {
         error[key] = createTypeErrorDesc("不存在", "存在");
+      }
       isErr = true;
     }
   }
@@ -72,7 +74,7 @@ function checkObject(
 function checkTuple<T = unknown>(
   arr: any[],
   except: ExceptType[],
-  options: Readonly<TypeCheckOptions>
+  options: Readonly<TypeCheckOptions>,
 ): TypeCheckFnCheckResult<T> {
   const error: Record<string, TypeErrorDesc> = {};
   const { checkAll } = options;
@@ -84,9 +86,9 @@ function checkTuple<T = unknown>(
     let maxLen = except.length;
 
     if (arr.length != except.length) {
-      if (arr.length > except.length && deleteSurplus)
+      if (arr.length > except.length && deleteSurplus) {
         arr.length = except.length;
-      else if (arr.length > except.length && checkProvidedOnly) {
+      } else if (arr.length > except.length && checkProvidedOnly) {
       } else {
         if (arr.length < except.length) maxLen = except.length;
         error.length = `预期长度: ${except.length}, 实际: ${arr.length}`;
@@ -105,10 +107,11 @@ function checkTuple<T = unknown>(
         else return { error };
       }
     }
-  } else
+  } else {
     return {
       error: createTypeErrorDesc("Array", getClassType(arr)),
     };
+  }
 
   if (isErr) return { error };
 }
@@ -116,19 +119,21 @@ function checkTuple<T = unknown>(
 export function internalCheckType<T extends ExceptType>(
   value: any,
   except: T,
-  options?: Readonly<TypeCheckOptions>
+  options?: Readonly<TypeCheckOptions>,
 ): TypeCheckFnCheckResult<InferExcept<T>>;
 export function internalCheckType(
   value: any,
   expect: ExceptType,
-  opts: Readonly<TypeCheckOptions> = {}
+  opts: Readonly<TypeCheckOptions> = {},
 ): TypeCheckFnCheckResult<unknown> {
   switch (typeof expect) {
-    case "string":
+    case "string": {
       let actualType = getBasicType(value);
-      if (actualType !== expect)
+      if (actualType !== expect) {
         return { error: createTypeErrorDesc(expect, actualType), value };
+      }
       break;
+    }
 
     case "object": {
       if (expect !== null) {
@@ -136,35 +141,41 @@ export function internalCheckType(
         const checker = isChecker(expect);
 
         if (checker) {
-          if (checker.baseType && typeof value !== expect.baseType)
+          if (checker.baseType && typeof value !== expect.baseType) {
             return {
               error: createTypeErrorDesc(checker.baseType, typeof value),
             };
+          }
           return checker[TYPE_CHECK_FN](value, opts);
-        } else if (getBasicType(value) === "object")
+        } else if (getBasicType(value) === "object") {
           return checkObject(value, expect as ExceptTypeObject, opts);
-        else
+        } else {
           return {
             error: createTypeErrorDesc("object", getBasicType(value)),
           };
+        }
       }
+      break;
     }
     case "function": {
-      if (expect.baseType && typeof value !== expect.baseType)
+      if (expect.baseType && typeof value !== expect.baseType) {
         return {
           error: createTypeErrorDesc(expect.baseType, typeof value),
         };
+      }
       return expect(value, opts);
     }
-    default:
+    default: {
       throw new ParameterError(
         2,
         createTypeErrorDesc("ExceptType", typeof expect),
-        "exceptType"
+        "exceptType",
       );
+    }
   }
 }
 function isChecker(value: object): TypeChecker | undefined {
-  if (typeof Reflect.get(value, TYPE_CHECK_FN) === "function")
+  if (typeof Reflect.get(value, TYPE_CHECK_FN) === "function") {
     return value as TypeChecker;
+  }
 }

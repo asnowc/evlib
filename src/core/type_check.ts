@@ -9,12 +9,12 @@ import {
 export function checkType<T extends ExceptType>(
   value: any,
   except: T,
-  options?: TypeCheckOptions
+  options?: TypeCheckOptions,
 ): TypeCheckResult<InferExcept<T>>;
 export function checkType(
   value: any,
   expect: ExceptType,
-  opts: TypeCheckOptions = {}
+  opts: TypeCheckOptions = {},
 ): TypeCheckResult<unknown> {
   const res = internalCheckType(value, expect, {
     checkAll: opts.checkAll,
@@ -32,9 +32,5 @@ type TypeCheckResult<T = unknown> = {
 };
 
 export * from "./type_check/get_type.ts";
-
-/** 预定义的检测函数工厂
- * @public
- */
-export * as typeChecker from "./type_check/type_checker.ts";
+export * from "./type_check/type_checker.ts";
 export * from "./type_check/type.ts";
