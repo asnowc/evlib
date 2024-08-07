@@ -1,6 +1,6 @@
 {
   "name": "evlib",
-  "version": "2.6.1",
+  "version": "2.6.2",
   "description": "一个 JS 函数库，包含了常用的函数、常用数据结构和设计模式的实现",
   "type": "module",
   "scripts": {

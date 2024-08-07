@@ -1,5 +1,5 @@
 import * as timer from "./internal.ts";
-import type { VoidFn, TerminablePromise } from "./type.ts";
+import type { TerminablePromise, VoidFn } from "./type.ts";
 
 /** 设置一个计时器, 在指定的时间后执行 fn
  * @public
@@ -7,12 +7,14 @@ import type { VoidFn, TerminablePromise } from "./type.ts";
  * @returns 返回一个函数，可用在定时器触发前取消定时器
  */
 export function setTimer(fn: VoidFn, timeout: number = 0): () => void {
-  let id: number | undefined = timer.setTimeout(function () {
+  const setTimeout = timer.setTimeout;
+  let id: number | undefined = setTimeout(function () {
     id = undefined;
     fn();
   }, timeout);
   return function clear() {
-    timer.clearTimeout(id);
+    const clearInterval = timer.clearTimeout;
+    clearInterval(id);
     id = undefined;
   };
 }
@@ -23,12 +25,14 @@ export function setTimer(fn: VoidFn, timeout: number = 0): () => void {
  * @returns 返回一个函数，可用关闭定时器
  */
 export function setInterval(fn: VoidFn, intervalTime: number = 0): () => void {
-  let id: number | undefined = timer.setInterval(function () {
+  const setInterval = timer.setInterval;
+  let id: number | undefined = setInterval(function () {
     id = undefined;
     fn();
   }, intervalTime);
   return function close() {
-    timer.clearInterval(id);
+    const clearInterval = timer.clearInterval;
+    clearInterval(id);
     id = undefined;
   };
 }
@@ -38,14 +42,17 @@ export function setInterval(fn: VoidFn, intervalTime: number = 0): () => void {
  */
 export function afterTime(time?: number): TerminablePromise<void> {
   let abort!: (reason?: Error) => void;
+  const setTimeout = timer.setTimeout;
+  const clearTimeout = timer.clearTimeout;
+
   let p: TerminablePromise<void> = new Promise<void>((resolve, reject) => {
     let id: number | undefined = timer.setTimeout(function () {
       id = undefined;
       resolve();
     }, time);
-    timer.setTimeout(resolve, time);
+    setTimeout(resolve, time);
     abort = function abort(reason?: Error) {
-      timer.clearTimeout(id);
+      clearTimeout(id);
       id = undefined;
       reject(reason);
     };

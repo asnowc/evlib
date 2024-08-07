@@ -1,8 +1,8 @@
-import { defineProject } from "vitest/config";
+import { defineConfig } from "vitest/config";
 import path from "node:path";
 
 const root = path.resolve(__dirname);
-export default defineProject({
+export default defineConfig({
   test: {
     alias: [
       { find: /^evlib$/, replacement: path.resolve(root, "src/core/mod.ts") },
