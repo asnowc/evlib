@@ -201,8 +201,8 @@ function instanceOf<T extends new (...args: any[]) => any>(
 /** 生成联合类型检测函数
  * @public  */
 function union<T extends ExceptType[]>(
-  types: ExceptType[],
-): TypeCheckFn<InferExcept<T>> | TypeChecker<InferExcept<T>> {
+  types: T,
+): TypeCheckFn<InferExcept<T[number]>> | TypeChecker<InferExcept<T[number]>> {
   return new Union(types);
 }
 /** 生成数组类型检测函数
