@@ -35,13 +35,15 @@ function checkObject(
 
     if (typeof exceptType === "object" && exceptType !== null) {
       const checker = isChecker(exceptType);
-      if (checker) {
-        if (!exist) continue;
-        else if (doc[testKey] === undefined && deleteSurplus) {
-          delete doc[testKey];
-          continue;
+      if (exist) {
+        if (checker) {
+          if (doc[testKey] === undefined && deleteSurplus) {
+            delete doc[testKey];
+            continue;
+          }
         }
-      } else if (!exist) {
+      } else {
+        if (checker?.optional) continue;
         error[testKey] = createTypeErrorDesc("存在", "不存在");
         if (!checkAll) return { error };
         continue;

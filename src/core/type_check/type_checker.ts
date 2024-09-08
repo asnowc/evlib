@@ -242,7 +242,35 @@ function arrayType<T extends ExceptType>(
   checkFn.baseType = "object";
   return checkFn;
 }
-
+/** 检测可能为 null 的类型 */
+function maybeNull<T extends ExceptType>(
+  expect: T,
+): TypeCheckFn<InferExcept<T> | null> {
+  return function (value, option) {
+    if (value === null) return;
+    return internalCheckType(value, expect, option);
+  };
+}
+/** 检测可能为 null 或 undefined 的类型 */
+function maybeNullish<T extends ExceptType>(
+  expect: T,
+  optional = true,
+): TypeChecker<InferExcept<T> | null | undefined> {
+  return {
+    optional,
+    [TYPE_CHECK_FN](val, checkOpts) {
+      if (val === undefined || val === null) return;
+      return internalCheckType(val, expect, checkOpts);
+    },
+  };
+}
+/** 检测枚举类型 */
+function enumType<T>(expects: T[]): TypeCheckFn<T> {
+  return (v, option) => {
+    if (expects.includes(v)) return;
+    return { error: `${v} 不在枚举${expects.join(", ")} 中` };
+  };
+}
 /** 预定义的检测函数工厂
  * @public
  */
@@ -256,4 +284,7 @@ export const typeChecker = {
   instanceOf,
   union,
   arrayType,
+  enumType,
+  maybeNull,
+  maybeNullish,
 };
