@@ -91,7 +91,10 @@ optional.object = optional("object");
 optional.function = optional("function");
 
 interface ArrayChecker {
-  <T extends ExceptType>(type: T): TypeChecker<InferExcept<T>[]>;
+  <T extends ExceptType>(
+    type: T,
+    length?: number,
+  ): TypeChecker<InferExcept<T>[]>;
   number: TypeChecker<number[]>;
   string: TypeChecker<string[]>;
   boolean: TypeChecker<boolean[]>;
@@ -107,9 +110,19 @@ interface ArrayChecker {
  */
 const array: ArrayChecker = /*  @__NO_SIDE_EFFECTS__ */ function array<
   T extends ExceptType,
->(type: T): TypeChecker<InferExcept<T>[]> {
+>(
+  type: T,
+  length?: number,
+): TypeChecker<InferExcept<T>[]> {
+  if (length !== undefined) {
+    return {
+      baseType: "object",
+      [TYPE_CHECK_FN]: arrayType(type, length),
+    };
+  }
   return {
-    [TYPE_CHECK_FN](val, checkOpts) {
+    baseType: "object",
+    [TYPE_CHECK_FN](val: any[], checkOpts) {
       return checkArray(val, type, checkOpts.checkAll);
     },
   };
@@ -206,7 +219,9 @@ function union<T extends ExceptType[]>(
   return new Union(types);
 }
 /** 生成数组类型检测函数
- * @public */
+ * @public
+ * @deprecated 改用 array
+ */
 function arrayType<T extends ExceptType>(
   type: T,
   length?: number,
@@ -281,9 +296,10 @@ export const typeChecker = {
   numberRange,
   /** @deprecated 改用 instanceOf代替 */
   instanceof: instanceOf,
+  /** @deprecated 改用 array 代替 */
+  arrayType,
   instanceOf,
   union,
-  arrayType,
   enumType,
   maybeNull,
   maybeNullish,

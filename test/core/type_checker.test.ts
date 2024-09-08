@@ -4,7 +4,6 @@ import "./assests/type_check.assert.ts";
 const {
   optional,
   array,
-  arrayType,
   instanceOf,
   numberRange,
   record,
@@ -124,24 +123,24 @@ describe("内置测试函数", function () {
       expect(res).toCheckFailWithField(["2"]);
     });
     test("数组类型判断", function () {
-      let res = checkType([2, 4, 56, 78], arrayType("number"));
+      let res = checkType([2, 4, 56, 78], array("number"));
       expect(res).toCheckPass();
 
-      res = checkType([2, 4, "d", 78], arrayType("number"));
+      res = checkType([2, 4, "d", 78], array("number"));
       expect(res).toCheckFailWithField(["2"]);
     });
     test("数组长度限制", function () {
       let res: CheckRes = checkType(
         { a: [2, 4, 56, 78] },
-        { a: arrayType("number", 2) },
+        { a: array("number", 2) },
         { policy: "delete" }
       );
       expect(res).toCheckPass();
 
-      res = checkType([2, 4, 56, 78], arrayType("number", 2));
+      res = checkType([2, 4, 56, 78], array("number", 2));
       expect(res).toCheckFailWithField(["length"]);
 
-      res = checkType([2, 4, "d", 78], arrayType("number", 3), {
+      res = checkType([2, 4, "d", 78], array("number", 3), {
         checkAll: true,
       });
       expect(res).toCheckFailWithField(["2", "length"]);
@@ -232,7 +231,7 @@ describe("自定义校验函数", function () {
     const obj = [10, 20];
     const { value, error } = checkType(
       obj,
-      arrayType((val: any) => ({
+      array((val: any) => ({
         value: val / 2,
         replace: true,
       }))
