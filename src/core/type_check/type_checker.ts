@@ -307,7 +307,9 @@ function maybeNullish(
     optional,
     [TYPE_CHECK_FN](val, checkOpts) {
       if (val === undefined || val === null) {
-        if (val !== defaultValue) return { replace: true, value: defaultValue };
+        if (defaultValue !== undefined && val !== defaultValue) {
+          return { replace: true, value: defaultValue };
+        }
         return;
       }
       return internalCheckType(val, expect, checkOpts);

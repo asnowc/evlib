@@ -653,16 +653,16 @@ function withPromise<T, R = any, E extends object = {}>(handle?: E): WithPromise
 
 // Warnings were encountered during analysis:
 //
-// src/core/type_check/type_checker.ts:327:25 - (ae-forgotten-export) The symbol "RecordChecker" needs to be exported by the entry point index.d.ts
-// src/core/type_check/type_checker.ts:327:25 - (ae-forgotten-export) The symbol "ArrayChecker" needs to be exported by the entry point index.d.ts
-// src/core/type_check/type_checker.ts:327:25 - (ae-forgotten-export) The symbol "OptionalChecker" needs to be exported by the entry point index.d.ts
-// src/core/type_check/type_checker.ts:327:25 - (ae-forgotten-export) The symbol "numberRange" needs to be exported by the entry point index.d.ts
-// src/core/type_check/type_checker.ts:333:3 - (ae-forgotten-export) The symbol "instanceOf" needs to be exported by the entry point index.d.ts
-// src/core/type_check/type_checker.ts:335:3 - (ae-forgotten-export) The symbol "arrayType" needs to be exported by the entry point index.d.ts
-// src/core/type_check/type_checker.ts:337:3 - (ae-forgotten-export) The symbol "union" needs to be exported by the entry point index.d.ts
-// src/core/type_check/type_checker.ts:338:3 - (ae-forgotten-export) The symbol "enumType" needs to be exported by the entry point index.d.ts
-// src/core/type_check/type_checker.ts:339:3 - (ae-forgotten-export) The symbol "maybeNull" needs to be exported by the entry point index.d.ts
-// src/core/type_check/type_checker.ts:340:3 - (ae-forgotten-export) The symbol "maybeNullish" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:329:25 - (ae-forgotten-export) The symbol "RecordChecker" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:329:25 - (ae-forgotten-export) The symbol "ArrayChecker" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:329:25 - (ae-forgotten-export) The symbol "OptionalChecker" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:329:25 - (ae-forgotten-export) The symbol "numberRange" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:335:3 - (ae-forgotten-export) The symbol "instanceOf" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:337:3 - (ae-forgotten-export) The symbol "arrayType" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:339:3 - (ae-forgotten-export) The symbol "union" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:340:3 - (ae-forgotten-export) The symbol "enumType" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:341:3 - (ae-forgotten-export) The symbol "maybeNull" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:342:3 - (ae-forgotten-export) The symbol "maybeNullish" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

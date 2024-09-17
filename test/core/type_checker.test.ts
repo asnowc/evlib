@@ -178,6 +178,7 @@ describe("内置测试函数", function () {
     // 忽略 d
     let res = checkType({ a: 3, b: null, c: undefined }, exp);
     expect(res).toCheckPass();
+    expect(res.value).toEqual({ a: 3, b: null, c: undefined });
 
     // 不能忽略
     let res2 = checkType(
