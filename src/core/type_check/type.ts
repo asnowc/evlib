@@ -39,7 +39,7 @@ export type BasicType =
  * 元组项检测
  * @public
  */
-export type ExceptTypeTuple = ExceptType[];
+export type ExceptTypeTuple = ExpectType[];
 /**
  * 对象属性检测
  * @public
@@ -51,7 +51,7 @@ export type ExceptTypeMap = ExceptTypeObject;
  * @public
  */
 export type ExceptTypeObject = {
-  [key: string | number]: ExceptType;
+  [key: string | number]: ExpectType;
   [key: symbol]: any;
 };
 
@@ -62,12 +62,15 @@ export type ExceptTypeObject = {
  * true: 检测通过, 可以用于 any类型
  * @public
  */
-export type ExceptType =
+export type ExpectType =
   | TypeCheckFn
   | TypeChecker
   | BasicType
   | ExceptTypeObject
   | ExceptTypeTuple;
+
+/** @deprecated 改用 ExpectType */
+export type ExceptType = ExpectType;
 
 /** @public */
 export interface TypeCheckOptions {
@@ -117,16 +120,11 @@ type InferBaseMap = {
 };
 /** 推断预期类型
  * @public  */
-export type InferExcept<T> = T extends string
-  ? InferBaseMap[T]
-  : T extends any[]
-  ? InferTuple<T>
-  : T extends TypeCheckFn<infer E>
-  ? E
-  : T extends TypeChecker<infer E>
-  ? E
-  : T extends object
-  ? {
+export type InferExcept<T> = T extends string ? InferBaseMap[T]
+  : T extends any[] ? InferTuple<T>
+  : T extends TypeCheckFn<infer E> ? E
+  : T extends TypeChecker<infer E> ? E
+  : T extends object ? {
       [key in keyof T]: InferExcept<T[key]>;
     }
   : unknown;

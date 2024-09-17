@@ -1,7 +1,7 @@
 import { createTypeErrorDesc, ParameterError } from "../errors.ts";
 import { getBasicType, getClassType } from "./get_type.ts";
 import type {
-  ExceptType,
+  ExpectType,
   ExceptTypeObject,
   InferExcept,
   TypeChecker,
@@ -75,7 +75,7 @@ function checkObject(
 }
 function checkTuple<T = unknown>(
   arr: any[],
-  except: ExceptType[],
+  except: ExpectType[],
   options: Readonly<TypeCheckOptions>,
 ): TypeCheckFnCheckResult<T> {
   const error: Record<string, TypeErrorDesc> = {};
@@ -118,14 +118,14 @@ function checkTuple<T = unknown>(
   if (isErr) return { error };
 }
 
-export function internalCheckType<T extends ExceptType>(
+export function internalCheckType<T extends ExpectType>(
   value: any,
   except: T,
   options?: Readonly<TypeCheckOptions>,
 ): TypeCheckFnCheckResult<InferExcept<T>>;
 export function internalCheckType(
   value: any,
-  expect: ExceptType,
+  expect: ExpectType,
   opts: Readonly<TypeCheckOptions> = {},
 ): TypeCheckFnCheckResult<unknown> {
   switch (typeof expect) {

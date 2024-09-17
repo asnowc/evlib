@@ -3,7 +3,7 @@ import { getClassType } from "./get_type.ts";
 import { internalCheckType } from "./check_base.ts";
 import {
   CustomChecker,
-  ExceptType,
+  ExpectType,
   InferExcept,
   TYPE_CHECK_FN,
   TypeChecker,
@@ -15,7 +15,7 @@ import {
 
 function checkArray<T>(
   val: any[],
-  type: ExceptType,
+  type: ExpectType,
   checkAll?: boolean,
 ): TypeCheckFnCheckResult<T[]> {
   let errCount = 0;
@@ -36,7 +36,7 @@ function checkArray<T>(
 }
 function checkRecord<T>(
   val: Record<string, any>,
-  type: ExceptType,
+  type: ExpectType,
   checkAll?: boolean,
 ): TypeCheckFnCheckResult<Record<string, T>> {
   let errCount = 0;
@@ -57,7 +57,7 @@ function checkRecord<T>(
   if (errCount) return { error: errors };
 }
 interface OptionalChecker {
-  <T extends ExceptType>(type: T): CustomChecker<InferExcept<T>>;
+  <T extends ExpectType>(type: T): CustomChecker<InferExcept<T>>;
   number: CustomChecker<number>;
   string: CustomChecker<string | undefined>;
   boolean: CustomChecker<boolean | undefined>;
@@ -70,7 +70,7 @@ interface OptionalChecker {
  * @public
  */
 const optional: OptionalChecker = /*  @__NO_SIDE_EFFECTS__ */ function optional<
-  T extends ExceptType,
+  T extends ExpectType,
 >(
   type: T,
 ): TypeCheckFn<InferExcept<T>> | TypeChecker<InferExcept<T>> {
@@ -91,7 +91,7 @@ optional.object = optional("object");
 optional.function = optional("function");
 
 interface ArrayChecker {
-  <T extends ExceptType>(
+  <T extends ExpectType>(
     type: T,
     length?: number,
   ): TypeChecker<InferExcept<T>[]>;
@@ -109,7 +109,7 @@ interface ArrayChecker {
  * @public
  */
 const array: ArrayChecker = /*  @__NO_SIDE_EFFECTS__ */ function array<
-  T extends ExceptType,
+  T extends ExpectType,
 >(
   type: T,
   length?: number,
@@ -136,7 +136,7 @@ array.object = array("object");
 array.function = array("function");
 
 interface RecordChecker {
-  <T extends ExceptType>(type: T): TypeChecker<Record<string, InferExcept<T>>>;
+  <T extends ExpectType>(type: T): TypeChecker<Record<string, InferExcept<T>>>;
   number: TypeChecker<Record<string, number>>;
   string: TypeChecker<Record<string, string>>;
   boolean: TypeChecker<Record<string, boolean>>;
@@ -149,7 +149,7 @@ interface RecordChecker {
  * @public */
 
 const record: RecordChecker = /*  @__NO_SIDE_EFFECTS__ */ function record<
-  T extends ExceptType,
+  T extends ExpectType,
 >(
   type: T,
 ): TypeChecker<Record<string, InferExcept<T>>> {
@@ -168,7 +168,7 @@ record.object = record("object");
 record.function = record("function");
 
 class Union<T> implements TypeChecker<T> {
-  constructor(readonly types: ExceptType[]) {}
+  constructor(readonly types: ExpectType[]) {}
   [TYPE_CHECK_FN](
     val: any,
     option: Readonly<TypeCheckOptions>,
@@ -213,7 +213,7 @@ function instanceOf<T extends new (...args: any[]) => any>(
 
 /** 生成联合类型检测函数
  * @public  */
-function union<T extends ExceptType[]>(
+function union<T extends ExpectType[]>(
   types: T,
 ): TypeCheckFn<InferExcept<T[number]>> | TypeChecker<InferExcept<T[number]>> {
   return new Union(types);
@@ -222,7 +222,7 @@ function union<T extends ExceptType[]>(
  * @public
  * @deprecated 改用 array
  */
-function arrayType<T extends ExceptType>(
+function arrayType<T extends ExpectType>(
   type: T,
   length?: number,
 ): TypeCheckFn<InferExcept<T>[]> {
@@ -258,7 +258,7 @@ function arrayType<T extends ExceptType>(
   return checkFn;
 }
 /** 检测可能为 null 的类型 */
-function maybeNull<T extends ExceptType>(
+function maybeNull<T extends ExpectType>(
   expect: T,
 ): TypeCheckFn<InferExcept<T> | null> {
   return function (value, option) {
@@ -267,7 +267,7 @@ function maybeNull<T extends ExceptType>(
   };
 }
 /** 检测可能为 null 或 undefined 的类型 */
-function maybeNullish<T extends ExceptType>(
+function maybeNullish<T extends ExpectType>(
   expect: T,
   optional = true,
 ): TypeChecker<InferExcept<T> | null | undefined> {
