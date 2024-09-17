@@ -1,7 +1,7 @@
 import { internalCheckType } from "./type_check/check_base.ts";
 import {
   ExpectType,
-  InferExcept,
+  InferExpect,
   TypeCheckOptions,
   TypeErrorDesc,
 } from "./type_check/type.ts";
@@ -10,7 +10,7 @@ export function checkType<T extends ExpectType>(
   value: any,
   except: T,
   options?: TypeCheckOptions,
-): TypeCheckResult<InferExcept<T>>;
+): TypeCheckResult<InferExpect<T>>;
 export function checkType(
   value: any,
   expect: ExpectType,

@@ -2,8 +2,8 @@ import { createTypeErrorDesc, ParameterError } from "../errors.ts";
 import { getBasicType, getClassType } from "./get_type.ts";
 import type {
   ExpectType,
-  ExceptTypeObject,
-  InferExcept,
+  ExpectTypeObject,
+  InferExpect,
   TypeChecker,
   TypeCheckFnCheckResult,
   TypeCheckOptions,
@@ -15,7 +15,7 @@ import { TYPE_CHECK_FN } from "./type.ts";
  */
 function checkObject(
   doc: Record<string, any>,
-  except: ExceptTypeObject,
+  except: ExpectTypeObject,
   options: TypeCheckOptions,
 ): TypeCheckFnCheckResult {
   const error: Record<string, TypeErrorDesc> = {};
@@ -43,10 +43,11 @@ function checkObject(
           }
         }
       } else {
-        if (checker?.optional) continue;
-        error[testKey] = createTypeErrorDesc("存在", "不存在");
-        if (!checkAll) return { error };
-        continue;
+        if (!checker?.optional) {
+          error[testKey] = createTypeErrorDesc("存在", "不存在");
+          if (!checkAll) return { error };
+          continue;
+        }
       }
     }
 
@@ -122,7 +123,7 @@ export function internalCheckType<T extends ExpectType>(
   value: any,
   except: T,
   options?: Readonly<TypeCheckOptions>,
-): TypeCheckFnCheckResult<InferExcept<T>>;
+): TypeCheckFnCheckResult<InferExpect<T>>;
 export function internalCheckType(
   value: any,
   expect: ExpectType,
@@ -150,7 +151,7 @@ export function internalCheckType(
           }
           return checker[TYPE_CHECK_FN](value, opts);
         } else if (getBasicType(value) === "object") {
-          return checkObject(value, expect as ExceptTypeObject, opts);
+          return checkObject(value, expect as ExpectTypeObject, opts);
         } else {
           return {
             error: createTypeErrorDesc("object", getBasicType(value)),
@@ -170,7 +171,7 @@ export function internalCheckType(
     default: {
       throw new ParameterError(
         2,
-        createTypeErrorDesc("ExceptType", typeof expect),
+        createTypeErrorDesc("ExpectType", typeof expect),
         "exceptType",
       );
     }

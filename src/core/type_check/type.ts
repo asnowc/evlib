@@ -39,18 +39,13 @@ export type BasicType =
  * 元组项检测
  * @public
  */
-export type ExceptTypeTuple = ExpectType[];
-/**
- * 对象属性检测
- * @public
- * @deprecated 改用 ExceptTypeObject
- */
-export type ExceptTypeMap = ExceptTypeObject;
+export type ExpectTypeTuple = ExpectType[];
+
 /**
  * 对象属性检测
  * @public
  */
-export type ExceptTypeObject = {
+export type ExpectTypeObject = {
   [key: string | number]: ExpectType;
   [key: symbol]: any;
 };
@@ -66,8 +61,8 @@ export type ExpectType =
   | TypeCheckFn
   | TypeChecker
   | BasicType
-  | ExceptTypeObject
-  | ExceptTypeTuple;
+  | ExpectTypeObject
+  | ExpectTypeTuple;
 
 /** @deprecated 改用 ExpectType */
 export type ExceptType = ExpectType;
@@ -118,19 +113,47 @@ type InferBaseMap = {
   string: string;
   [key: string]: unknown;
 };
-/** 推断预期类型
- * @public  */
-export type InferExcept<T> = T extends string ? InferBaseMap[T]
+/**
+ * 推断预期类型
+ * @public
+ */
+export type InferExpect<T> = T extends string ? InferBaseMap[T]
   : T extends any[] ? InferTuple<T>
   : T extends TypeCheckFn<infer E> ? E
   : T extends TypeChecker<infer E> ? E
   : T extends object ? {
-      [key in keyof T]: InferExcept<T[key]>;
+      [key in keyof T]: InferExpect<T[key]>;
     }
   : unknown;
 
 type InferTuple<T extends any[]> = T extends [infer P, ...infer Q]
-  ? [InferExcept<P>, ...InferTuple<Q>]
+  ? [InferExpect<P>, ...InferTuple<Q>]
   : T;
 
 type Fn = (...args: any[]) => any;
+
+/**
+ * 元组项检测
+ * @public
+ * @deprecated 改用 ExpectTypeTuple
+ */
+export type ExceptTypeTuple = ExpectTypeTuple;
+/**
+ * 对象属性检测
+ * @public
+ * @deprecated 改用 ExpectTypeObject
+ */
+export type ExceptTypeMap = ExpectTypeObject;
+/**
+ * 对象属性检测
+ * @public
+ * @deprecated 改用 ExpectTypeObject ExceptTypeObject
+ */
+export type ExceptTypeObject = ExpectTypeObject;
+
+/**
+ * 推断预期类型
+ * @public
+ * @deprecated 改用 InferExpect
+ */
+export type InferExcept<T> = InferExpect<T>;
