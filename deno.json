@@ -1,6 +1,6 @@
 {
   "name": "@asn/evlib",
-  "version": "2.7.0",
+  "version": "2.8.0",
   "tasks": {
     "doc:gen": "deno doc --output=temp --html src/core/mod.ts src/async.ts src/data_struct.ts src/math.ts src/object.ts"
   },

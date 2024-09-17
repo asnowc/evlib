@@ -64,9 +64,6 @@ export type ExpectType =
   | ExpectTypeObject
   | ExpectTypeTuple;
 
-/** @deprecated 改用 ExpectType */
-export type ExceptType = ExpectType;
-
 /** @public */
 export interface TypeCheckOptions {
   /** 检测策略
@@ -157,3 +154,9 @@ export type ExceptTypeObject = ExpectTypeObject;
  * @deprecated 改用 InferExpect
  */
 export type InferExcept<T> = InferExpect<T>;
+
+/**
+ * @public
+ * @deprecated 改用 ExpectType
+ */
+export type ExceptType = ExpectType;
