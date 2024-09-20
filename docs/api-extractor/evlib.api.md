@@ -102,6 +102,7 @@ declare namespace core {
         setTimer,
         setInterval_2 as setInterval,
         afterTime,
+        wakeUpIn,
         withPromise,
         dePromise,
         WithPromise,
@@ -536,7 +537,7 @@ class TimeoutError extends Error {
 }
 
 // @public
-function toErrorStr(err?: any): string;
+function toErrorStr(err?: any, showStack?: boolean): string;
 
 // @public (undocumented)
 const TYPE_CHECK_FN: unique symbol;
@@ -631,6 +632,9 @@ interface VoidFn {
     // (undocumented)
     (): void;
 }
+
+// @public
+function wakeUpIn(min: number): () => Promise<void>;
 
 // @public (undocumented)
 interface WithPromise<T, R = any> {

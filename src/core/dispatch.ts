@@ -60,7 +60,26 @@ export function afterTime(time?: number): TerminablePromise<void> {
   p.abort = abort;
   return p;
 }
-
+/**
+ * 调用时记录时间，返回一个函数，这个函数根据记录的时间设置计时器，相当于 wakeUpIn() 调用的时候开始计时
+ * @public
+ * @example
+ * ```ts
+ * const sleep=wakeUpIn(1000)
+ * // do some thing....
+ * await sleep()
+ *
+ * ```
+ */
+export function wakeUpIn(min: number): () => Promise<void> {
+  let tTime = Date.now();
+  return function () {
+    tTime = min - (Date.now() - tTime);
+    return new Promise<void>((resolve) => {
+      setTimeout(resolve, tTime);
+    });
+  };
+}
 /** 超时控制器，超时将自动执行 abort()
  * @alpha
  */
