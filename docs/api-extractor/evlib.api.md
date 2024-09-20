@@ -110,7 +110,6 @@ declare namespace core {
         PromiseHandle,
         ControllablePromise,
         ObjectKey,
-        Enum,
         patchObject,
         groupObject,
         removeUndefinedKey,
@@ -203,11 +202,6 @@ function eachLinkedList<T extends object>(link?: SinglyLinkList<T>): Generator<S
 
 // @public
 const ECMA_VERSION: number;
-
-// @alpha (undocumented)
-const Enum: {
-    getKeys(enumObj: Record<string, string | number>): string[];
-};
 
 declare namespace errors {
     export {
