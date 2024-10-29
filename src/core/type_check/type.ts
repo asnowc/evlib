@@ -1,7 +1,10 @@
 /** @public */
 export const TYPE_CHECK_FN = Symbol("type check object");
 
-/** @public */
+/**
+ * 自定义类型校验
+ * @public
+ */
 export interface TypeChecker<T = unknown> {
   optional?: boolean;
   /** 前置类型, 前置类型匹配才会执行检测函数, 如果不匹配, 检测直接不通过 */
@@ -15,7 +18,10 @@ export interface TypeChecker<T = unknown> {
  */
 export type TypeErrorDesc = string | { [key: string]: TypeErrorDesc };
 
-/** @public */
+/**
+ * 自定义类型校验函数
+ * @public
+ */
 export interface TypeCheckFn<T = any> {
   (val: any, option: Readonly<TypeCheckOptions>): TypeCheckFnCheckResult<T>;
   /** 前置类型, 前置类型匹配才会执行检测函数, 如果不匹配, 检测直接不通过 */
@@ -57,9 +63,9 @@ export type ExpectTypeObject = {
  * true: 检测通过, 可以用于 any类型
  * @public
  */
-export type ExpectType =
-  | TypeCheckFn
-  | TypeChecker
+export type ExpectType<T = unknown> =
+  | TypeCheckFn<T>
+  | TypeChecker<T>
   | BasicType
   | ExpectTypeObject
   | ExpectTypeTuple;

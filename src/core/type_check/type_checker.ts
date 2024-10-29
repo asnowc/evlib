@@ -269,7 +269,7 @@ function arrayType<T extends ExpectType>(
 function maybeNull<T extends ExpectType>(
   expect: T,
 ): TypeCheckFn<InferExpect<T> | null>;
-/** 检测可能为 null 的类型 */
+/** 检测可能为 null 的类型，如果为 null , 则替换为默认值 */
 function maybeNull<T extends ExpectType, Def = T>(
   expect: T,
   defaultValue: any,
@@ -293,6 +293,7 @@ function maybeNullish<T extends ExpectType>(
   expect: T,
   optional?: boolean,
 ): TypeChecker<InferExpect<T> | null | undefined>;
+/** 检测可能为 null 或 undefined 的类型，如果为  null 或 undefined，则替换为默认值 */
 function maybeNullish<T extends ExpectType, Def = T>(
   expect: T,
   optional: boolean,
