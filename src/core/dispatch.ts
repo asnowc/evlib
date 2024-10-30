@@ -46,14 +46,13 @@ export function afterTime(time?: number): TerminablePromise<void> {
   const clearTimeout = timer.clearTimeout;
 
   let p: TerminablePromise<void> = new Promise<void>((resolve, reject) => {
-    let id: number | undefined = timer.setTimeout(function () {
+    let id: number | undefined = setTimeout(function () {
       id = undefined;
       resolve();
     }, time);
-    setTimeout(resolve, time);
     abort = function abort(reason?: Error) {
+      if (id === undefined) return;
       clearTimeout(id);
-      id = undefined;
       reject(reason);
     };
   }) as any;
