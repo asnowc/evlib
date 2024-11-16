@@ -43,14 +43,15 @@ export class PromiseConcurrency {
       this.#full = withPromise<void>();
       return this.#full.promise;
     }
+    if (this.failedTotal > this.maxFailed) {
+      throw new Error(`超过错误数量阈值${this.failedTotal}/${this.maxFailed}`);
+    }
   }
   #end?: WithPromise<void>;
   /** 监听一次队列清空事件 */
   onClear(): Promise<void> {
-    if (!this.#end) {
-      this.#end = withPromise();
-      if (this.processingCount === 0) this.#end.resolve();
-    }
+    if (this.processingCount === 0) return Promise.resolve();
+    if (!this.#end) this.#end = withPromise();
     return this.#end.promise;
   }
   #onError = (e: any) => {

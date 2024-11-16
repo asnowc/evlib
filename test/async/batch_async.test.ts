@@ -37,6 +37,7 @@ test("failed", async function () {
         cases[1].reject("出错");
     });
     await ctrl.push(cases[2].promise);
+    expect(ctrl.processingCount, "1 出错，剩余 0, 2").toBe(2);
 
     setTimeout(() => {
         cases[2].reject("出错");
@@ -45,7 +46,12 @@ test("failed", async function () {
 
     expect(ctrl.failedTotal).toBe(1);
     await expect(p).rejects.toThrowError();
-    expect(ctrl.processingCount).toBe(2);
+    expect(ctrl.processingCount, "2 出错，剩余 0, 3").toBe(2);
+
+    cases[0].resolve();
+    cases[3].resolve();
+    await ctrl.onClear();
+
 
     setTimeout(() => {
         cases[4].resolve();
