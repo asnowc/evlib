@@ -8,7 +8,7 @@ export function createTypeErrorDesc(expect: string, actual: string): string {
 
 /** @public */
 export class TypeError extends Error {
-  constructor(public cause: TypeErrorDesc, msg?: string) {
+  constructor(public override cause: TypeErrorDesc, msg?: string) {
     if (!msg) msg = "类型不匹配";
     super(msg, { cause });
   }

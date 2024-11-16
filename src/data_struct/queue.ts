@@ -1,7 +1,7 @@
 import {
-  SinglyLinkList,
   eachLinkedList,
   getLinkedListByIndex,
+  SinglyLinkList,
 } from "./linked_list.ts";
 
 /** @public */
@@ -74,10 +74,8 @@ export class LinkedQueue<T extends object> implements Queue<T> {
  * 链式缓存队列。如果push后队列长度超过指定长度，队头会被挤出
  * @public
  */
-export class LinkedCacheQueue<T extends object>
-  extends LinkedQueue<T>
-  implements CacheQueue<T>
-{
+export class LinkedCacheQueue<T extends object> extends LinkedQueue<T>
+  implements CacheQueue<T> {
   constructor(maxSize: number) {
     super();
     this.#maxSize = maxSize;
@@ -98,12 +96,12 @@ export class LinkedCacheQueue<T extends object>
     }
     this.#maxSize = maxSize;
   }
-  unshift(data: T): void;
-  unshift(data: SinglyLinkList<T>): void {
+  override unshift(data: T): void;
+  override unshift(data: SinglyLinkList<T>): void {
     if (this.#maxSize === this.size) return;
     super.unshift(data);
   }
-  push(data: T): void {
+  override push(data: T): void {
     if (this.#maxSize <= 0) return;
     else if (this.#maxSize === 1) {
       this.head = data;

@@ -15,7 +15,7 @@
   "publish": {
     "include": ["LICENSE", "README.md", "src/**/*.ts"]
   },
-  "compilerOptions": { "lib": ["ESNext"] },
-  "nodeModulesDir": false,
+  "compilerOptions": { "lib": ["esnext"] },
+  "nodeModulesDir": "none",
   "lock": false
 }

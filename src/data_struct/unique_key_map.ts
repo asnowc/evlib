@@ -11,8 +11,9 @@ export class UniqueKeyMap<T = any> extends Map<number, T> {
       isNaN(maxSize) ||
       maxSize === Infinity ||
       typeof maxSize !== "number"
-    )
+    ) {
       throw new NumericalRangeError();
+    }
     super();
   }
   #startPointer = 0;
@@ -23,11 +24,13 @@ export class UniqueKeyMap<T = any> extends Map<number, T> {
     return this.maxSize - this.size;
   }
   get freeRange(): number {
-    if (this.#startPointer === this.#lastPointer)
+    if (this.#startPointer === this.#lastPointer) {
       return this.size === 0 ? this.maxSize : 0;
+    }
 
-    if (this.#startPointer < this.#lastPointer)
+    if (this.#startPointer < this.#lastPointer) {
       return this.maxSize - (this.#lastPointer - this.#startPointer);
+    }
     return this.#startPointer - this.#lastPointer;
   }
   get startPointer(): number {
@@ -73,12 +76,13 @@ export class UniqueKeyMap<T = any> extends Map<number, T> {
     this.delete(key);
     return data;
   }
-  delete(key: number): boolean {
+  override delete(key: number): boolean {
     if (super.delete(key)) {
-      if (key === this.#startPointer)
+      if (key === this.#startPointer) {
         this.#startPointer = this.movePointerAdd(this.#startPointer);
-      else if (key === this.movePointerSub(this.#lastPointer))
+      } else if (key === this.movePointerSub(this.#lastPointer)) {
         this.#lastPointer = key;
+      }
       if (this.startPointer === this.#lastPointer) {
         this.#startPointer = 0;
         this.#lastPointer = 0;
@@ -88,8 +92,10 @@ export class UniqueKeyMap<T = any> extends Map<number, T> {
     }
     return false;
   }
-  /** 只能设置已存在的key的值, 否则抱出异常 */
-  set(key: number, data: T): this {
+  /**
+   * 只能设置已存在的key的值, 否则抱出异常
+   */
+  override set(key: number, data: T): this {
     if (super.has(key)) return super.set(key, data);
     throw new OutOfKeyRangeError();
   }
@@ -99,7 +105,7 @@ export class UniqueKeyMap<T = any> extends Map<number, T> {
     super.set(key, data);
     return true;
   }
-  clear() {
+  override clear() {
     super.clear();
     this.#startPointer = 0;
     this.#lastPointer = 0;

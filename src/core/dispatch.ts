@@ -72,6 +72,7 @@ export function afterTime(time?: number): TerminablePromise<void> {
  */
 export function wakeUpIn(min: number): () => Promise<void> {
   let tTime = Date.now();
+  const setTimeout = timer.setTimeout;
   return function () {
     tTime = min - (Date.now() - tTime);
     return new Promise<void>((resolve) => {

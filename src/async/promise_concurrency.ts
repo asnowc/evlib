@@ -40,7 +40,7 @@ export class PromiseConcurrency {
     }
 
     if (this.concurrency <= this.processingCount) {
-      this.#full = Promise.withResolvers<void>();
+      this.#full = withPromise<void>();
       return this.#full.promise;
     }
   }
