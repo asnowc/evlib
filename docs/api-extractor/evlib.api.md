@@ -17,7 +17,9 @@ declare namespace async {
         DataCollector,
         ByteParser,
         LengthByteParser,
-        StepsByteParser
+        StepsByteParser,
+        PromiseConcurrencyOption,
+        PromiseConcurrency
     }
 }
 export { async }
@@ -175,9 +177,11 @@ declare namespace data_struct {
 export { data_struct }
 
 // @public
-class DataCollector<T, R = void> implements AsyncGenerator<T, R, void> {
+class DataCollector<T, R = void> implements AsyncGenerator<T, R, undefined> {
     // (undocumented)
-    [Symbol.asyncIterator](): AsyncGenerator<T, R, void>;
+    [Symbol.asyncDispose](): Promise<void>;
+    // (undocumented)
+    [Symbol.asyncIterator](): AsyncGenerator<T, R, undefined>;
     close(data: R): void;
     // (undocumented)
     next(): Promise<IteratorResult<T, R>>;
@@ -466,6 +470,23 @@ function pickObjectKey<P extends {}>(obj: Object, keys: (keyof P)[] | Set<keyof 
 
 // @public (undocumented)
 function pickObjectKey(obj: Object, keys: string[] | Set<any>, target?: Object): Record<string, unknown>;
+
+// @public
+class PromiseConcurrency {
+    constructor(config: PromiseConcurrencyOption);
+    concurrency: number;
+    failedTotal: number;
+    maxFailed: number;
+    onClear(): Promise<void>;
+    processingCount: number;
+    push(...data: Promise<void | any>[]): Promise<void>;
+}
+
+// @public (undocumented)
+interface PromiseConcurrencyOption {
+    concurrency: number;
+    maxFailed?: number;
+}
 
 // @public (undocumented)
 interface PromiseHandle<T> {
