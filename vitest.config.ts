@@ -3,6 +3,7 @@ import path from "node:path";
 
 const root = path.resolve(__dirname);
 export default defineConfig({
+  esbuild: { target: "es2022" },
   test: {
     alias: [
       { find: /^evlib$/, replacement: path.resolve(root, "src/core/mod.ts") },

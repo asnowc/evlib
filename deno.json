@@ -2,7 +2,9 @@
   "name": "@asn/evlib",
   "version": "2.11.1",
   "tasks": {
-    "doc:gen": "deno doc --output=temp --html src/core/mod.ts src/async.ts src/data_struct.ts src/math.ts src/object.ts"
+    "doc:gen": "deno doc --output=temp --html src/core/mod.ts src/async.ts src/data_struct.ts src/math.ts src/object.ts",
+    "check-type": { "command": "deno check --config src/deno.json src", "description": "检查 src 目录下的类型" },
+    "check-type-all": { "command": "deno check --config deno.json test", "description": "检查测试文件的类型" }
   },
   "exports": {
     ".": "./src/core/mod.ts",
@@ -12,10 +14,22 @@
     "./mock": "./src/mock.ts",
     "./object": "./src/object.ts"
   },
+  "imports": {
+    "evlib": "./src/core/mod.ts",
+    "evlib/async": "./src/async.ts",
+    "evlib/data_struct": "./src/data_struct.ts",
+    "evlib/math": "./src/math.ts",
+    "evlib/mock": "./src/mock.ts",
+    "evlib/object": "./src/object.ts"
+  },
   "publish": {
     "include": ["LICENSE", "README.md", "src/**/*.ts"]
   },
-  "compilerOptions": { "lib": ["esnext"] },
-  "nodeModulesDir": "none",
-  "lock": false
+  "compilerOptions": { "lib": ["esnext", "deno.window"] },
+  "nodeModulesDir": "manual",
+  "lock": false,
+  "fmt": {
+    "lineWidth": 120,
+    "indentWidth": 2
+  }
 }
