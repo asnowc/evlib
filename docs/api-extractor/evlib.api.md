@@ -13,7 +13,6 @@ function afterTime(time?: number): TerminablePromise<void>;
 
 declare namespace async {
     export {
-        InquiryRequest,
         DataCollector,
         ByteParser,
         LengthByteParser,
@@ -132,7 +131,8 @@ declare namespace core {
         ParameterError,
         ParameterTypeError,
         NotImplementedError,
-        AbortedError
+        AbortedError,
+        listenSignal
     }
 }
 export { core }
@@ -289,17 +289,6 @@ type InferExpect<T> = T extends string ? InferBaseMap[T] : T extends any[] ? Inf
 } : unknown;
 
 // @alpha (undocumented)
-class InquiryRequest<AcceptReturn = unknown, RejectReturn = unknown, AcceptArgs extends any[] = [], RejectArgs extends any[] = []> {
-    constructor(acceptCb: (...args: AcceptArgs) => AcceptReturn, rejectCb: (...args: RejectArgs) => RejectReturn);
-    // (undocumented)
-    accept(...args: AcceptArgs): AcceptReturn;
-    // (undocumented)
-    reject(...args: RejectArgs): RejectReturn;
-    // (undocumented)
-    get status(): boolean | undefined;
-}
-
-// @alpha (undocumented)
 class LengthByteParser extends ByteParser<Uint8Array> {
     constructor(total: number);
     // (undocumented)
@@ -347,6 +336,11 @@ interface Listenable<T> {
     once<R extends Listener<T>>(resolve: R): R;
     then(resolve: Listener<T>): void;
 }
+
+// @public
+function listenSignal(signal: PruneAbortSignal | undefined, listener: (this: PruneAbortSignal) => void): Disposable & {
+    dispose(): void;
+};
 
 // @public
 class LoopUniqueId {
@@ -419,8 +413,8 @@ class OnceEventTrigger<T> implements OnceListenable<T> {
     emitError(err: any): number;
     // (undocumented)
     finally(listener: () => void): void;
-    // Warning: (ae-forgotten-export) The symbol "BaseAbortSignal" needs to be exported by the entry point index.d.ts
-    getPromise(signal?: BaseAbortSignal): Promise<T>;
+    // Warning: (ae-forgotten-export) The symbol "PruneAbortSignal" needs to be exported by the entry point index.d.ts
+    getPromise(signal?: PruneAbortSignal): Promise<T>;
     // (undocumented)
     off(key: object): boolean;
     once<R extends Listener<T>>(resolve: R, reject?: (arg: any) => void): R;
