@@ -1,5 +1,5 @@
 import { ParameterTypeError, AbortedError } from "./errors.ts";
-import { BaseAbortSignal } from "./internal.ts";
+import { PruneAbortSignal } from "./internal.ts";
 
 class EventTriggerImpl<T> implements Listenable<T>, EventTriggerController<T> {
   #queue = new Set<Listener<T>>();
@@ -123,7 +123,7 @@ export interface OnceListenable<T> {
 
 interface SignalListener {
   reject: (reason: any) => void;
-  signal: BaseAbortSignal;
+  signal: PruneAbortSignal;
   listeners: AsyncListenerList<unknown>;
   handleEvent(): void;
 }
@@ -143,7 +143,7 @@ export class OnceEventTrigger<T> implements OnceListenable<T> {
   }
   /** promise 模式的订阅
    */
-  getPromise(signal?: BaseAbortSignal): Promise<T> {
+  getPromise(signal?: PruneAbortSignal): Promise<T> {
     if (this.#done) return Promise.reject(createDoneError());
     let item!: AsyncListenerInfo<T>;
     const prom = new Promise<T>(function (resolve, reject) {
