@@ -27,16 +27,10 @@ jobs:
       - name: Check Api
         run: pnpm run ci:api-extract
       - name: Publish-Jsr dry-run
-        run: |
-          cp ../README.md ./README.md 
-          npx jsr publish --dry-run --allow-dirty
-        working-directory: ./vio
+        run: npx jsr publish --dry-run
       - name: Publish
         run: pnpm publish --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - name: Publish jsr
-        run: |
-          cp ../README.md ./README.md 
-          npx jsr publish --allow-dirty
-        working-directory: ./vio
+      - name: Publish-Jsr
+        run: npx jsr publish
