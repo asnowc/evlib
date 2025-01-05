@@ -1,4 +1,7 @@
-{ 
-  "compilerOptions": { "lib": ["esnext"] },
+{
+  "fmt": {
+    "lineWidth": 120
+  },
+  "compilerOptions": { "lib": ["es2018"] },
   "lock": false
 }

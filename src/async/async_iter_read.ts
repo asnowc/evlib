@@ -9,8 +9,7 @@ type DataLink<T> = {
  * @public
  * @remarks 将被动数据转为主动的异步迭代器处理模式
  */
-export class DataCollector<T, R = void>
-  implements AsyncGenerator<T, R, undefined> {
+export class DataCollector<T, R = void> {
   #last?: DataLink<T>;
   #head?: DataLink<T>;
   #push(item: DataLink<T>) {
@@ -68,7 +67,5 @@ export class DataCollector<T, R = void>
   }
   [Symbol.asyncIterator](): AsyncGenerator<T, R, undefined> {
     return this;
-  }
-  async [Symbol.asyncDispose]() {
   }
 }

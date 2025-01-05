@@ -13,6 +13,7 @@ class ListenSignal {
   dispose() {
     this.signal?.removeEventListener("abort", this._listener);
   }
+  //@ts-expect-error 当 lib 改为 es2022 后可以移除注释
   [Symbol.dispose] = this.dispose;
 }
 /**
@@ -26,9 +27,7 @@ class ListenSignal {
 export function listenSignal(
   signal: PruneAbortSignal | undefined,
   listener: (this: PruneAbortSignal) => void,
+  //@ts-expect-error 当 lib 改为 es2022 后可以移除注释
 ): Disposable & { dispose(): void } {
   return new ListenSignal(listener, signal);
 }
-
-
-

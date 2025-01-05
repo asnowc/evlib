@@ -177,9 +177,7 @@ declare namespace data_struct {
 export { data_struct }
 
 // @public
-class DataCollector<T, R = void> implements AsyncGenerator<T, R, undefined> {
-    // (undocumented)
-    [Symbol.asyncDispose](): Promise<void>;
+class DataCollector<T, R = void> {
     // (undocumented)
     [Symbol.asyncIterator](): AsyncGenerator<T, R, undefined>;
     close(data: R): void;

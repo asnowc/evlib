@@ -10,6 +10,10 @@ import type {
   TypeErrorDesc,
 } from "./type.ts";
 import { TYPE_CHECK_FN } from "./type.ts";
+const objectHasOwn: (object: object, key: string) => boolean = (Object as any).hasOwn ??
+  function ObjectHasOwn(obj: any, key: string) {
+    return !!Object.getOwnPropertyDescriptor(obj, key);
+  };
 /**
  * 如果 对象的字段预期类型为可选, 并且实际存在字段为undefined, 则在deleteSurplus为true是将字段删除
  */
@@ -25,13 +29,12 @@ function checkObject(
 
   let isErr = false;
 
-  let keys = deleteSurplus || !checkProvidedOnly
-    ? new Set(Object.keys(doc))
-    : undefined;
+  let keys = deleteSurplus || !checkProvidedOnly ? new Set(Object.keys(doc)) : undefined;
 
   let exist: boolean;
   for (let [testKey, exceptType] of Object.entries(except)) {
-    exist = Object.hasOwn(doc, testKey);
+    exist = objectHasOwn(doc, testKey);
+    Object.getOwnPropertyDescriptor;
 
     if (typeof exceptType === "object" && exceptType !== null) {
       const checker = isChecker(exceptType);

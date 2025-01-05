@@ -22,9 +22,15 @@ function unimplemented() {
   throw new Error("Function not implemented");
 }
 export type PruneEvent = { [key: string]: any };
-export type EventListener = EventListenerObject | ((this: PruneAbortSignal, e: PruneEvent) => void);
+export type EventListener =
+  | EventListenerObject
+  | ((this: PruneAbortSignal, e: PruneEvent) => void);
 export interface PruneEventListener {
-  addEventListener(type: string, listener: EventListener, options?: { once?: boolean }): void;
+  addEventListener(
+    type: string,
+    listener: EventListener,
+    options?: { once?: boolean },
+  ): void;
   removeEventListener(type: string, listener: EventListener): void;
 }
 

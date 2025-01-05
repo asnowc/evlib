@@ -23,12 +23,16 @@ function getESVersion(): number {
     version = 2016;
   } else if (!Promise.prototype.finally) {
     version = 2017;
-  } else if (!globalThis.BigInt) {
+    //@ts-ignore
+  } else if (!Promise.finally) {
     version = 2018;
+    //@ts-ignore
   } else if (!Promise.allSettled) {
     version = 2019;
+    //@ts-ignore
   } else if (!String.prototype.replaceAll) {
     version = 2020;
+    //@ts-ignore
   } else if (!Array.prototype.at) {
     version = 2021;
   } else {
@@ -39,19 +43,21 @@ function getESVersion(): number {
 /** JS运行时
  * @public
  */
-export const runtimeEngine: "node" | "browser" | "deno" | "bun" | "unknown" =
-  getEngine();
+export const runtimeEngine: "node" | "browser" | "deno" | "bun" | "unknown" = getEngine();
 /*@__NO_SIDE_EFFECTS__*/
 function getEngine(): typeof runtimeEngine {
   try {
     if (typeof Deno.version.deno === "string") return "deno";
   } catch (error) {}
   try {
-    window.window.window;
-    return "browser";
+    if (typeof window === "object" && window.window === window) {
+      return "browser";
+    }
   } catch (error) {}
-  if (typeof (globalThis as any).process?.version === "string") {
-    return "node";
+  try {
+    //@ts-ignore
+    if (typeof process.version === "string") return "node";
+  } catch (error) {
   }
   return "unknown";
 }
