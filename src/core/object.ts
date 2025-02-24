@@ -16,7 +16,7 @@ export type PatchObjectOpts = {
 export function patchObject<T = unknown>(
   from: Obj,
   to: Obj,
-  opts: PatchObjectOpts = {}
+  opts: PatchObjectOpts = {},
 ): T {
   for (const [key, val] of Object.entries(from)) {
     if (val === undefined && opts.skipUndefined) continue;
@@ -72,18 +72,18 @@ export function removeUndefinedKey<T extends Obj>(obj: T, deep = true): T {
 export function pickObjectKey<P extends {}>(
   obj: Object,
   keys: (keyof P)[] | Set<keyof P>,
-  target?: Object
+  target?: Object,
 ): P;
 /** @public */
 export function pickObjectKey(
   obj: Object,
   keys: string[] | Set<any>,
-  target?: Object
+  target?: Object,
 ): Record<string, unknown>;
 export function pickObjectKey(
   obj: Object,
   keys: any[] | Set<any>,
-  target: Record<string, any> = {}
+  target: Record<string, any> = {},
 ): unknown {
   if (!(keys instanceof Set)) keys = new Set(keys);
   for (const [k, v] of Object.entries(obj)) {
@@ -96,13 +96,14 @@ export function pickObjectKey(
  */
 export function deepClone<T>(
   obj: T,
-  cloned: Map<any, any> = new Map<any, any>()
+  cloned: Map<any, any> = new Map<any, any>(),
 ): T {
   if (cloned.has(obj)) return cloned.get(obj);
 
   if (obj instanceof Array) return deepCloneArray(obj, cloned);
-  else if (typeof obj === "object" && obj !== null)
+  else if (typeof obj === "object" && obj !== null) {
     return deepCloneObject(obj, cloned);
+  }
   throw new ParameterTypeError(0, "object", getBasicType(obj), "obj");
 }
 function deepCloneArray(obj: unknown[], cloned: Map<any, any>) {

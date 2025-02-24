@@ -1,9 +1,5 @@
-import {
-  eachLinkedList,
-  getLinkedListByIndex,
-  SinglyLinkList,
-} from "evlib/data_struct";
-import { expect, describe, test } from "vitest";
+import { eachLinkedList, getLinkedListByIndex, SinglyLinkList } from "evlib/data_struct";
+import { describe, expect, test } from "vitest";
 
 describe("eachLinkedList", function () {
   test("迭代遍历", function () {

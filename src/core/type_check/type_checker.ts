@@ -226,45 +226,7 @@ function union<T extends ExpectType[]>(
 ): TypeCheckFn<InferExpect<T[number]>> | TypeChecker<InferExpect<T[number]>> {
   return new Union(types);
 }
-/** 生成数组类型检测函数
- * @public
- * @deprecated 改用 array
- */
-function arrayType<T extends ExpectType>(
-  type: T,
-  length?: number,
-): TypeCheckFn<InferExpect<T>[]> {
-  const checkFn: TypeCheckFn = function checkFn(val: any, options) {
-    const { checkAll } = options;
-    const deleteSurplus = options.policy === "delete";
-    if (Array.isArray(val)) {
-      let errCount = 0;
-      let errors: any = {};
-      if (length !== undefined && length !== val.length) {
-        if (deleteSurplus) val.length = length;
-        else {
-          errors.length = `预期长度: ${length}, 实际: ${val.length}`;
-          errCount++;
-          if (!checkAll) return { error: errors };
-        }
-      }
-      for (let i = 0; i < val.length; i++) {
-        let item = val[i];
-        let res = internalCheckType(item, type);
-        if (!res) continue;
-        if (res.replace) val[i] = res.value;
-        else if (res.error) {
-          errors[i] = res.error;
-          if (!checkAll) return { error: errors };
-          errCount++;
-        }
-      }
-      if (errCount) return { error: errors };
-    } else return { error: createTypeErrorDesc("Array", getClassType(val)) };
-  };
-  checkFn.baseType = "object";
-  return checkFn;
-}
+
 /** 检测可能为 null 的类型 */
 function maybeNull<T extends ExpectType>(
   expect: T,
@@ -324,6 +286,41 @@ function enumType<T>(expects: T[]): TypeCheckFn<T> {
     return { error: `${v} 不在枚举${expects.join(", ")} 中` };
   };
 }
+function arrayType<T extends ExpectType>(
+  type: T,
+  length?: number,
+): TypeCheckFn<InferExpect<T>[]> {
+  const checkFn: TypeCheckFn = function checkFn(val: any, options) {
+    const { checkAll } = options;
+    const deleteSurplus = options.policy === "delete";
+    if (Array.isArray(val)) {
+      let errCount = 0;
+      let errors: any = {};
+      if (length !== undefined && length !== val.length) {
+        if (deleteSurplus) val.length = length;
+        else {
+          errors.length = `预期长度: ${length}, 实际: ${val.length}`;
+          errCount++;
+          if (!checkAll) return { error: errors };
+        }
+      }
+      for (let i = 0; i < val.length; i++) {
+        let item = val[i];
+        let res = internalCheckType(item, type);
+        if (!res) continue;
+        if (res.replace) val[i] = res.value;
+        else if (res.error) {
+          errors[i] = res.error;
+          if (!checkAll) return { error: errors };
+          errCount++;
+        }
+      }
+      if (errCount) return { error: errors };
+    } else return { error: createTypeErrorDesc("Array", getClassType(val)) };
+  };
+  checkFn.baseType = "object";
+  return checkFn;
+}
 /** 预定义的检测函数工厂
  * @public
  */
@@ -332,10 +329,6 @@ export const typeChecker = {
   array,
   optional,
   numberRange,
-  /** @deprecated 改用 instanceOf代替 */
-  instanceof: instanceOf,
-  /** @deprecated 改用 array 代替 */
-  arrayType,
   instanceOf,
   union,
   enumType,

@@ -1,10 +1,5 @@
 import { internalCheckType } from "./type_check/check_base.ts";
-import {
-  ExpectType,
-  InferExpect,
-  TypeCheckOptions,
-  TypeErrorDesc,
-} from "./type_check/type.ts";
+import { ExpectType, InferExpect, TypeCheckOptions, TypeErrorDesc } from "./type_check/type.ts";
 /**
  * 校验数据类型，如果校验不通过，则返回异常信息
  * @public

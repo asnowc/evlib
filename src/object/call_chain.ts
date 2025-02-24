@@ -18,7 +18,7 @@ class ChainProxyHandler implements ProxyHandler<object> {
 type ProxyTarget<T extends Fn = Fn> = (
   argArray: Parameters<T>,
   thisArg: any,
-  target: T
+  target: T,
 ) => any;
 
 type ProxyFactory = () => ProxyTarget | object;
@@ -43,7 +43,7 @@ export function getChainPath(obj: object): string[] {
  * @public
  */
 export function createObjectChain<T extends Fn = Fn>(
-  createProxy?: () => ProxyTarget<T>
+  createProxy?: () => ProxyTarget<T>,
 ): CallChian<T>;
 /** 创建对象链
  * @param createProxy - 构造新的链时调用的函数，这个函数应返回一个新的对象
@@ -59,7 +59,7 @@ export function createObjectChain(createProxy?: () => object): ObjectChian;
 export function createObjectChain<T extends Fn = Fn>(
   key: string,
   extend?: object,
-  createProxy?: () => ProxyTarget<T>
+  createProxy?: () => ProxyTarget<T>,
 ): CallChian<T>;
 /** 基于对象链创建新的对象链
  * @param key - 链的键名
@@ -70,12 +70,12 @@ export function createObjectChain<T extends Fn = Fn>(
 export function createObjectChain(
   key: string,
   extend?: object,
-  createProxy?: () => object
+  createProxy?: () => object,
 ): ObjectChian;
 export function createObjectChain(
   key_create?: ProxyFactory | string,
   extend?: object,
-  createProxy?: ProxyFactory
+  createProxy?: ProxyFactory,
 ): CallChian<ProxyTarget> {
   let key: string | undefined;
   if (typeof key_create === "function") createProxy = key_create;

@@ -1,5 +1,5 @@
 import { LengthByteParser, StepsByteParser } from "evlib/async";
-import { expect, describe, test } from "vitest";
+import { describe, expect, test } from "vitest";
 describe("LengthByteParser", function () {
   test("未结束执行 finish()", function () {
     const parser = new LengthByteParser(10);

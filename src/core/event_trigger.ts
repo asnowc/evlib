@@ -1,4 +1,4 @@
-import { ParameterTypeError, AbortedError } from "./errors.ts";
+import { AbortedError, ParameterTypeError } from "./errors.ts";
 import { PruneAbortSignal } from "./internal.ts";
 
 class EventTriggerImpl<T> implements Listenable<T>, EventTriggerController<T> {
@@ -35,8 +35,9 @@ class EventTriggerImpl<T> implements Listenable<T>, EventTriggerController<T> {
   }
   on<R extends Listener<T>>(listener: R): R {
     if (this.#done) throw createDoneError();
-    if (typeof listener !== "function")
+    if (typeof listener !== "function") {
       throw new ParameterTypeError(0, "function", typeof listener);
+    }
     this.#queue.add(listener);
     return listener;
   }
@@ -151,8 +152,9 @@ export class OnceEventTrigger<T> implements OnceListenable<T> {
     });
     const key = item.reject!;
     if (signal) {
-      if (signal.aborted)
+      if (signal.aborted) {
         return Promise.reject(signal.reason ?? new AbortedError());
+      }
 
       const signalListener: SignalListener = {
         reject: key,
@@ -175,7 +177,7 @@ export class OnceEventTrigger<T> implements OnceListenable<T> {
     this.#asyncListeners.delete(key);
     item.signalListener?.signal.removeEventListener(
       "abort",
-      item.signalListener
+      item.signalListener,
     );
     return true;
   }
@@ -186,8 +188,9 @@ export class OnceEventTrigger<T> implements OnceListenable<T> {
   /** 与 then 类似，它会返回 resolve 函数 */
   once<R extends Listener<T>>(resolve: R, reject?: (arg: any) => void): R {
     if (this.#done) throw createDoneError();
-    if (typeof resolve !== "function")
+    if (typeof resolve !== "function") {
       throw new TypeError("listener must be a function");
+    }
     this.#setListener(resolve, { resolve, reject });
     return resolve;
   }
@@ -196,8 +199,9 @@ export class OnceEventTrigger<T> implements OnceListenable<T> {
   }
   catch(listener: (err: any) => void): void {
     if (this.#done) throw createDoneError();
-    if (typeof listener !== "function")
+    if (typeof listener !== "function") {
       throw new TypeError("listener must be a function");
+    }
     this.#setListener(listener, { reject: listener });
     return;
   }
@@ -215,7 +219,7 @@ export class OnceEventTrigger<T> implements OnceListenable<T> {
       }
       handle.signalListener?.signal.removeEventListener(
         "abort",
-        handle.signalListener
+        handle.signalListener,
       );
     }
     this.#asyncListeners.clear();
@@ -232,7 +236,7 @@ export class OnceEventTrigger<T> implements OnceListenable<T> {
       }
       handle.signalListener?.signal.removeEventListener(
         "abort",
-        handle.signalListener
+        handle.signalListener,
       );
     }
     this.#asyncListeners.clear();

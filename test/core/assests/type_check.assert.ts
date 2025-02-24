@@ -17,8 +17,7 @@ const passRes = { pass: true, message: passMsg };
 expect.extend({
   toCheckPass(received: any) {
     return {
-      pass:
-        typeof received === "object" &&
+      pass: typeof received === "object" &&
         received !== null &&
         received.error === undefined,
       message: () => received.error,
@@ -72,9 +71,10 @@ function checkRes(res: any) {
 function withError(resv: any) {
   const res = checkRes(resv);
   if (res) return res;
-  if (!Object.hasOwn(resv, "error"))
+  if (!Object.hasOwn(resv, "error")) {
     return {
       pass: false,
       message: () => `预期不通过检测, 实际通过`,
     };
+  }
 }

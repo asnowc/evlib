@@ -21,12 +21,6 @@ declare namespace async {
         PromiseConcurrency
     }
 }
-export { async }
-
-// @public @deprecated (undocumented)
-const autoUnit: {
-    byte: (number: number, raids?: number, unit?: "B" | "KB" | "MB" | "GB" | "TB" | "PB") => string;
-};
 
 // @public
 function autoUnitByte(number: number, raids?: number, unit?: "B" | "KB" | "MB" | "GB" | "TB" | "PB"): string;
@@ -96,11 +90,6 @@ declare namespace core {
         TypeCheckOptions,
         TypeCheckFnCheckResult,
         InferExpect,
-        ExceptTypeTuple,
-        ExceptTypeMap,
-        ExceptTypeObject,
-        InferExcept,
-        ExceptType,
         setTimer,
         setInterval_2 as setInterval,
         afterTime,
@@ -135,7 +124,6 @@ declare namespace core {
         listenSignal
     }
 }
-export { core }
 
 // @public
 function createList<T>(fn: (index: number) => T, size: number, startIndex?: number): T[];
@@ -174,7 +162,6 @@ declare namespace data_struct {
         LoopUniqueId
     }
 }
-export { data_struct }
 
 // @public
 class DataCollector<T, R = void> {
@@ -207,20 +194,6 @@ function eachLinkedList<T extends object>(link?: SinglyLinkList<T>): Generator<S
 // @public
 const ECMA_VERSION: number;
 
-declare namespace errors {
-    export {
-        AbortedError,
-        NotImplementedError,
-        NumericalRangeError,
-        ParameterError,
-        ParameterTypeError,
-        TimeoutError,
-        TypeError_2 as TypeError,
-        createTypeErrorDesc
-    }
-}
-export { errors }
-
 // @public (undocumented)
 const EventTrigger: new <T>() => EventTrigger<T>;
 
@@ -228,18 +201,6 @@ const EventTrigger: new <T>() => EventTrigger<T>;
 //
 // @public (undocumented)
 type EventTrigger<T> = Listenable<T> & EventTriggerController<T>;
-
-// @public @deprecated (undocumented)
-type ExceptType = ExpectType;
-
-// @public @deprecated
-type ExceptTypeMap = ExpectTypeObject;
-
-// @public @deprecated
-type ExceptTypeObject = ExpectTypeObject;
-
-// @public @deprecated
-type ExceptTypeTuple = ExpectTypeTuple;
 
 // @public
 type ExpectType<T = unknown> = TypeCheckFn<T> | TypeChecker<T> | BasicType | ExpectTypeObject | ExpectTypeTuple;
@@ -274,9 +235,6 @@ function getLinkedListByIndex<T extends object>(link: SinglyLinkList<T>, index: 
 
 // @beta
 function groupObject<T extends {}>(data: T[], key: keyof T): Obj<T>;
-
-// @public @deprecated
-type InferExcept<T> = InferExpect<T>;
 
 // Warning: (ae-forgotten-export) The symbol "InferBaseMap" needs to be exported by the entry point index.d.ts
 // Warning: (ae-forgotten-export) The symbol "InferTuple" needs to be exported by the entry point index.d.ts
@@ -359,11 +317,9 @@ declare namespace math {
         paseExponentNum,
         autoUnitByte,
         ExponentFormat,
-        autoUnit,
         randomInt
     }
 }
-export { math }
 
 declare namespace mock {
     export {
@@ -371,7 +327,6 @@ declare namespace mock {
         randomString
     }
 }
-export { mock }
 
 // @public (undocumented)
 class NotImplementedError extends Error {
@@ -391,7 +346,6 @@ declare namespace object {
         CallChian
     }
 }
-export { object }
 
 // @public
 type ObjectChian = {
@@ -571,8 +525,6 @@ const typeChecker: {
     array: ArrayChecker;
     optional: OptionalChecker;
     numberRange: typeof numberRange;
-    instanceof: typeof instanceOf;
-    arrayType: typeof arrayType;
     instanceOf: typeof instanceOf;
     union: typeof union;
     enumType: typeof enumType;
@@ -618,10 +570,6 @@ class UniqueKeyMap<T = any> extends Map<number, T> {
     constructor(maxSize: number);
     allocKeySet(data: T, safe?: undefined | false): number;
     allocKeySet(data: T, safe?: boolean): number | null;
-    // @deprecated
-    allowKeySet(data: T, safe?: undefined | false): number;
-    // @deprecated (undocumented)
-    allowKeySet(data: T, safe?: boolean): number | null;
     // (undocumented)
     clear(): void;
     // (undocumented)
@@ -668,16 +616,15 @@ function withPromise<T, R = any, E extends object = {}>(handle?: E): WithPromise
 
 // Warnings were encountered during analysis:
 //
-// src/core/type_check/type_checker.ts:330:25 - (ae-forgotten-export) The symbol "RecordChecker" needs to be exported by the entry point index.d.ts
-// src/core/type_check/type_checker.ts:330:25 - (ae-forgotten-export) The symbol "ArrayChecker" needs to be exported by the entry point index.d.ts
-// src/core/type_check/type_checker.ts:330:25 - (ae-forgotten-export) The symbol "OptionalChecker" needs to be exported by the entry point index.d.ts
-// src/core/type_check/type_checker.ts:330:25 - (ae-forgotten-export) The symbol "numberRange" needs to be exported by the entry point index.d.ts
-// src/core/type_check/type_checker.ts:336:3 - (ae-forgotten-export) The symbol "instanceOf" needs to be exported by the entry point index.d.ts
-// src/core/type_check/type_checker.ts:338:3 - (ae-forgotten-export) The symbol "arrayType" needs to be exported by the entry point index.d.ts
-// src/core/type_check/type_checker.ts:340:3 - (ae-forgotten-export) The symbol "union" needs to be exported by the entry point index.d.ts
-// src/core/type_check/type_checker.ts:341:3 - (ae-forgotten-export) The symbol "enumType" needs to be exported by the entry point index.d.ts
-// src/core/type_check/type_checker.ts:342:3 - (ae-forgotten-export) The symbol "maybeNull" needs to be exported by the entry point index.d.ts
-// src/core/type_check/type_checker.ts:343:3 - (ae-forgotten-export) The symbol "maybeNullish" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:327:25 - (ae-forgotten-export) The symbol "RecordChecker" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:327:25 - (ae-forgotten-export) The symbol "ArrayChecker" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:327:25 - (ae-forgotten-export) The symbol "OptionalChecker" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:327:25 - (ae-forgotten-export) The symbol "numberRange" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:327:25 - (ae-forgotten-export) The symbol "instanceOf" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:327:25 - (ae-forgotten-export) The symbol "union" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:327:25 - (ae-forgotten-export) The symbol "enumType" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:327:25 - (ae-forgotten-export) The symbol "maybeNull" needs to be exported by the entry point index.d.ts
+// src/core/type_check/type_checker.ts:327:25 - (ae-forgotten-export) The symbol "maybeNullish" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

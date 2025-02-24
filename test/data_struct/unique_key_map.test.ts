@@ -1,5 +1,5 @@
 import { UniqueKeyMap } from "evlib/data_struct";
-import { it, describe, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 describe("UniqueKeyMap", function () {
   describe("申请>读取>更新>删除", function () {

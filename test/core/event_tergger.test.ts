@@ -1,5 +1,5 @@
 import { EventTrigger, OnceEventTrigger } from "evlib";
-import { describe, test, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 describe("EventTrigger", function () {
   let listenable: EventTrigger<any>;

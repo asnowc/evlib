@@ -1,5 +1,5 @@
 import { afterTime } from "evlib";
-import { describe, it, vi, expect } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 describe("afterTimeHandle", function () {
   it("超时成功", async function () {
