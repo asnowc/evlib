@@ -21,12 +21,12 @@
     "evlib/math": "./src/math.ts",
     "evlib/mock": "./src/mock.ts",
     "evlib/object": "./src/object.ts",
-    "evlib/validator": "./src/validator.ts",
+    "evlib/validator": "./src/validator.ts"
   },
   "publish": {
     "include": ["LICENSE", "README.md", "src/**/*.ts"]
   },
-  "compilerOptions": { "lib": ["esnext", "deno.window"] },
+  "compilerOptions": { "lib": ["es2022"] },
   "nodeModulesDir": "manual",
   "lock": false,
   "fmt": {
