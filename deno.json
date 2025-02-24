@@ -1,6 +1,6 @@
 {
   "name": "@asn/evlib",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "tasks": {
     "doc:gen": "deno doc --output=temp --html src/core/mod.ts src/async.ts src/data_struct.ts src/math.ts src/object.ts",
     "check-type": { "command": "deno check --config src/deno.json src", "description": "检查 src 目录下的类型" },
@@ -12,7 +12,8 @@
     "./data_struct": "./src/data_struct.ts",
     "./math": "./src/math.ts",
     "./mock": "./src/mock.ts",
-    "./object": "./src/object.ts"
+    "./object": "./src/object.ts",
+    "./validator": "./src/validator.ts"
   },
   "imports": {
     "evlib": "./src/core/mod.ts",
