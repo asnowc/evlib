@@ -286,7 +286,8 @@ interface Listenable<T> {
 }
 
 // @public
-function listenSignal(signal: PruneAbortSignal | undefined, listener: (this: PruneAbortSignal) => void): Disposable & {
+function listenSignal(signal: PruneAbortSignal | undefined, listener: (this: PruneAbortSignal) => void): {
+    [Symbol.dispose](): void;
     dispose(): void;
 };
 
