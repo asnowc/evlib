@@ -1,4 +1,3 @@
-import { createTypeErrorDesc } from "../errors.ts";
 import { getClassType } from "./get_type.ts";
 import { internalCheckType } from "./check_base.ts";
 import {
@@ -12,14 +11,35 @@ import {
   TypeCheckOptions,
   TypeErrorDesc,
 } from "./type.ts";
+import { createTypeErrorDesc } from "../core/errors.ts";
 
 function checkArray<T>(
   val: any[],
   type: ExpectType,
-  checkAll?: boolean,
+  checkOpts: TypeCheckOptions,
+  option: {
+    maxLen?: number;
+    minLen?: number;
+  } = {},
 ): TypeCheckFnCheckResult<T[]> {
+  if (!Array.isArray(val)) return { error: createTypeErrorDesc("Array", getClassType(val)) };
+  const { maxLen, minLen } = option;
+
+  const errors: Record<string | number, any> = {};
   let errCount = 0;
-  let errors: any = {};
+
+  if (maxLen !== undefined && val.length > maxLen) {
+    if (checkOpts.policy === "delete") val.length = maxLen;
+    else {
+      errors.length = createTypeErrorDesc(`最大 ${maxLen}`, val.length.toString());
+      errCount++;
+      if (!checkOpts.checkAll) return { error: errors };
+    }
+  }
+  if (minLen !== undefined && val.length < minLen) {
+    errors.length = createTypeErrorDesc(`最小 ${minLen}`, val.length.toString());
+    if (!checkOpts.checkAll) return { error: errors };
+  }
 
   for (let i = 0; i < val.length; i++) {
     let item = val[i];
@@ -29,7 +49,7 @@ function checkArray<T>(
     else if (res.error) {
       errors[i] = res.error;
       errCount++;
-      if (!checkAll) return { error: errors };
+      if (!checkOpts.checkAll) return { error: errors };
     }
   }
   if (errCount) return { error: errors };
@@ -57,9 +77,10 @@ function checkRecord<T>(
   if (errCount) return { error: errors };
 }
 interface OptionalChecker {
-  <T extends ExpectType>(type: T): CustomChecker<InferExpect<T> | undefined>;
+  <T extends ExpectType>(type: T, mode?: undefined | null | "nullish"): CustomChecker<InferExpect<T> | undefined>;
   <T extends ExpectType, Def = T>(
     type: T,
+    mode: undefined | null | "nullish",
     defaultValue: Def,
   ): CustomChecker<InferExpect<T> | Def>;
   number: CustomChecker<number | undefined>;
@@ -73,17 +94,31 @@ interface OptionalChecker {
 /** 生成可选类型检测器
  * @public
  */
-const optional: OptionalChecker = /*  @__NO_SIDE_EFFECTS__ */ function optional<
+export const optional: OptionalChecker = /*  @__NO_SIDE_EFFECTS__ */ function optional<
   T extends ExpectType,
 >(
   type: T,
-  def?: any,
+  mode: undefined | null | "nullish" = undefined,
+  defaultValue?: any,
 ): TypeCheckFn<InferExpect<T>> | TypeChecker<InferExpect<T>> {
+  if (mode === "nullish") {
+    return {
+      optional: true,
+      [TYPE_CHECK_FN](val, checkOpts) {
+        if (val === undefined) {
+          if (defaultValue !== undefined) return { value: defaultValue, replace: true };
+          return;
+        }
+        return internalCheckType(val, type, checkOpts);
+      },
+    };
+  }
+
   return {
     optional: true,
     [TYPE_CHECK_FN](val, checkOpts) {
-      if (val === undefined) {
-        if (def !== undefined) return { value: def, replace: true };
+      if (val === mode) {
+        if (defaultValue !== undefined) return { value: defaultValue, replace: true };
         return;
       }
       return internalCheckType(val, type, checkOpts);
@@ -101,7 +136,10 @@ optional.function = optional("function");
 interface ArrayChecker {
   <T extends ExpectType>(
     type: T,
-    length?: number,
+    option?: {
+      maxLen?: number;
+      minLen?: number;
+    },
   ): TypeChecker<InferExpect<T>[]>;
   number: TypeChecker<number[]>;
   string: TypeChecker<string[]>;
@@ -116,22 +154,19 @@ interface ArrayChecker {
  * 生成可同类数组检测器
  * @public
  */
-const array: ArrayChecker = /*  @__NO_SIDE_EFFECTS__ */ function array<
+export const array: ArrayChecker = /*  @__NO_SIDE_EFFECTS__ */ function array<
   T extends ExpectType,
 >(
   type: T,
-  length?: number,
+  option: {
+    maxLen?: number;
+    minLen?: number;
+  } = {},
 ): TypeChecker<InferExpect<T>[]> {
-  if (length !== undefined) {
-    return {
-      baseType: "object",
-      [TYPE_CHECK_FN]: arrayType(type, length),
-    };
-  }
   return {
     baseType: "object",
-    [TYPE_CHECK_FN](val: any[], checkOpts) {
-      return checkArray(val, type, checkOpts.checkAll);
+    [TYPE_CHECK_FN](val, checkOpts) {
+      return checkArray(val, type, checkOpts, option);
     },
   };
 };
@@ -153,10 +188,11 @@ interface RecordChecker {
   object: TypeChecker<Record<string, object>>;
   function: TypeChecker<Record<string, (...args: any[]) => any>>;
 }
-/** 生成可同类属性检测器
- * @public */
-
-const record: RecordChecker = /*  @__NO_SIDE_EFFECTS__ */ function record<
+/**
+ * 生成可同类属性检测器
+ * @public
+ */
+export const record: RecordChecker = /*  @__NO_SIDE_EFFECTS__ */ function record<
   T extends ExpectType,
 >(
   type: T,
@@ -191,9 +227,11 @@ class Union<T> implements TypeChecker<T> {
     return { error: errors.join(" | ") };
   }
 }
-/** 生成数字范围检测函数
- * @public */
-function numberRange(min: number, max = Infinity): TypeCheckFn<number> {
+/**
+ * 生成数字范围检测函数
+ * @public
+ */
+export function numberRange(min: number, max = Infinity): TypeCheckFn<number> {
   const checkFn: TypeCheckFn = function checkFn(val: number, option) {
     if (val > max || val < min) {
       return {
@@ -205,9 +243,11 @@ function numberRange(min: number, max = Infinity): TypeCheckFn<number> {
   return checkFn;
 }
 
-/** 生成实例类型检测函数
- * @public */
-function instanceOf<T extends new (...args: any[]) => any>(
+/**
+ * 生成实例类型检测函数
+ * @public
+ */
+export function instanceOf<T extends new (...args: any[]) => any>(
   obj: T,
 ): TypeCheckFn<InstanceType<T>> {
   if (typeof obj !== "function") throw new Error();
@@ -219,126 +259,23 @@ function instanceOf<T extends new (...args: any[]) => any>(
   return checkFn;
 }
 
-/** 生成联合类型检测函数
- * @public  */
-function union<T extends ExpectType[]>(
+/**
+ * 生成联合类型检测函数
+ * @public
+ */
+export function union<T extends ExpectType[]>(
   types: T,
 ): TypeCheckFn<InferExpect<T[number]>> | TypeChecker<InferExpect<T[number]>> {
   return new Union(types);
 }
-/** 生成数组类型检测函数
+
+/**
+ * 检测枚举类型
  * @public
- * @deprecated 改用 array
  */
-function arrayType<T extends ExpectType>(
-  type: T,
-  length?: number,
-): TypeCheckFn<InferExpect<T>[]> {
-  const checkFn: TypeCheckFn = function checkFn(val: any, options) {
-    const { checkAll } = options;
-    const deleteSurplus = options.policy === "delete";
-    if (Array.isArray(val)) {
-      let errCount = 0;
-      let errors: any = {};
-      if (length !== undefined && length !== val.length) {
-        if (deleteSurplus) val.length = length;
-        else {
-          errors.length = `预期长度: ${length}, 实际: ${val.length}`;
-          errCount++;
-          if (!checkAll) return { error: errors };
-        }
-      }
-      for (let i = 0; i < val.length; i++) {
-        let item = val[i];
-        let res = internalCheckType(item, type);
-        if (!res) continue;
-        if (res.replace) val[i] = res.value;
-        else if (res.error) {
-          errors[i] = res.error;
-          if (!checkAll) return { error: errors };
-          errCount++;
-        }
-      }
-      if (errCount) return { error: errors };
-    } else return { error: createTypeErrorDesc("Array", getClassType(val)) };
-  };
-  checkFn.baseType = "object";
-  return checkFn;
-}
-/** 检测可能为 null 的类型 */
-function maybeNull<T extends ExpectType>(
-  expect: T,
-): TypeCheckFn<InferExpect<T> | null>;
-/** 检测可能为 null 的类型，如果为 null , 则替换为默认值 */
-function maybeNull<T extends ExpectType, Def = T>(
-  expect: T,
-  defaultValue: any,
-): TypeCheckFn<InferExpect<T> | Def>;
-function maybeNull<T extends ExpectType>(
-  expect: T,
-  defaultValue?: any,
-): TypeCheckFn<InferExpect<T> | null> {
-  return function (value, option) {
-    if (value === null) {
-      if (defaultValue !== undefined && defaultValue !== null) {
-        return { replace: true, value: defaultValue };
-      }
-      return;
-    }
-    return internalCheckType(value, expect, option);
-  };
-}
-/** 检测可能为 null 或 undefined 的类型 */
-function maybeNullish<T extends ExpectType>(
-  expect: T,
-  optional?: boolean,
-): TypeChecker<InferExpect<T> | null | undefined>;
-/** 检测可能为 null 或 undefined 的类型，如果为  null 或 undefined，则替换为默认值 */
-function maybeNullish<T extends ExpectType, Def = T>(
-  expect: T,
-  optional: boolean,
-  defaultValue: Def,
-): TypeChecker<InferExpect<T> | Def>;
-function maybeNullish(
-  expect: ExpectType,
-  optional = true,
-  defaultValue?: any,
-): TypeChecker<any | null | undefined> {
-  return {
-    optional,
-    [TYPE_CHECK_FN](val, checkOpts) {
-      if (val === undefined || val === null) {
-        if (defaultValue !== undefined && val !== defaultValue) {
-          return { replace: true, value: defaultValue };
-        }
-        return;
-      }
-      return internalCheckType(val, expect, checkOpts);
-    },
-  };
-}
-/** 检测枚举类型 */
-function enumType<T>(expects: T[]): TypeCheckFn<T> {
+export function enumType<T>(expects: T[]): TypeCheckFn<T> {
   return (v, option) => {
     if (expects.includes(v)) return;
     return { error: `${v} 不在枚举${expects.join(", ")} 中` };
   };
 }
-/** 预定义的检测函数工厂
- * @public
- */
-export const typeChecker = {
-  record,
-  array,
-  optional,
-  numberRange,
-  /** @deprecated 改用 instanceOf代替 */
-  instanceof: instanceOf,
-  /** @deprecated 改用 array 代替 */
-  arrayType,
-  instanceOf,
-  union,
-  enumType,
-  maybeNull,
-  maybeNullish,
-};

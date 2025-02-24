@@ -1,5 +1,4 @@
 export * from "./es.ts";
-export * from "./type_check.ts";
 export * from "./dispatch.ts";
 export * from "./promise.ts";
 export * from "./type.ts";

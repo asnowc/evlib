@@ -5,7 +5,7 @@
 export function createList<T>(
   fn: (index: number) => T,
   size: number,
-  startIndex = 0
+  startIndex = 0,
 ): T[] {
   if (size <= 0) throw new RangeError("size can't be less then 0");
   const arr = new Array(size);

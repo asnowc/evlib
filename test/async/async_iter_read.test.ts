@@ -1,5 +1,5 @@
 import { DataCollector } from "evlib/async";
-import { describe, test, expect } from "vitest";
+import { describe, expect, test } from "vitest";
 
 describe("DataCollector", function () {
   test("迭代被动解决", async function () {

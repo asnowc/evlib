@@ -1,5 +1,4 @@
 import { ParameterTypeError } from "./errors.ts";
-import { getBasicType } from "./type_check.ts";
 import { ObjectKey } from "./type.ts";
 
 type Obj<V = any> = Record<ObjectKey, V>;
@@ -16,13 +15,13 @@ export type PatchObjectOpts = {
 export function patchObject<T = unknown>(
   from: Obj,
   to: Obj,
-  opts: PatchObjectOpts = {}
+  opts: PatchObjectOpts = {},
 ): T {
   for (const [key, val] of Object.entries(from)) {
     if (val === undefined && opts.skipUndefined) continue;
-    if (getBasicType(val) === "object") {
-      let toObj = to[key];
-      if (getBasicType(toObj) !== "object") to[key] = deepClone(val);
+    if (typeof val === "object" && val !== null) {
+      const toObj = to[key];
+      if (typeof toObj !== "object" || toObj === null) to[key] = deepClone(val);
       else if (val instanceof Array && toObj instanceof Array) {
         if (opts.arrayStrategy === "push") toObj.push(...val);
         else if (opts.arrayStrategy === "unshift") toObj.unshift(...val);
@@ -72,18 +71,18 @@ export function removeUndefinedKey<T extends Obj>(obj: T, deep = true): T {
 export function pickObjectKey<P extends {}>(
   obj: Object,
   keys: (keyof P)[] | Set<keyof P>,
-  target?: Object
+  target?: Object,
 ): P;
 /** @public */
 export function pickObjectKey(
   obj: Object,
   keys: string[] | Set<any>,
-  target?: Object
+  target?: Object,
 ): Record<string, unknown>;
 export function pickObjectKey(
   obj: Object,
   keys: any[] | Set<any>,
-  target: Record<string, any> = {}
+  target: Record<string, any> = {},
 ): unknown {
   if (!(keys instanceof Set)) keys = new Set(keys);
   for (const [k, v] of Object.entries(obj)) {
@@ -96,14 +95,15 @@ export function pickObjectKey(
  */
 export function deepClone<T>(
   obj: T,
-  cloned: Map<any, any> = new Map<any, any>()
+  cloned: Map<any, any> = new Map<any, any>(),
 ): T {
   if (cloned.has(obj)) return cloned.get(obj);
 
   if (obj instanceof Array) return deepCloneArray(obj, cloned);
-  else if (typeof obj === "object" && obj !== null)
+  else if (typeof obj === "object" && obj !== null) {
     return deepCloneObject(obj, cloned);
-  throw new ParameterTypeError(0, "object", getBasicType(obj), "obj");
+  }
+  throw new ParameterTypeError(0, "object", obj === null ? "null" : typeof obj, "obj");
 }
 function deepCloneArray(obj: unknown[], cloned: Map<any, any>) {
   let newObj: unknown[] = [];

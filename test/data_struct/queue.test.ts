@@ -1,5 +1,5 @@
-import { LinkedQueue, LinkedCacheQueue } from "evlib/data_struct";
-import { test, describe, expect } from "vitest";
+import { LinkedCacheQueue, LinkedQueue } from "evlib/data_struct";
+import { describe, expect, test } from "vitest";
 describe("LinkedQueue", function () {
   test("构造", function () {
     const queue = new LinkedQueue();

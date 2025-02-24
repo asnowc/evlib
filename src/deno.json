@@ -2,6 +2,6 @@
   "fmt": {
     "lineWidth": 120
   },
-  "compilerOptions": { "lib": ["es2018"] },
+  "compilerOptions": { "lib": ["es2022"] },
   "lock": false
 }

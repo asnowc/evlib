@@ -5,7 +5,7 @@ import { randomInt } from "../math/random.ts";
 export function randomString(
   len: number,
   minUnicode: number = 0,
-  maxUnicode: number = 0x1fff
+  maxUnicode: number = 0x1fff,
 ): string {
   if (len < 4095) {
     const unicode = new Array(len);
@@ -24,13 +24,13 @@ export function randomString(
       for (let i = 0; i < max; i++) {
         unicodeList[i] = randomInt(minUnicode, maxUnicode);
       }
-      const list =
-        max < unicodeList.length ? unicodeList.slice(0, max) : unicodeList;
-      if (maxUnicode <= 0xffff)
+      const list = max < unicodeList.length ? unicodeList.slice(0, max) : unicodeList;
+      if (maxUnicode <= 0xffff) {
         strList[chunkOffset++] = String.fromCharCode.apply(String, list);
+      }
       return (strList[chunkOffset++] = String.fromCodePoint.apply(
         String,
-        list
+        list,
       ));
     }
 

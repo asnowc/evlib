@@ -2,10 +2,10 @@
  * @public
  */
 export function withPromise<T, R = any, E extends object = {}>(
-  handle?: E
+  handle?: E,
 ): WithPromise<T, R> & E;
 export function withPromise(
-  handle: Record<string, any> = {}
+  handle: Record<string, any> = {},
 ): WithPromise<unknown, unknown> {
   handle.promise = new Promise(function (resolve, reject) {
     handle.resolve = resolve;
@@ -19,7 +19,7 @@ export function withPromise(
  */
 export function dePromise<T, R>(
   val: T | Promise<T>,
-  fn: (val: T) => R
+  fn: (val: T) => R,
 ): R | Promise<R> {
   if (val instanceof Promise) return val.then(fn);
   return fn(val);

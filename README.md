@@ -1,5 +1,4 @@
-[![NPM version][npm]][npm-url]
-[![JSR version][jsr]][jsr-url]
+[![NPM version][npm]][npm-url] [![JSR version][jsr]][jsr-url]
 
 [npm]: https://img.shields.io/npm/v/evlib.svg
 [npm-url]: https://npmjs.com/package/evlib

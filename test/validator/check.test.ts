@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkType } from "evlib";
+import { checkType } from "evlib/validator";
 import "./assests/type_check.assert.ts";
 describe("基础类型检测", function () {
   it("null", function () {

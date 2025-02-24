@@ -27,7 +27,10 @@ class ListenSignal {
 export function listenSignal(
   signal: PruneAbortSignal | undefined,
   listener: (this: PruneAbortSignal) => void,
+): {
   //@ts-expect-error 当 lib 改为 es2022 后可以移除注释
-): Disposable & { dispose(): void } {
+  [Symbol.dispose](): void;
+  dispose(): void;
+} {
   return new ListenSignal(listener, signal);
 }

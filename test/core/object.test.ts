@@ -1,10 +1,4 @@
-import {
-  patchObject,
-  groupObject,
-  pickObjectKey,
-  removeUndefinedKey,
-  deepClone,
-} from "evlib";
+import { deepClone, groupObject, patchObject, pickObjectKey, removeUndefinedKey } from "evlib";
 import { describe, expect, test } from "vitest";
 
 describe("deepClone", function () {

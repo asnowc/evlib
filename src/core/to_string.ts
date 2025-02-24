@@ -10,9 +10,7 @@ export function toErrorStr(
   err?: any,
   showStack_options?: { showStack?: boolean } | boolean,
 ): string {
-  const option = typeof showStack_options === "object"
-    ? showStack_options
-    : { showStack: showStack_options, tab: 0 };
+  const option = typeof showStack_options === "object" ? showStack_options : { showStack: showStack_options, tab: 0 };
 
   if (err === null || err === undefined) return String(err);
   if (err instanceof Error) {
@@ -22,9 +20,7 @@ export function toErrorStr(
     if (option.showStack && err.stack) {
       str = err.stack;
     } else {
-      str = (err as any).code
-        ? `${name}(${code}): ${err.message}`
-        : `${name}: ${err.message}`;
+      str = (err as any).code ? `${name}(${code}): ${err.message}` : `${name}: ${err.message}`;
     }
     if (err.cause !== undefined) {
       return str + "\n  Cause " + toErrorStr(err.cause, option as any);

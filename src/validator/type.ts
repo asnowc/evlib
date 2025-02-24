@@ -129,40 +129,7 @@ export type InferExpect<T> = T extends string ? InferBaseMap[T]
     }
   : unknown;
 
-type InferTuple<T extends any[]> = T extends [infer P, ...infer Q]
-  ? [InferExpect<P>, ...InferTuple<Q>]
+type InferTuple<T extends any[]> = T extends [infer P, ...infer Q] ? [InferExpect<P>, ...InferTuple<Q>]
   : T;
 
 type Fn = (...args: any[]) => any;
-
-/**
- * 元组项检测
- * @public
- * @deprecated 改用 ExpectTypeTuple
- */
-export type ExceptTypeTuple = ExpectTypeTuple;
-/**
- * 对象属性检测
- * @public
- * @deprecated 改用 ExpectTypeObject
- */
-export type ExceptTypeMap = ExpectTypeObject;
-/**
- * 对象属性检测
- * @public
- * @deprecated 改用 ExpectTypeObject ExceptTypeObject
- */
-export type ExceptTypeObject = ExpectTypeObject;
-
-/**
- * 推断预期类型
- * @public
- * @deprecated 改用 InferExpect
- */
-export type InferExcept<T> = InferExpect<T>;
-
-/**
- * @public
- * @deprecated 改用 ExpectType
- */
-export type ExceptType = ExpectType;

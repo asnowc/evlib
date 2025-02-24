@@ -12,7 +12,7 @@ export type DoublyLinkList<T extends object = {}> = {
  * 遍历链表的迭代器
  * @public */
 export function* eachLinkedList<T extends object>(
-  link?: SinglyLinkList<T>
+  link?: SinglyLinkList<T>,
 ): Generator<SinglyLinkList<T>, void, void> {
   while (link) {
     yield link;
@@ -25,7 +25,7 @@ export function* eachLinkedList<T extends object>(
  */
 export function getLinkedListByIndex<T extends object>(
   link: SinglyLinkList<T>,
-  index: number
+  index: number,
 ): SinglyLinkList<T> {
   for (let i = 0; i < index; i++) {
     if (!link.next) throw new RangeError("Over range of the linked list");

@@ -1,8 +1,4 @@
-import {
-  ParameterError,
-  NumericalRangeError,
-  ParameterTypeError,
-} from "../core/errors.ts";
+import { NumericalRangeError, ParameterError, ParameterTypeError } from "../core/errors.ts";
 import { retainDecimalsFloor } from "./float.ts";
 
 /** @public */
@@ -23,7 +19,7 @@ export type ExponentFormat = {
 export function paseExponentNum(
   num: number,
   carry: number,
-  maxExponent?: number
+  maxExponent?: number,
 ): ExponentFormat;
 /** 使用动态进位值标准化数字  (int + decimals) * carry ^ exponent
  * @public
@@ -38,10 +34,11 @@ export function paseExponentNum(num: number, carry: number[]): ExponentFormat;
 export function paseExponentNum(
   num: number,
   carry: number | number[],
-  maxExponent: number = Infinity
+  maxExponent: number = Infinity,
 ): ExponentFormat {
-  if (isNaN(num) || num === Infinity)
+  if (isNaN(num) || num === Infinity) {
     throw new ParameterError(0, `Invalid number (${num}) `, "num");
+  }
 
   let exponent = 0;
   let decimals: number = num % 1;
@@ -59,8 +56,9 @@ export function paseExponentNum(
       exponent++;
     }
   } else if (carry instanceof Array) {
-    if (carry.length === 0)
+    if (carry.length === 0) {
       throw new ParameterError(1, `Array length cannot be 0`, "carry");
+    }
 
     const carryList = carry;
     for (let i = 0; i < carryList.length && exponent < maxExponent; i++) {
@@ -84,7 +82,7 @@ export function paseExponentNum(
 export function autoUnitByte(
   number: number,
   raids: number = 2,
-  unit?: "B" | "KB" | "MB" | "GB" | "TB" | "PB"
+  unit?: "B" | "KB" | "MB" | "GB" | "TB" | "PB",
 ): string {
   const unitList = ["B", "KB", "MB", "GB", "TB", "PB"];
   let startIndex = 0;
@@ -95,7 +93,7 @@ export function autoUnitByte(
   let { exponent, decimals, int } = paseExponentNum(
     number,
     1024,
-    unitList.length - startIndex
+    unitList.length - startIndex,
   );
   exponent += startIndex;
 
@@ -103,17 +101,3 @@ export function autoUnitByte(
 
   return int + unitList[exponent];
 }
-/**
- * @public
- * @deprecated 已废弃
- */
-export const autoUnit: {
-  /** @deprecated autoUnitByte  */
-  byte: (
-    number: number,
-    raids?: number,
-    unit?: "B" | "KB" | "MB" | "GB" | "TB" | "PB"
-  ) => string;
-} = {
-  byte: autoUnitByte,
-};
