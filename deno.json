@@ -20,7 +20,8 @@
     "evlib/data_struct": "./src/data_struct.ts",
     "evlib/math": "./src/math.ts",
     "evlib/mock": "./src/mock.ts",
-    "evlib/object": "./src/object.ts"
+    "evlib/object": "./src/object.ts",
+    "evlib/validator": "./src/validator.ts",
   },
   "publish": {
     "include": ["LICENSE", "README.md", "src/**/*.ts"]

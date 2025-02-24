@@ -1,5 +1,5 @@
-import { internalCheckType } from "./type_check/check_base.ts";
-import { ExpectType, InferExpect, TypeCheckOptions, TypeErrorDesc } from "./type_check/type.ts";
+import { internalCheckType } from "./validator/check_base.ts";
+import { ExpectType, InferExpect, TypeCheckOptions, TypeErrorDesc } from "./validator/type.ts";
 /**
  * 校验数据类型，如果校验不通过，则返回异常信息
  * @public
@@ -23,7 +23,8 @@ export function checkType(
   else if (res.error) return { value, error: res.error };
   return { value };
 }
-type TypeCheckResult<T = unknown> = {
+/** @public */
+export type TypeCheckResult<T = unknown> = {
   /** 异常信息 */
   error?: TypeErrorDesc;
   /** 要替换的值 */
@@ -42,6 +43,6 @@ export function verifyType<T extends ExpectType>(
   return value;
 }
 
-export * from "./type_check/get_type.ts";
-export * from "./type_check/type_checker.ts";
-export * from "./type_check/type.ts";
+export * from "./validator/get_type.ts";
+export * from "./validator/type_checker.ts";
+export * from "./validator/type.ts";

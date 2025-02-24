@@ -1,4 +1,4 @@
-import { createTypeErrorDesc, ParameterError } from "../errors.ts";
+import { createTypeErrorDesc, ParameterError } from "../core/errors.ts";
 import { getBasicType, getClassType } from "./get_type.ts";
 import type {
   ExpectType,

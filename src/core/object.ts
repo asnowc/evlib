@@ -1,5 +1,4 @@
 import { ParameterTypeError } from "./errors.ts";
-import { getBasicType } from "./type_check.ts";
 import { ObjectKey } from "./type.ts";
 
 type Obj<V = any> = Record<ObjectKey, V>;
@@ -20,9 +19,9 @@ export function patchObject<T = unknown>(
 ): T {
   for (const [key, val] of Object.entries(from)) {
     if (val === undefined && opts.skipUndefined) continue;
-    if (getBasicType(val) === "object") {
-      let toObj = to[key];
-      if (getBasicType(toObj) !== "object") to[key] = deepClone(val);
+    if (typeof val === "object" && val !== null) {
+      const toObj = to[key];
+      if (typeof toObj !== "object" || toObj === null) to[key] = deepClone(val);
       else if (val instanceof Array && toObj instanceof Array) {
         if (opts.arrayStrategy === "push") toObj.push(...val);
         else if (opts.arrayStrategy === "unshift") toObj.unshift(...val);
@@ -104,7 +103,7 @@ export function deepClone<T>(
   else if (typeof obj === "object" && obj !== null) {
     return deepCloneObject(obj, cloned);
   }
-  throw new ParameterTypeError(0, "object", getBasicType(obj), "obj");
+  throw new ParameterTypeError(0, "object", obj === null ? "null" : typeof obj, "obj");
 }
 function deepCloneArray(obj: unknown[], cloned: Map<any, any>) {
   let newObj: unknown[] = [];

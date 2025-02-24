@@ -16,13 +16,29 @@ function passMsg() {
 const passRes = { pass: true, message: passMsg };
 expect.extend({
   toCheckPass(received: any) {
-    return {
-      pass: typeof received === "object" &&
-        received !== null &&
-        received.error === undefined,
-      message: () => received.error,
-      actual: this.error,
-    };
+    if (typeof received !== "object" || received === null) {
+      return {
+        message() {
+          return "参数应为对象";
+        },
+        pass: false,
+      };
+    }
+    if (this.isNot) {
+      return {
+        pass: received.error === undefined,
+        message: () => received.error,
+        actual: "预期检测通过",
+        expected: received.error,
+      };
+    } else {
+      return {
+        pass: received.error === undefined,
+        message: () => received.error,
+        actual: received.error,
+        expected: "预期检测通过",
+      };
+    }
   },
   toCheckFail(received: { error: any }, expe) {
     const isResult = withError(received);
