@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { array, checkType, record } from "evlib/validator";
+import { checkType, record } from "evlib/validator";
 import "./assests/type_check.assert.ts";
 
 test("使用自定义函数判断", function () {
@@ -38,27 +38,7 @@ test("record属性替换", function () {
   expect(value.aa, "值已被替换成").toBe(5);
   expect(error).toBeUndefined();
 });
-test("数组替换", function () {
-  const obj = [10, 20];
-  const { value, error } = checkType(
-    obj,
-    array((val: any) => ({
-      value: val / 2,
-      replace: true,
-    })),
-  );
-  expect(value, "值已被替换成").toEqual([5, 10]);
-  expect(error).toBeUndefined();
-});
-test("元组替换", function () {
-  const obj = [10, 20];
-  const { value, error } = checkType(obj, [
-    "number",
-    () => ({ value: 10, replace: true }),
-  ]);
-  expect(value, "值已被替换成").toEqual([10, 10]);
-  expect(error).toBeUndefined();
-});
+
 test("校验不通过", function () {
   const obj = 9;
   const { value, error } = checkType(obj, (val) => ({

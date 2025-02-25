@@ -1,11 +1,11 @@
-import { TypeCheckFn } from "../type.ts";
+import { CustomChecker, TypeCheckFn } from "../type.ts";
 import { createTypeErrorDesc } from "../../core/errors.ts";
 
 /**
  * 生成数字范围检测函数
  * @public
  */
-export function numberRange(min: number, max = Infinity): TypeCheckFn<number> {
+export function numberRange(min: number, max = Infinity): CustomChecker<number> {
   const checkFn: TypeCheckFn = function checkFn(val: number, option) {
     if (Number.isNaN(val)) return { error: createTypeErrorDesc("Integer", String(val)) };
     if (val > max || val < min) {
@@ -31,12 +31,12 @@ export type NumberCheckOption = {
  * @param min - 默认 -Infinity
  * @param max - 默认 Infinity
  */
-export function integer(min?: number, max?: number): TypeCheckFn<number>;
+export function integer(min?: number, max?: number): CustomChecker<number>;
 /**
  * @public 断言目标是一个整数
  */
-export function integer(option?: NumberCheckOption): TypeCheckFn<number>;
-export function integer(min: number | NumberCheckOption = -Infinity, max: number = Infinity): TypeCheckFn<number> {
+export function integer(option?: NumberCheckOption): CustomChecker<number>;
+export function integer(min: number | NumberCheckOption = -Infinity, max: number = Infinity): CustomChecker<number> {
   let acceptString: boolean | undefined = false;
   if (typeof min === "object") {
     max = min.max ?? Infinity;

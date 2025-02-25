@@ -1,21 +1,7 @@
 import { expect, test } from "vitest";
-import { checkType, enumType, instanceOf, numberRange, union } from "evlib/validator";
+import { checkType, enumType, instanceOf, numberRange } from "evlib/validator";
 import "../assests/type_check.assert.ts";
 
-test("union", function () {
-  const res = checkType(
-    { s: 3, i: null },
-    {
-      s: union(["number", "string"]),
-      i: union(["string", (a: any) => undefined]),
-    },
-  );
-  //联合类型
-  expect(res).checkPass();
-  expect(
-    checkType({ s: 3 }, { s: union(["bigint", "string"]) }),
-  ).checkFailWithField(["s"]);
-});
 test("numberRange", function () {
   let towToFour = numberRange(2, 4);
   expect(checkType({ a: 2 }, { a: towToFour })).checkPass();

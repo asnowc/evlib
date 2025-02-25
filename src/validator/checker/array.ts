@@ -1,10 +1,10 @@
 import { getClassType } from "../get_type.ts";
 import { internalCheckType } from "../check_base.ts";
 import {
+  CustomChecker,
   ExpectType,
   InferExpect,
   TYPE_CHECK_FN,
-  TypeChecker,
   TypeCheckFnCheckResult,
   TypeCheckOptions,
 } from "../type.ts";
@@ -17,14 +17,14 @@ interface ArrayChecker {
       maxLen?: number;
       minLen?: number;
     },
-  ): TypeChecker<InferExpect<T>[]>;
-  number: TypeChecker<number[]>;
-  string: TypeChecker<string[]>;
-  boolean: TypeChecker<boolean[]>;
-  bigint: TypeChecker<bigint[]>;
-  symbol: TypeChecker<symbol[]>;
-  object: TypeChecker<object[]>;
-  function: TypeChecker<((...args: any[]) => any)[]>;
+  ): CustomChecker<InferExpect<T>[]>;
+  number: CustomChecker<number[]>;
+  string: CustomChecker<string[]>;
+  boolean: CustomChecker<boolean[]>;
+  bigint: CustomChecker<bigint[]>;
+  symbol: CustomChecker<symbol[]>;
+  object: CustomChecker<object[]>;
+  function: CustomChecker<((...args: any[]) => any)[]>;
 }
 
 /**
@@ -39,7 +39,7 @@ export const array: ArrayChecker = /*  @__NO_SIDE_EFFECTS__ */ function array<
     maxLen?: number;
     minLen?: number;
   } = {},
-): TypeChecker<InferExpect<T>[]> {
+): CustomChecker<InferExpect<T>[]> {
   return {
     baseType: "object",
     [TYPE_CHECK_FN](val, checkOpts) {

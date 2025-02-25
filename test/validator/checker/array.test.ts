@@ -27,3 +27,15 @@ test("数组长度限制", function () {
 test("传入非数组", function () {
   expect(checkType(null, array.number)).checkFail();
 });
+test("数组替换", function () {
+  const obj = [10, 20];
+  const { value, error } = checkType(
+    obj,
+    array((val: any) => ({
+      value: val / 2,
+      replace: true,
+    })),
+  );
+  expect(value, "值已被替换成").toEqual([5, 10]);
+  expect(error).toBeUndefined();
+});

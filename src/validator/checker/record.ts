@@ -1,5 +1,5 @@
 import { internalCheckType } from "../check_base.ts";
-import { ExpectType, InferExpect, TYPE_CHECK_FN, TypeChecker, TypeCheckFnCheckResult } from "../type.ts";
+import { CustomChecker, ExpectType, InferExpect, TYPE_CHECK_FN, TypeCheckFnCheckResult } from "../type.ts";
 
 function checkRecord<T>(
   val: Record<string, any>,
@@ -25,14 +25,14 @@ function checkRecord<T>(
 }
 
 interface RecordChecker {
-  <T extends ExpectType>(type: T): TypeChecker<Record<string, InferExpect<T>>>;
-  number: TypeChecker<Record<string, number>>;
-  string: TypeChecker<Record<string, string>>;
-  boolean: TypeChecker<Record<string, boolean>>;
-  bigint: TypeChecker<Record<string, bigint>>;
-  symbol: TypeChecker<Record<string, symbol>>;
-  object: TypeChecker<Record<string, object>>;
-  function: TypeChecker<Record<string, (...args: any[]) => any>>;
+  <T extends ExpectType>(type: T): CustomChecker<Record<string, InferExpect<T>>>;
+  number: CustomChecker<Record<string, number>>;
+  string: CustomChecker<Record<string, string>>;
+  boolean: CustomChecker<Record<string, boolean>>;
+  bigint: CustomChecker<Record<string, bigint>>;
+  symbol: CustomChecker<Record<string, symbol>>;
+  object: CustomChecker<Record<string, object>>;
+  function: CustomChecker<Record<string, (...args: any[]) => any>>;
 }
 /**
  * 生成可同类属性检测器
@@ -42,7 +42,7 @@ export const record: RecordChecker = /*  @__NO_SIDE_EFFECTS__ */ function record
   T extends ExpectType,
 >(
   type: T,
-): TypeChecker<Record<string, InferExpect<T>>> {
+): CustomChecker<Record<string, InferExpect<T>>> {
   return {
     [TYPE_CHECK_FN](val, checkOpts) {
       return checkRecord(val, type, checkOpts.checkAll);

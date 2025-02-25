@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, test } from "vitest";
 import { checkType } from "evlib/validator";
 import "./assests/type_check.assert.ts";
 describe("基础类型检测", function () {
@@ -103,36 +103,7 @@ describe("检测对象", function () {
     expect(res).checkFailWithField(["a"]);
   });
 });
-describe("元组检测", function () {
-  it("全匹配", function () {
-    expect(checkType([1, "d"], ["number", "string"])).checkPass();
 
-    expect(checkType([1, "d"], ["number", "number"])).checkFailWithField([
-      "1",
-    ]);
-  });
-  it("长度检测", function () {
-    let val = [1, "d", null];
-    expect(checkType(val, ["number", "string"])).checkFail({
-      length: "预期长度: 2, 实际: 3",
-    });
-    expect(val).toEqual([1, "d", null]);
-  });
-  it("仅匹配预期提供字段", function () {
-    let val = [1, "d", null];
-    expect(
-      checkType(val, ["number", "string"], { policy: "pass" }),
-    ).checkPass();
-    expect(val).toEqual([1, "d", null]);
-  });
-  it("移除多余", function () {
-    let val = [1, "d", null];
-    expect(
-      checkType(val, ["number", "string"], { policy: "delete" }),
-    ).checkPass();
-    expect(val).toEqual([1, "d"]);
-  });
-});
 describe("嵌套", function () {
   it("仅检测", function () {
     let res = checkType(
@@ -151,4 +122,16 @@ describe("嵌套", function () {
     expect(res).checkPass();
     expect(obj).toEqual({ s: 3, i: { q: "s", c: undefined } });
   });
+});
+
+test("union", function () {
+  expect(checkType(null, ["string", "null"])).checkPass();
+  expect(checkType(undefined, ["string", "null"])).checkFail();
+  expect(checkType(
+    { s: 3, i: null },
+    { s: ["number", "string"], i: ["string", "null"] },
+  )).checkPass();
+  expect(
+    checkType({ s: 3 }, { s: ["bigint", "string"] }),
+  ).checkFailWithField(["s"]);
 });

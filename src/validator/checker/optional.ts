@@ -1,5 +1,5 @@
 import { internalCheckType } from "../check_base.ts";
-import { CustomChecker, ExpectType, InferExpect, TYPE_CHECK_FN, TypeChecker, TypeCheckFn } from "../type.ts";
+import { CustomChecker, ExpectType, InferExpect, TYPE_CHECK_FN } from "../type.ts";
 
 interface OptionalChecker {
   <T extends ExpectType>(type: T, mode?: undefined | null | "nullish"): CustomChecker<InferExpect<T> | undefined>;
@@ -25,7 +25,7 @@ export const optional: OptionalChecker = /*  @__NO_SIDE_EFFECTS__ */ function op
   type: T,
   mode: undefined | null | "nullish" = undefined,
   defaultValue?: any,
-): TypeCheckFn<InferExpect<T>> | TypeChecker<InferExpect<T>> {
+): CustomChecker<InferExpect<T>> {
   if (mode === "nullish") {
     return {
       optional: true,

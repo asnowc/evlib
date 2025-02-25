@@ -1,32 +1,22 @@
 import { getClassType } from "../get_type.ts";
-import { internalCheckType } from "../check_base.ts";
-import {
-  ExpectType,
-  InferExpect,
-  TYPE_CHECK_FN,
-  TypeChecker,
-  TypeCheckFn,
-  TypeCheckFnCheckResult,
-  TypeCheckOptions,
-  TypeErrorDesc,
-} from "../type.ts";
+import { checkTuple } from "../check_base.ts";
+import { CustomChecker, ExpectType, InferExpect, TypeCheckFn } from "../type.ts";
 import { createTypeErrorDesc } from "../../core/errors.ts";
 
-class Union<T> implements TypeChecker<T> {
-  constructor(readonly types: ExpectType[]) {}
-  [TYPE_CHECK_FN](
-    val: any,
-    option: Readonly<TypeCheckOptions>,
-  ): TypeCheckFnCheckResult<T>;
-  [TYPE_CHECK_FN](val: any, option: Readonly<TypeCheckOptions>) {
-    let errors: TypeErrorDesc[] = [];
-    for (const except of this.types) {
-      const res = internalCheckType(val, except, option);
-      if (!res || res.replace || !res.error) return res;
-      errors.push(res.error);
-    }
-    return { error: errors.join(" | ") };
-  }
+/** @public */
+export type InferExpectTuple<T extends any[]> = T extends [infer P, ...infer Q]
+  ? [InferExpect<P>, ...InferExpectTuple<Q>]
+  : T;
+
+/** @public */
+export function tuple<T extends ExpectType[]>(expect: T): CustomChecker<InferExpectTuple<T>> {
+  const checkFn: TypeCheckFn<any> = function (value, option) {
+    if (!Array.isArray(value)) return { error: createTypeErrorDesc("Array", getClassType(value)) };
+    return checkTuple(value, expect, option);
+  };
+  checkFn.baseType = "object";
+
+  return checkFn;
 }
 
 /**
@@ -35,7 +25,7 @@ class Union<T> implements TypeChecker<T> {
  */
 export function instanceOf<T extends new (...args: any[]) => any>(
   obj: T,
-): TypeCheckFn<InstanceType<T>> {
+): CustomChecker<InstanceType<T>> {
   if (typeof obj !== "function") throw new Error();
   const checkFn: TypeCheckFn = function checkFn(val: object) {
     if (val instanceof obj) return;
@@ -46,20 +36,10 @@ export function instanceOf<T extends new (...args: any[]) => any>(
 }
 
 /**
- * 生成联合类型检测函数
- * @public
- */
-export function union<T extends ExpectType[]>(
-  types: T,
-): TypeCheckFn<InferExpect<T[number]>> | TypeChecker<InferExpect<T[number]>> {
-  return new Union(types);
-}
-
-/**
  * 检测枚举类型
  * @public
  */
-export function enumType<T>(expects: T[]): TypeCheckFn<T> {
+export function enumType<T>(expects: T[]): CustomChecker<T> {
   return (v, option) => {
     if (expects.includes(v)) return;
     return { error: `${v} 不在枚举${expects.join(", ")} 中` };

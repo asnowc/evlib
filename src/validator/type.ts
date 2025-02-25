@@ -41,17 +41,15 @@ export type BasicType =
   | "object"
   | "function"
   | "null";
-/**
- * 元组项检测
- * @public
- */
-export type ExpectTypeTuple = ExpectType[];
+
+/**  @public */
+export type ExpectUnionType = ExpectType[];
 
 /**
  * 对象属性检测
  * @public
  */
-export type ExpectTypeObject = {
+export type ExpectObjectType = {
   [key: string | number]: ExpectType;
   [key: symbol]: any;
 };
@@ -67,8 +65,8 @@ export type ExpectType<T = unknown> =
   | TypeCheckFn<T>
   | TypeChecker<T>
   | BasicType
-  | ExpectTypeObject
-  | ExpectTypeTuple;
+  | ExpectObjectType
+  | ExpectUnionType;
 
 /** @public */
 export interface TypeCheckOptions {
@@ -123,7 +121,7 @@ type InferBaseMap = {
  * @public
  */
 export type InferExpect<T> = T extends string ? InferBaseMap[T]
-  : T extends any[] ? InferTuple<T>
+  : T extends any[] ? InferExpectUnion<T>
   : T extends TypeCheckFn<infer E> ? E
   : T extends TypeChecker<infer E> ? E
   : T extends object ? {
@@ -131,7 +129,8 @@ export type InferExpect<T> = T extends string ? InferBaseMap[T]
     }
   : unknown;
 
-type InferTuple<T extends any[]> = T extends [infer P, ...infer Q] ? [InferExpect<P>, ...InferTuple<Q>]
-  : T;
+/** @public */
+export type InferExpectUnion<T extends any[]> = T extends [infer P, ...infer Q] ? InferExpect<P> | InferExpectUnion<Q>
+  : never;
 
 type Fn = (...args: any[]) => any;
