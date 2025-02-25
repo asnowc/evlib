@@ -65,7 +65,7 @@ export class DataCollector<T, R = void> {
   throw(e: any): Promise<IteratorResult<T, R>> {
     return this.return(e);
   }
-  [Symbol.asyncIterator]() {
+  [Symbol.asyncIterator](): this {
     return this;
   }
 }
