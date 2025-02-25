@@ -28,7 +28,7 @@
   "publish": {
     "include": ["LICENSE", "README.md", "src/**/*.ts"]
   },
-  "compilerOptions": { "lib": ["es2022"] },
+  "compilerOptions": { "lib": ["esnext","deno.window"] },
   "nodeModulesDir": "manual",
   "lock": false,
   "fmt": {
