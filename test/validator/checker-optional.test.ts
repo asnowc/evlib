@@ -16,7 +16,7 @@ describe("自定义可选", function () {
           q: optional({ c: "string" }),
         },
       ),
-    ).toCheckFailWithField(["q"]);
+    ).checkFailWithField(["q"]);
   });
   test("正确的可选", function () {
     expect(
@@ -69,7 +69,7 @@ test("快捷可选", function () {
       { s: 3, i: "s", q: 8 },
       { s: "number", i: "string", q: optional.string },
     ),
-  ).toCheckFailWithField(["q"]);
+  ).checkFailWithField(["q"]);
   expect(
     checkType(
       { s: 3, i: "s", q: "sd" },

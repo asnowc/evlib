@@ -6,7 +6,7 @@ test("使用自定义函数判断", function () {
   let obj = { s: 3, i: "s" };
   expect(
     checkType(obj, { s: "number", i: (a: any) => ({ error: "sd" }) }),
-  ).toCheckFail({ i: "sd" });
+  ).checkFail({ i: "sd" });
   expect(
     checkType(obj, { s: "number", i: (a: any) => undefined }),
   ).checkPass();

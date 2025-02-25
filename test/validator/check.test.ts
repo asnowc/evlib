@@ -4,7 +4,7 @@ import "./assests/type_check.assert.ts";
 describe("基础类型检测", function () {
   it("null", function () {
     expect(checkType(null, "null")).checkPass();
-    expect(checkType(null, {})).toCheckFail();
+    expect(checkType(null, {})).checkFail();
   });
   it("object", function () {
     expect(checkType({}, "object")).checkPass();
@@ -44,7 +44,7 @@ describe("检测对象", function () {
   it("多余字段检测", function () {
     let obj = { s: 3, i: "s", q: undefined };
     let checkRes = checkType(obj, { s: "number", i: "string" });
-    expect(checkRes).toCheckFail({ q: "预期: 不存在, 实际: 存在" });
+    expect(checkRes).checkFail({ q: "预期: 不存在, 实际: 存在" });
     expect(obj).toEqual({ s: 3, i: "s", q: undefined });
   });
   it("检测所有字段", function () {
@@ -70,8 +70,8 @@ describe("检测对象", function () {
       q: "number",
       y: "number",
     });
-    expect(checkRes).toCheckFailWithField(["q"]);
-    expect(checkRes2).toCheckFailWithField(["q"]);
+    expect(checkRes).checkFailWithField(["q"]);
+    expect(checkRes2).checkFailWithField(["q"]);
     expect(obj).toEqual({ s: 3, i: "s", q: undefined });
   });
 
@@ -84,15 +84,15 @@ describe("检测对象", function () {
         { checkAll: true },
       ),
       "预期类型不一致",
-    ).toCheckFailWithField(["s", "y"]);
+    ).checkFailWithField(["s", "y"]);
     expect(
       checkType(obj, { s: "string", y: (a: any) => undefined }),
       "预期类型不一致",
-    ).toCheckFailWithField(["s"]);
+    ).checkFailWithField(["s"]);
   });
   it("预期不存在", function () {
     let res = checkType({ a: 8 }, { a: "number", b: "number" });
-    expect(res).toCheckFailWithField(["b"]);
+    expect(res).checkFailWithField(["b"]);
   });
   it("判断null类型", function () {
     let res = checkType({ a: null }, { a: "null" });
@@ -100,20 +100,20 @@ describe("检测对象", function () {
   });
   it("传入错误预期类型", function () {
     let res = checkType({ a: 3 }, { a: "D" } as any);
-    expect(res).toCheckFailWithField(["a"]);
+    expect(res).checkFailWithField(["a"]);
   });
 });
 describe("元组检测", function () {
   it("全匹配", function () {
     expect(checkType([1, "d"], ["number", "string"])).checkPass();
 
-    expect(checkType([1, "d"], ["number", "number"])).toCheckFailWithField([
+    expect(checkType([1, "d"], ["number", "number"])).checkFailWithField([
       "1",
     ]);
   });
   it("长度检测", function () {
     let val = [1, "d", null];
-    expect(checkType(val, ["number", "string"])).toCheckFail({
+    expect(checkType(val, ["number", "string"])).checkFail({
       length: "预期长度: 2, 实际: 3",
     });
     expect(val).toEqual([1, "d", null]);

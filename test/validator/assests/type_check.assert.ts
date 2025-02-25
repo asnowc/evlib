@@ -1,8 +1,8 @@
 import { expect } from "vitest";
 interface CustomMatchers<R = unknown> {
   checkPass(): R;
-  toCheckFail(errDesc?: any): R;
-  toCheckFailWithField(fields: string[]): R;
+  checkFail(errDesc?: any): R;
+  checkFailWithField(fields: string[]): R;
 }
 
 declare module "vitest" {
@@ -39,23 +39,23 @@ expect.extend({
       };
     }
   },
-  toCheckFail(received: { error: any }, expe) {
+  checkFail(received: { error: any }, expect) {
     const isResult = withError(received);
     if (isResult) return isResult;
-    if (expe === undefined) return passRes;
+    if (expect === undefined) return passRes;
     try {
-      expect(received.error).toEqual(expe);
+      expect(received.error).toEqual(expect);
       return passRes;
     } catch (error) {
       return {
         pass: false,
         message: () => `预期检测失败`,
         actual: received.error ?? null,
-        expected: expe,
+        expected: expect,
       };
     }
   },
-  toCheckFailWithField(received: { error: any }, field: string[]) {
+  checkFailWithField(received: { error: any }, field: string[]) {
     const isResult = withError(received);
     if (isResult) return isResult;
 
