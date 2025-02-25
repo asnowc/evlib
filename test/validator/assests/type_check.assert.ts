@@ -1,9 +1,8 @@
-import type { Assertion, AsymmetricMatchersContaining } from "vitest";
 import { expect } from "vitest";
 interface CustomMatchers<R = unknown> {
-  toCheckPass(): R;
-  toCheckFail(errDesc?: any): R;
-  toCheckFailWithField(fields: string[]): R;
+  checkPass(): R;
+  checkFail(errDesc?: any): R;
+  checkFailWithField(fields: string[]): R;
 }
 
 declare module "vitest" {
@@ -15,11 +14,11 @@ function passMsg() {
 }
 const passRes = { pass: true, message: passMsg };
 expect.extend({
-  toCheckPass(received: any) {
+  checkPass(received: any) {
     if (typeof received !== "object" || received === null) {
       return {
         message() {
-          return "参数应为对象";
+          return "预期返回对象，实际返回" + typeof received;
         },
         pass: false,
       };
@@ -27,36 +26,36 @@ expect.extend({
     if (this.isNot) {
       return {
         pass: received.error === undefined,
-        message: () => received.error,
-        actual: "预期检测通过",
-        expected: received.error,
+        message: () => "预期检测不通过",
+        actual: "检测通过",
+        expected: "检测不通过",
       };
     } else {
       return {
         pass: received.error === undefined,
-        message: () => received.error,
+        message: () => "预期检测通过",
         actual: received.error,
-        expected: "预期检测通过",
+        expected: "检测通过",
       };
     }
   },
-  toCheckFail(received: { error: any }, expe) {
+  checkFail(received: { error: any }, expectError) {
     const isResult = withError(received);
     if (isResult) return isResult;
-    if (expe === undefined) return passRes;
+    if (expectError === undefined) return passRes;
     try {
-      expect(received.error).toEqual(expe);
+      expect(received.error).toEqual(expectError);
       return passRes;
     } catch (error) {
       return {
         pass: false,
         message: () => `预期检测失败`,
         actual: received.error ?? null,
-        expected: expe,
+        expected: expectError,
       };
     }
   },
-  toCheckFailWithField(received: { error: any }, field: string[]) {
+  checkFailWithField(received: { error: any }, field: string[]) {
     const isResult = withError(received);
     if (isResult) return isResult;
 
@@ -75,6 +74,7 @@ expect.extend({
     }
   },
 });
+
 function checkRes(res: any) {
   if (res === undefined || (typeof res === "object" && res !== null)) return;
   return {

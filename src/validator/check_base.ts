@@ -1,8 +1,8 @@
 import { createTypeErrorDesc, ParameterError } from "../core/errors.ts";
 import { getBasicType, getClassType } from "./get_type.ts";
 import type {
+  ExpectObjectType,
   ExpectType,
-  ExpectTypeObject,
   InferExpect,
   TypeChecker,
   TypeCheckFnCheckResult,
@@ -10,16 +10,13 @@ import type {
   TypeErrorDesc,
 } from "./type.ts";
 import { TYPE_CHECK_FN } from "./type.ts";
-const objectHasOwn: (object: object, key: string) => boolean = (Object as any).hasOwn ??
-  function ObjectHasOwn(obj: any, key: string) {
-    return !!Object.getOwnPropertyDescriptor(obj, key);
-  };
+
 /**
  * 如果 对象的字段预期类型为可选, 并且实际存在字段为undefined, 则在deleteSurplus为true是将字段删除
  */
-function checkObject(
+export function checkObject(
   doc: Record<string, any>,
-  except: ExpectTypeObject,
+  except: ExpectObjectType,
   options: TypeCheckOptions,
 ): TypeCheckFnCheckResult {
   const error: Record<string, TypeErrorDesc> = {};
@@ -33,7 +30,7 @@ function checkObject(
 
   let exist: boolean;
   for (let [testKey, exceptType] of Object.entries(except)) {
-    exist = objectHasOwn(doc, testKey);
+    exist = Object.hasOwn(doc, testKey);
     Object.getOwnPropertyDescriptor;
 
     if (typeof exceptType === "object" && exceptType !== null) {
@@ -77,7 +74,7 @@ function checkObject(
   if (isErr) return { error };
   return { value: doc, replace: true };
 }
-function checkTuple<T = unknown>(
+export function checkTuple<T = unknown>(
   arr: any[],
   except: ExpectType[],
   options: Readonly<TypeCheckOptions>,
@@ -121,7 +118,22 @@ function checkTuple<T = unknown>(
 
   if (isErr) return { error };
 }
-
+export function checkUnion(
+  arr: any,
+  exceptUnion: ExpectType[],
+  option: Readonly<TypeCheckOptions>,
+) {
+  const errors: TypeErrorDesc[] = [];
+  for (let i = 0; i < exceptUnion.length; i++) {
+    const res = internalCheckType(arr, exceptUnion[i], option);
+    if (!res) return;
+    if (res.error) errors.push(res.error);
+    else {
+      return;
+    }
+  }
+  return { error: "没有符合的联合类型： " + errors.join(" | ") };
+}
 export function internalCheckType<T extends ExpectType>(
   value: any,
   except: T,
@@ -143,7 +155,7 @@ export function internalCheckType(
 
     case "object": {
       if (expect !== null) {
-        if (expect instanceof Array) return checkTuple(value, expect, opts);
+        if (expect instanceof Array) return checkUnion(value, expect, opts);
         const checker = isChecker(expect);
 
         if (checker) {
@@ -154,7 +166,7 @@ export function internalCheckType(
           }
           return checker[TYPE_CHECK_FN](value, opts);
         } else if (getBasicType(value) === "object") {
-          return checkObject(value, expect as ExpectTypeObject, opts);
+          return checkObject(value, expect as ExpectObjectType, opts);
         } else {
           return {
             error: createTypeErrorDesc("object", getBasicType(value)),

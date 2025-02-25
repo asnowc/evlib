@@ -181,7 +181,7 @@ function eachLinkedList<T extends object>(link?: SinglyLinkList<T>): Generator<S
 const ECMA_VERSION: number;
 
 // @public
-function enumType<T>(expects: T[]): TypeCheckFn<T>;
+function enumType<T>(expects: T[]): CustomChecker<T>;
 
 // @public (undocumented)
 const EventTrigger: new <T>() => EventTrigger<T>;
@@ -192,16 +192,16 @@ const EventTrigger: new <T>() => EventTrigger<T>;
 type EventTrigger<T> = Listenable<T> & EventTriggerController<T>;
 
 // @public
-type ExpectType<T = unknown> = TypeCheckFn<T> | TypeChecker<T> | BasicType | ExpectTypeObject | ExpectTypeTuple;
-
-// @public
-type ExpectTypeObject = {
+type ExpectObjectType = {
     [key: string | number]: ExpectType;
     [key: symbol]: any;
 };
 
 // @public
-type ExpectTypeTuple = ExpectType[];
+type ExpectType<T = unknown> = TypeCheckFn<T> | TypeChecker<T> | BasicType | ExpectObjectType | ExpectUnionType;
+
+// @public (undocumented)
+type ExpectUnionType = ExpectType[];
 
 // @public (undocumented)
 type ExponentFormat = {
@@ -226,15 +226,26 @@ function getLinkedListByIndex<T extends object>(link: SinglyLinkList<T>, index: 
 function groupObject<T extends {}>(data: T[], key: keyof T): Obj<T>;
 
 // Warning: (ae-forgotten-export) The symbol "InferBaseMap" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "InferTuple" needs to be exported by the entry point index.d.ts
 //
 // @public
-type InferExpect<T> = T extends string ? InferBaseMap[T] : T extends any[] ? InferTuple<T> : T extends TypeCheckFn<infer E> ? E : T extends TypeChecker<infer E> ? E : T extends object ? {
+type InferExpect<T> = T extends string ? InferBaseMap[T] : T extends any[] ? InferExpectUnion<T> : T extends TypeCheckFn<infer E> ? E : T extends TypeChecker<infer E> ? E : T extends object ? {
     [key in keyof T]: InferExpect<T[key]>;
 } : unknown;
 
+// @public (undocumented)
+type InferExpectTuple<T extends any[]> = T extends [infer P, ...infer Q] ? [InferExpect<P>, ...InferExpectTuple<Q>] : T;
+
+// @public (undocumented)
+type InferExpectUnion<T extends any[]> = T extends [infer P, ...infer Q] ? InferExpect<P> | InferExpectUnion<Q> : never;
+
 // @public
-function instanceOf<T extends new (...args: any[]) => any>(obj: T): TypeCheckFn<InstanceType<T>>;
+function instanceOf<T extends new (...args: any[]) => any>(obj: T): CustomChecker<InstanceType<T>>;
+
+// @public
+function integer(min?: number, max?: number): CustomChecker<number>;
+
+// @public
+function integer(option?: NumberCheckOption): CustomChecker<number>;
 
 // @alpha (undocumented)
 class LengthByteParser extends ByteParser<Uint8Array> {
@@ -326,8 +337,15 @@ class NotImplementedError extends Error {
     constructor(type?: string);
 }
 
+// @public (undocumented)
+type NumberCheckOption = {
+    min?: number;
+    max?: number;
+    acceptString?: boolean;
+};
+
 // @public
-function numberRange(min: number, max?: number): TypeCheckFn<number>;
+function numberRange(min: number, max?: number): CustomChecker<number>;
 
 // @public
 class NumericalRangeError extends RangeError {
@@ -500,6 +518,9 @@ class StepsByteParser<T> extends ByteParser<T> {
 }
 
 // @public
+function stringMatch(regexp: RegExp): CustomChecker<number>;
+
+// @public
 interface TerminablePromise<T> extends Promise<T> {
     // (undocumented)
     abort(reason?: Error): void;
@@ -512,6 +533,9 @@ class TimeoutError extends Error {
 
 // @public
 function toErrorStr(err?: any, showStack?: boolean): string;
+
+// @public
+function tuple<T extends ExpectType[]>(expect: T): CustomChecker<InferExpectTuple<T>>;
 
 // @public (undocumented)
 const TYPE_CHECK_FN: unique symbol;
@@ -565,9 +589,6 @@ type TypeErrorDesc_2 = string | {
 };
 
 // @public
-function union<T extends ExpectType[]>(types: T): TypeCheckFn<InferExpect<T[number]>> | TypeChecker<InferExpect<T[number]>>;
-
-// @public
 class UniqueKeyMap<T = any> extends Map<number, T> {
     constructor(maxSize: number);
     allocKeySet(data: T, safe?: undefined | false): number;
@@ -593,30 +614,35 @@ class UniqueKeyMap<T = any> extends Map<number, T> {
 
 declare namespace validator {
     export {
-        checkType,
-        verifyType,
-        TypeCheckResult,
-        getBasicType,
-        getClassType,
-        numberRange,
-        instanceOf,
-        union,
-        enumType,
-        optional,
-        array,
-        record,
         TYPE_CHECK_FN,
         TypeChecker,
         TypeErrorDesc_2 as TypeErrorDesc,
         TypeCheckFn,
         CustomChecker,
         BasicType,
-        ExpectTypeTuple,
-        ExpectTypeObject,
+        ExpectUnionType,
+        ExpectObjectType,
         ExpectType,
         TypeCheckOptions,
         TypeCheckFnCheckResult,
-        InferExpect
+        InferExpect,
+        InferExpectUnion,
+        getBasicType,
+        getClassType,
+        checkType,
+        verifyType,
+        TypeCheckResult,
+        array,
+        optional,
+        record,
+        tuple,
+        instanceOf,
+        enumType,
+        InferExpectTuple,
+        stringMatch,
+        numberRange,
+        integer,
+        NumberCheckOption
     }
 }
 

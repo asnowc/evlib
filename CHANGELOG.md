@@ -1,14 +1,19 @@
-## 2.x
+## 3.x
 
-BREAKING CHANGE:
+### 3.0.0
 
-math: 移除 autoUnit
+##### math
 
-core:
-移除 errors 子包
+BREAKING: 移除 autoUnit
 
-typeChecker 直接移到 validator 包
-并移除 instanceof.typeChecker.instanceof, typeChecker.arrayType, typeChecker.maybeNull, typeChecker.maybeNullish
+##### core
+
+BREAKING: 移除 errors 子包
+BREAKING: typeChecker 直接移到 validator 包
+
+##### validator
+
+feat: 新增 validator 包
 
 之前
 
@@ -23,11 +28,33 @@ const { numberRange } = typeChecker;
 import { numberRange, checkType } from "evlib/validator";
 ```
 
-tpeChecker.optional 签名更改
+BREAKING: 移除之前的 instanceof.typeChecker.instanceof, typeChecker.arrayType, typeChecker.maybeNull, typeChecker.maybeNullish, typeChecker.union
+BREAKING: tpeChecker.optional 签名更改
 
 ```ts
 type Optional = (expectType: ExpectType, defaultValue?: any) => TypeCheckResult; // 之前
 type Optional = (expectType: ExpectType, mode?: undefined | null | "nullish", defaultValue?: any) => TypeCheckResult; //现在
 ```
 
-data_struct: 移除 UniqueKeyMap.allowKeySet()
+BREAKING: 数组用于断言联合类型
+之前
+
+```ts
+checkType(2, typeChecker.union(["number", "string"]));
+```
+
+现在
+
+```ts
+checkType(2, ["number", "string"]);
+```
+
+feat: 新增 tuple() 用于断言元组
+
+##### data_struct
+
+BREAKING: 移除 UniqueKeyMap.allowKeySet()
+
+```
+
+```
