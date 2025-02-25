@@ -16,7 +16,8 @@ interface OptionalChecker {
   object: CustomChecker<object | undefined>;
   function: CustomChecker<((...args: any[]) => any) | undefined>;
 }
-/** 生成可选类型检测器
+/**
+ * 断言目标是可选类型
  * @public
  */
 export const optional: OptionalChecker = /*  @__NO_SIDE_EFFECTS__ */ function optional<

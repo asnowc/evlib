@@ -2,7 +2,7 @@ import { CustomChecker, TypeCheckFn } from "../type.ts";
 import { createTypeErrorDesc } from "../../core/errors.ts";
 
 /**
- * 生成数字范围检测函数
+ * 断言目标是数字且在指定的范围内
  * @public
  */
 export function numberRange(min: number, max = Infinity): CustomChecker<number> {

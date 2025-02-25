@@ -8,7 +8,7 @@ export type InferExpectTuple<T extends any[]> = T extends [infer P, ...infer Q]
   ? [InferExpect<P>, ...InferExpectTuple<Q>]
   : T;
 
-/** @public */
+/** @public 断言目标匹配给定元组类型 */
 export function tuple<T extends ExpectType[]>(expect: T): CustomChecker<InferExpectTuple<T>> {
   const checkFn: TypeCheckFn<any> = function (value, option) {
     if (!Array.isArray(value)) return { error: createTypeErrorDesc("Array", getClassType(value)) };
@@ -20,7 +20,7 @@ export function tuple<T extends ExpectType[]>(expect: T): CustomChecker<InferExp
 }
 
 /**
- * 生成实例类型检测函数
+ * 断言目标是给定类的实例
  * @public
  */
 export function instanceOf<T extends new (...args: any[]) => any>(
@@ -36,7 +36,7 @@ export function instanceOf<T extends new (...args: any[]) => any>(
 }
 
 /**
- * 检测枚举类型
+ * 断言目标等于给定的枚举
  * @public
  */
 export function enumType<T>(expects: T[]): CustomChecker<T> {

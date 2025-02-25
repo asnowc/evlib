@@ -35,7 +35,7 @@ interface RecordChecker {
   function: CustomChecker<Record<string, (...args: any[]) => any>>;
 }
 /**
- * 生成可同类属性检测器
+ * 断言目标是字典类型
  * @public
  */
 export const record: RecordChecker = /*  @__NO_SIDE_EFFECTS__ */ function record<

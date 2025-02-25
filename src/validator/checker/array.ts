@@ -28,7 +28,7 @@ interface ArrayChecker {
 }
 
 /**
- * 生成可同类数组检测器
+ * 断言目标是数组且元素为给定的类型
  * @public
  */
 export const array: ArrayChecker = /*  @__NO_SIDE_EFFECTS__ */ function array<
