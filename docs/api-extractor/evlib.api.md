@@ -152,7 +152,7 @@ declare namespace data_struct {
 // @public
 class DataCollector<T, R = void> {
     // (undocumented)
-    [Symbol.asyncIterator](): AsyncGenerator<T, R, undefined>;
+    [Symbol.asyncIterator](): this;
     close(data: R): void;
     // (undocumented)
     next(): Promise<IteratorResult<T, R>>;

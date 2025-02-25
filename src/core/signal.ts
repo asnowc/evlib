@@ -1,5 +1,4 @@
 import { PruneAbortSignal } from "./internal.ts";
-
 class ListenSignal {
   constructor(
     private _listener: (this: PruneAbortSignal) => void,
@@ -13,7 +12,7 @@ class ListenSignal {
   dispose() {
     this.signal?.removeEventListener("abort", this._listener);
   }
-  //@ts-expect-error 当 lib 改为 es2022 后可以移除注释
+  //@ts-ignore 需要 esnext
   [Symbol.dispose] = this.dispose;
 }
 /**
@@ -28,7 +27,7 @@ export function listenSignal(
   signal: PruneAbortSignal | undefined,
   listener: (this: PruneAbortSignal) => void,
 ): {
-  //@ts-expect-error 当 lib 改为 es2022 后可以移除注释
+  //@ts-ignore 需要 esnext
   [Symbol.dispose](): void;
   dispose(): void;
 } {
