@@ -1,0 +1,21 @@
+name: Check API
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  check-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Build
+        run: pnpm run ci:build
+      - name: Check API
+        run: pnpm run ci:api-extract

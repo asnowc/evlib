@@ -25,7 +25,6 @@ jobs:
       - name: Unit test
         run: pnpm run ci:test
   check:
-    if: ${{github.ref_name=='main'}}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -36,7 +35,9 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-      - name: Build
-        run: pnpm run ci:build
-      - name: Check API
-        run: pnpm run ci:api-extract
+      - name: Check type
+        run: deno task check-type-src
+      - name: Check type
+        run: deno task check-type-test
+      - name: Check format
+        run: deno task check-fmt

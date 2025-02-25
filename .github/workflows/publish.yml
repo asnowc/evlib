@@ -23,8 +23,6 @@ jobs:
           run_install: true
       - name: Build
         run: pnpm run ci:build
-      - name: Check Api
-        run: pnpm run ci:api-extract
       - name: Publish-Jsr dry-run
         run: npx jsr publish --dry-run
       - name: Publish
