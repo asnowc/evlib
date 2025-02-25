@@ -9,7 +9,7 @@ test("使用自定义函数判断", function () {
   ).toCheckFail({ i: "sd" });
   expect(
     checkType(obj, { s: "number", i: (a: any) => undefined }),
-  ).toCheckPass();
+  ).checkPass();
 });
 test("转换值", function () {
   const obj = 10;

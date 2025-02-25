@@ -3,14 +3,14 @@ import { checkType } from "evlib/validator";
 import "./assests/type_check.assert.ts";
 describe("基础类型检测", function () {
   it("null", function () {
-    expect(checkType(null, "null")).toCheckPass();
+    expect(checkType(null, "null")).checkPass();
     expect(checkType(null, {})).toCheckFail();
   });
   it("object", function () {
-    expect(checkType({}, "object")).toCheckPass();
+    expect(checkType({}, "object")).checkPass();
   });
   it("symbol", function () {
-    expect(checkType(Symbol(), "symbol")).toCheckPass();
+    expect(checkType(Symbol(), "symbol")).checkPass();
   });
 });
 describe("检测对象", function () {
@@ -18,7 +18,7 @@ describe("检测对象", function () {
     let obj = { s: 3, i: "s", q: undefined };
     expect(
       checkType(obj, { s: "number", i: "string", q: "undefined" }),
-    ).toCheckPass();
+    ).checkPass();
     expect(obj).toEqual({ s: 3, i: "s", q: undefined });
   });
   it("移除多余", function () {
@@ -28,7 +28,7 @@ describe("检测对象", function () {
       { s: "number", i: "string" },
       { policy: "delete" },
     );
-    expect(checkRes).toCheckPass();
+    expect(checkRes).checkPass();
     expect(obj).toEqual({ s: 3, i: "s" });
   });
   it("仅匹配", function () {
@@ -38,7 +38,7 @@ describe("检测对象", function () {
       { s: "number", i: "string" },
       { policy: "delete" },
     );
-    expect(checkRes).toCheckPass();
+    expect(checkRes).checkPass();
     expect(obj).toEqual({ s: 3, i: "s", q: undefined });
   });
   it("多余字段检测", function () {
@@ -96,7 +96,7 @@ describe("检测对象", function () {
   });
   it("判断null类型", function () {
     let res = checkType({ a: null }, { a: "null" });
-    expect(res).toCheckPass();
+    expect(res).checkPass();
   });
   it("传入错误预期类型", function () {
     let res = checkType({ a: 3 }, { a: "D" } as any);
@@ -105,7 +105,7 @@ describe("检测对象", function () {
 });
 describe("元组检测", function () {
   it("全匹配", function () {
-    expect(checkType([1, "d"], ["number", "string"])).toCheckPass();
+    expect(checkType([1, "d"], ["number", "string"])).checkPass();
 
     expect(checkType([1, "d"], ["number", "number"])).toCheckFailWithField([
       "1",
@@ -122,14 +122,14 @@ describe("元组检测", function () {
     let val = [1, "d", null];
     expect(
       checkType(val, ["number", "string"], { policy: "pass" }),
-    ).toCheckPass();
+    ).checkPass();
     expect(val).toEqual([1, "d", null]);
   });
   it("移除多余", function () {
     let val = [1, "d", null];
     expect(
       checkType(val, ["number", "string"], { policy: "delete" }),
-    ).toCheckPass();
+    ).checkPass();
     expect(val).toEqual([1, "d"]);
   });
 });
@@ -139,7 +139,7 @@ describe("嵌套", function () {
       { s: 3, i: { q: "s", c: undefined } },
       { s: "number", i: { q: "string", c: "undefined" } },
     );
-    expect(res).toCheckPass();
+    expect(res).checkPass();
   });
   it("删除多余", function () {
     let obj = { s: 3, i: { q: "s", y: null, c: undefined }, b: 6 };
@@ -148,7 +148,7 @@ describe("嵌套", function () {
       { s: "number", i: { q: "string", c: "undefined" } },
       { policy: "delete" },
     );
-    expect(res).toCheckPass();
+    expect(res).checkPass();
     expect(obj).toEqual({ s: 3, i: { q: "s", c: undefined } });
   });
 });

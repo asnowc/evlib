@@ -94,9 +94,10 @@ type TypeCheckError = {
   replace?: undefined;
 };
 type TypeCheckReplace<T> = {
+  error?: undefined;
   /** 要替换的值 */
   value: T;
-  replace: true;
+  replace: boolean;
 };
 /** @public */
 export type TypeCheckFnCheckResult<T = unknown> =

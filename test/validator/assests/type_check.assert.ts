@@ -1,7 +1,6 @@
-import type { Assertion, AsymmetricMatchersContaining } from "vitest";
 import { expect } from "vitest";
 interface CustomMatchers<R = unknown> {
-  toCheckPass(): R;
+  checkPass(): R;
   toCheckFail(errDesc?: any): R;
   toCheckFailWithField(fields: string[]): R;
 }
@@ -15,11 +14,11 @@ function passMsg() {
 }
 const passRes = { pass: true, message: passMsg };
 expect.extend({
-  toCheckPass(received: any) {
+  checkPass(received: any) {
     if (typeof received !== "object" || received === null) {
       return {
         message() {
-          return "参数应为对象";
+          return "预期返回对象，实际返回" + typeof received;
         },
         pass: false,
       };
@@ -27,16 +26,16 @@ expect.extend({
     if (this.isNot) {
       return {
         pass: received.error === undefined,
-        message: () => received.error,
-        actual: "预期检测通过",
-        expected: received.error,
+        message: () => "预期检测不通过",
+        actual: "检测通过",
+        expected: "检测不通过",
       };
     } else {
       return {
         pass: received.error === undefined,
-        message: () => received.error,
+        message: () => "预期检测通过",
         actual: received.error,
-        expected: "预期检测通过",
+        expected: "检测通过",
       };
     }
   },
@@ -75,6 +74,7 @@ expect.extend({
     }
   },
 });
+
 function checkRes(res: any) {
   if (res === undefined || (typeof res === "object" && res !== null)) return;
   return {
