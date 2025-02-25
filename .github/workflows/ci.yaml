@@ -31,10 +31,9 @@ jobs:
       - uses: pnpm/action-setup@v4
         with:
           run_install: true
-      - uses: actions/setup-node@v4
+      - uses: denoland/setup-deno@v2
         with:
-          node-version: 22
-          cache: pnpm
+          deno_version: v2.x
       - name: Check type
         run: deno task check-type-src
       - name: Check type
