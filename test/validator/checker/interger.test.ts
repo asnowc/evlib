@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { checkType, integer } from "evlib/validator";
-import "./assests/type_check.assert.ts";
+import "../assests/type_check.assert.ts";
 
 test("integer", function () {
   expect(checkType(NaN, integer())).not.checkPass();

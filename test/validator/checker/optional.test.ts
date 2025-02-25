@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { checkType, optional, verifyType } from "evlib/validator";
-import "./assests/type_check.assert.ts";
+import "../assests/type_check.assert.ts";
 
 describe("自定义可选", function () {
   test("不存在的可选", function () {

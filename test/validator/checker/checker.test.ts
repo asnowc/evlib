@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
-import { checkType, enumType, instanceOf, integer, numberRange, stringMatch, union } from "evlib/validator";
-import "./assests/type_check.assert.ts";
+import { checkType, enumType, instanceOf, numberRange, union } from "evlib/validator";
+import "../assests/type_check.assert.ts";
 
 test("union", function () {
   const res = checkType(

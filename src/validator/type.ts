@@ -91,6 +91,7 @@ export interface TypeCheckOptions {
 }
 type TypeCheckError = {
   error: TypeErrorDesc;
+  value?: undefined;
   replace?: undefined;
 };
 type TypeCheckReplace<T> = {

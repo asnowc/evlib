@@ -39,19 +39,19 @@ expect.extend({
       };
     }
   },
-  checkFail(received: { error: any }, expect) {
+  checkFail(received: { error: any }, expectError) {
     const isResult = withError(received);
     if (isResult) return isResult;
-    if (expect === undefined) return passRes;
+    if (expectError === undefined) return passRes;
     try {
-      expect(received.error).toEqual(expect);
+      expect(received.error).toEqual(expectError);
       return passRes;
     } catch (error) {
       return {
         pass: false,
         message: () => `预期检测失败`,
         actual: received.error ?? null,
-        expected: expect,
+        expected: expectError,
       };
     }
   },
