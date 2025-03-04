@@ -37,8 +37,9 @@ export type TypeCheckResult<T = unknown> = {
 export function verifyType<T extends ExpectType>(
   input: any,
   expect: T,
+  option?: TypeCheckOptions,
 ): InferExpect<T> {
-  const { value, error } = checkType(input, expect);
+  const { value, error } = checkType(input, expect, option);
   if (error) throw new Error("参数校验不通过", { cause: error });
   return value;
 }

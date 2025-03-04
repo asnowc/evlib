@@ -647,7 +647,7 @@ declare namespace validator {
 }
 
 // @public
-function verifyType<T extends ExpectType>(input: any, expect: T): InferExpect<T>;
+function verifyType<T extends ExpectType>(input: any, expect: T, option?: TypeCheckOptions): InferExpect<T>;
 
 // @public
 interface VoidFn {

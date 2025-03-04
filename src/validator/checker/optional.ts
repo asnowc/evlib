@@ -31,7 +31,7 @@ export const optional: OptionalChecker = /*  @__NO_SIDE_EFFECTS__ */ function op
     return {
       optional: true,
       [TYPE_CHECK_FN](val, checkOpts) {
-        if (val === undefined) {
+        if (val === undefined || val === null) {
           if (defaultValue !== undefined) return { value: defaultValue, replace: true };
           return;
         }
