@@ -23,7 +23,10 @@ declare namespace async {
         LengthByteParser,
         StepsByteParser,
         PromiseConcurrencyOption,
-        PromiseConcurrency
+        PromiseConcurrency,
+        ResourceManager,
+        ResourcePool,
+        PoolOption
     }
 }
 
@@ -436,6 +439,11 @@ function pickObjectKey<P extends {}>(obj: Object, keys: (keyof P)[] | Set<keyof 
 // @public (undocumented)
 function pickObjectKey(obj: Object, keys: string[] | Set<any>, target?: Object): Record<string, unknown>;
 
+// @public (undocumented)
+type PoolOption = {
+    maxCount?: number;
+};
+
 // @public
 class PromiseConcurrency {
     constructor(config: PromiseConcurrencyOption);
@@ -484,6 +492,35 @@ const record: RecordChecker;
 
 // @public
 function removeUndefinedKey<T extends Obj>(obj: T, deep?: boolean): T;
+
+// @public (undocumented)
+interface ResourceManager<T> {
+    // (undocumented)
+    create(): Promise<T>;
+    // (undocumented)
+    dispose(conn: T): void;
+}
+
+// @public
+class ResourcePool<T> {
+    constructor(handler: ResourceManager<T>, option?: PoolOption);
+    checkTimeout(idleTimeout: number, minCount?: number): void;
+    // (undocumented)
+    close(force?: boolean, err?: Error): Promise<void>;
+    get closed(): boolean;
+    // (undocumented)
+    static defaultMaxCount: number;
+    // (undocumented)
+    get(): Promise<T>;
+    get idleCount(): number;
+    maxCount: number;
+    // (undocumented)
+    release(conn: T): void;
+    // (undocumented)
+    remove(conn: T): void;
+    get totalCount(): number;
+    get waitingCount(): number;
+}
 
 // @public (undocumented)
 function retainDecimalsFloor(num: number, raids?: number): number;
