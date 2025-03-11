@@ -1,6 +1,6 @@
 {
   "name": "@asn/evlib",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "tasks": {
     "doc:gen": "deno doc --output=temp --html src/core/mod.ts src/async.ts src/data_struct.ts src/math.ts src/object.ts",
     "check-type-src": { "command": "deno check --config src/deno.json src", "description": "检查 src 目录下的类型" },

@@ -555,7 +555,7 @@ class StepsByteParser<T> extends ByteParser<T> {
 }
 
 // @public
-function stringMatch(regexp: RegExp): CustomChecker<number>;
+function stringMatch(regexp: RegExp): CustomChecker<string>;
 
 // @public
 interface TerminablePromise<T> extends Promise<T> {
