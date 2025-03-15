@@ -2,7 +2,12 @@ import { internalCheckType } from "../check_base.ts";
 import { CustomChecker, ExpectType, InferExpect, TYPE_CHECK_FN } from "../type.ts";
 
 interface OptionalChecker {
-  <T extends ExpectType>(type: T, mode?: undefined | null | "nullish"): CustomChecker<InferExpect<T> | undefined>;
+  <T extends ExpectType>(type: T, mode?: undefined): CustomChecker<InferExpect<T> | undefined>;
+  <T extends ExpectType>(type: T, mode: null): CustomChecker<InferExpect<T> | null>;
+  <T extends ExpectType>(
+    type: T,
+    mode?: undefined | null | "nullish",
+  ): CustomChecker<InferExpect<T> | undefined | null>;
   <T extends ExpectType, Def = T>(
     type: T,
     mode: undefined | null | "nullish",
