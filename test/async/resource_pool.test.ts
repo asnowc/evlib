@@ -140,3 +140,90 @@ describe("连接中途断开", function () {
     expect(resourceManage.dispose).not.toBeCalled();
   });
 });
+
+describe("空闲连接超时", function () {
+  test("空闲连接在超时后被移除", async function ({ resourceManage }) {
+    const pool = new ResourcePool(resourceManage, { idleTimeout: 100 });
+    const conn = await pool.get();
+    pool.release(conn);
+
+    expect(pool.totalCount).toBe(1);
+    expect(pool.idleCount).toBe(1);
+
+    await new Promise((resolve) => setTimeout(resolve, 150));
+
+    expect(pool.totalCount).toBe(0);
+    expect(pool.idleCount).toBe(0);
+    expect(resourceManage.dispose).toBeCalledTimes(1);
+  });
+
+  test("多个空闲连接在超时后被移除", async function ({ resourceManage }) {
+    const pool = new ResourcePool(resourceManage, { idleTimeout: 100 });
+    const conn1 = await pool.get();
+    const conn2 = await pool.get();
+    pool.release(conn1);
+    pool.release(conn2);
+
+    expect(pool.totalCount).toBe(2);
+    expect(pool.idleCount).toBe(2);
+
+    await new Promise((resolve) => setTimeout(resolve, 150));
+
+    expect(pool.totalCount).toBe(0);
+    expect(pool.idleCount).toBe(0);
+    expect(resourceManage.dispose).toBeCalledTimes(2);
+  });
+
+  test("空闲连接超时后再次获取新连接", async function ({ resourceManage }) {
+    const pool = new ResourcePool(resourceManage, { idleTimeout: 100 });
+    const conn = await pool.get();
+    pool.release(conn);
+
+    await new Promise((resolve) => setTimeout(resolve, 150));
+
+    const newConn = await pool.get();
+    expect(pool.totalCount).toBe(1);
+    expect(pool.idleCount).toBe(0);
+    expect(resourceManage.create).toBeCalledTimes(2);
+  });
+
+  test("空闲连接未超时前不会被移除", async function ({ resourceManage }) {
+    const pool = new ResourcePool(resourceManage, { idleTimeout: 200 });
+    const conn = await pool.get();
+    pool.release(conn);
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    expect(pool.totalCount).toBe(1);
+    expect(pool.idleCount).toBe(1);
+    expect(resourceManage.dispose).not.toBeCalled();
+  });
+});
+
+describe("使用次数上限", function () {
+  test("连接使用次数超过上限后被移除", async function ({ resourceManage }) {
+    const pool = new ResourcePool(resourceManage, { usageLimit: 3 });
+
+    for (let i = 0; i < 3; i++) {
+      const conn = await pool.get();
+      pool.release(conn);
+    }
+
+    expect(pool.totalCount).toBe(0);
+    expect(pool.idleCount).toBe(0);
+    expect(resourceManage.dispose).toBeCalledTimes(1);
+  });
+
+  test("连接使用次数未超过上限不会被移除", async function ({ resourceManage }) {
+    const pool = new ResourcePool(resourceManage, { usageLimit: 4 });
+
+    for (let i = 0; i < 3; i++) {
+      const conn = await pool.get();
+      pool.release(conn);
+    }
+
+    expect(pool.totalCount).toBe(1);
+    expect(pool.idleCount).toBe(1);
+    expect(resourceManage.dispose).not.toBeCalled();
+  });
+});
