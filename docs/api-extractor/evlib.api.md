@@ -442,6 +442,8 @@ function pickObjectKey(obj: Object, keys: string[] | Set<any>, target?: Object):
 // @public (undocumented)
 type PoolOption = {
     maxCount?: number;
+    idleTimeout?: number;
+    usageLimit?: number;
 };
 
 // @public
@@ -510,15 +512,16 @@ class ResourcePool<T> {
     get closed(): boolean;
     // (undocumented)
     static defaultMaxCount: number;
+    freeTimeout: number;
     // (undocumented)
     get(): Promise<T>;
     get idleCount(): number;
     maxCount: number;
     // (undocumented)
     release(conn: T): void;
-    // (undocumented)
     remove(conn: T): void;
     get totalCount(): number;
+    usageLimit: number;
     get waitingCount(): number;
 }
 
