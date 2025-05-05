@@ -1,6 +1,7 @@
-import { describe, expect } from "vitest";
+import { describe, expect, vi } from "vitest";
 import { MockConn, test } from "./__mock.ts";
 import { ResourcePool } from "evlib/async";
+import { updateSetTimeout } from "../../src/core/internal.ts";
 
 test("count", async function ({ pool }) {
   const conn = await pool.get();
@@ -197,6 +198,22 @@ describe("空闲连接超时", function () {
     expect(pool.totalCount).toBe(1);
     expect(pool.idleCount).toBe(1);
     expect(resourceManage.dispose).not.toBeCalled();
+  });
+  test("关闭连接池，应直接关闭计时器", async function ({ resourceManage }) {
+    vi.useFakeTimers();
+    updateSetTimeout(setTimeout, clearTimeout);
+
+    const pool = new ResourcePool(resourceManage, { idleTimeout: 100 });
+    const conn = await pool.get();
+    pool.release(conn);
+
+    expect(vi.getTimerCount()).toBe(1);
+    await pool.close();
+    expect(vi.getTimerCount(), "计算器已被清空").toBe(0);
+
+    expect(pool.totalCount).toBe(0);
+    expect(pool.idleCount).toBe(0);
+    expect(resourceManage.dispose).toBeCalledTimes(1);
   });
 });
 

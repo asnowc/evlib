@@ -1,4 +1,4 @@
-import { setTimeout } from "../core/internal.ts";
+import { clearTimeout, setTimeout } from "../core/internal.ts";
 
 /** @public */
 export interface ResourceManager<T> {
@@ -99,10 +99,13 @@ export class ResourcePool<T> {
     }
   }
   #onTimeoutCheck = () => {
-    if (this.freeTimeout <= 0) return;
+    if (this.freeTimeout <= 0) {
+      this.#timer = undefined;
+      return;
+    }
     this.checkTimeout(this.freeTimeout);
-    if (this.#free.length) {
-      setTimeout(this.#onTimeoutCheck, this.freeTimeout);
+    if (this.#free.length && this.freeTimeout) {
+      this.#timer = setTimeout(this.#onTimeoutCheck, this.freeTimeout);
     }
   };
 
@@ -118,6 +121,10 @@ export class ResourcePool<T> {
   #closedError?: Error;
   close(force: boolean = false, err: Error = new Error("Pool is closed")): Promise<void> {
     if (this.#closedError) return Promise.resolve();
+    if (this.#timer) {
+      clearTimeout(this.#timer);
+      this.#timer = undefined;
+    }
     this.#closedError = err;
     for (const item of this.#queue) {
       item.reject(err);

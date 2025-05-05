@@ -15,7 +15,10 @@ interface InitFn {
   setInterval(handler: TimerHandler, timeout?: number, ...args: any[]): number;
   setTimeout(handler: TimerHandler, timeout?: number, ...args: any[]): number;
 }
-
+export function updateSetTimeout(fn: InitFn["setTimeout"], clear: InitFn["clearTimeout"]) {
+  setTimeout = fn;
+  clearTimeout = clear;
+}
 type TimerHandler = string | Function;
 
 function unimplemented() {
