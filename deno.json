@@ -4,7 +4,7 @@
   "tasks": {
     "pack": "deno pack --allow-dirty --no-source-maps",
     "build": "deno transpile  src/**/*.ts --outdir dist --declaration",
-    "test:coverage": "deno x vitest --coverage --ui",
+    "test:coverage": "deno x vitest run --coverage",
     "ci:test": "deno x vitest run",
     "publish:jsr-try": "deno publish --allow-dirty --dry-run",
     "doc:gen": "deno doc --output=temp --html src/core/mod.ts src/async.ts src/data_struct.ts src/math.ts src/object.ts",
@@ -29,6 +29,7 @@
   },
   "imports": {
     "@deno/vite-plugin": "npm:@deno/vite-plugin@^2.0.3",
+    "@vitest/coverage-v8": "npm:@vitest/coverage-v8@5.0.1",
     "evlib": "./src/core/mod.ts",
     "evlib/async": "./src/async.ts",
     "evlib/data_struct": "./src/data_struct.ts",

@@ -2,9 +2,38 @@
   "version": "5",
   "specifiers": {
     "npm:@deno/vite-plugin@^2.0.3": "2.0.3_vite@8.3.0",
-    "npm:vitest@^5.0.1": "5.0.1_vite@8.3.0"
+    "npm:@vitest/coverage-v8@5.0.1": "5.0.1_vitest@5.0.1_@vitest+ui@5.0.1",
+    "npm:vitest@^5.0.1": "5.0.1_@vitest+coverage-v8@5.0.1_@vitest+ui@5.0.1"
   },
   "npm": {
+    "@babel/helper-string-parser@7.29.7": {
+      "integrity": "sha512-Pb5ijPrZ89GDH8223L4UP8i6QApWxs04RbPQJTeWDV0/keR2E36MeKnyr6LYmUUvqRRI+Iv87SuF1W6ErINzYw==",
+      "tarball": "https://registry.npmmirror.com/@babel/helper-string-parser/-/helper-string-parser-7.29.7.tgz"
+    },
+    "@babel/helper-validator-identifier@7.29.7": {
+      "integrity": "sha512-qehxGkRj55h/ff8EMaJ+cYhyaKlHIxqYDn682wQD7RNp9UujOQsHog2uS0r2vzr4pW+sXf90NeeayjcNaX3fFg==",
+      "tarball": "https://registry.npmmirror.com/@babel/helper-validator-identifier/-/helper-validator-identifier-7.29.7.tgz"
+    },
+    "@babel/parser@7.29.8": {
+      "integrity": "sha512-E8lTAYNB1KW+FH+VGJuZM1ioAx2E6oVlvQFRrf5P8ZZmsiJXYAD9vTFV7yyEURNzgh1dFqMZuO6tUwcARbqFCA==",
+      "dependencies": [
+        "@babel/types"
+      ],
+      "bin": true,
+      "tarball": "https://registry.npmmirror.com/@babel/parser/-/parser-7.29.8.tgz"
+    },
+    "@babel/types@7.29.8": {
+      "integrity": "sha512-Vj1jF3cPfxg7OAfoI7QnVKLoILlm2JF9pnVHrX8qx7AHMiYWT+NDAA7jChlNgRS4WTLc/fD1lXLmPixluj+3Gg==",
+      "dependencies": [
+        "@babel/helper-string-parser",
+        "@babel/helper-validator-identifier"
+      ],
+      "tarball": "https://registry.npmmirror.com/@babel/types/-/types-7.29.8.tgz"
+    },
+    "@bcoe/v8-coverage@1.0.2": {
+      "integrity": "sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==",
+      "tarball": "https://registry.npmmirror.com/@bcoe/v8-coverage/-/v8-coverage-1.0.2.tgz"
+    },
     "@deno/vite-plugin@2.0.3_vite@8.3.0": {
       "integrity": "sha512-TbIawVRFqIfshSa4CYEPMgLbEIKHg+WXymWvvwlsyct1X8tG4O1OrQldvU/faw6bw7NBCyxVYdT4iIv93jQSig==",
       "dependencies": [
@@ -62,6 +91,10 @@
     "@oxc-project/types@0.149.0": {
       "integrity": "sha512-Efcc+iF0j3Bf67YjEqIqWXbX5XddXoK/Mw4K1/JuXwRCZ8N16VR7iT23nlCc9XrveFVh/E5Rqs2StT0V8v9LdA==",
       "tarball": "https://registry.npmmirror.com/@oxc-project/types/-/types-0.149.0.tgz"
+    },
+    "@polka/url@1.0.0-next.29": {
+      "integrity": "sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==",
+      "tarball": "https://registry.npmmirror.com/@polka/url/-/url-1.0.0-next.29.tgz"
     },
     "@rolldown/binding-android-arm-eabi@1.2.8": {
       "integrity": "sha512-tN5aztYkKCte4i5SIrrz5yK/HMjEuCqCSCJa418jOV8tZ1cBY3YF2otxB1ktPxzsLA1BeTqwapK0bfjxNvHJVw==",
@@ -173,6 +206,32 @@
       "integrity": "sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==",
       "tarball": "https://registry.npmmirror.com/@types/estree/-/estree-1.0.9.tgz"
     },
+    "@vitest/coverage-v8@5.0.1_vitest@5.0.1_@vitest+ui@5.0.1": {
+      "integrity": "sha512-FRC8ACiudC3dI6MTplzRSYWHDRnIv2IPfbzs4FdoJNsMal/35sWV8hwIfV8ZcqzSPy+uXHeMVONt9CEqtOU17w==",
+      "dependencies": [
+        "@bcoe/v8-coverage",
+        "@vitest/istanbul-lib-coverage",
+        "@vitest/istanbul-lib-report",
+        "ast-v8-to-istanbul",
+        "magicast",
+        "obug",
+        "std-env",
+        "tinyrainbow",
+        "vitest"
+      ],
+      "tarball": "https://registry.npmmirror.com/@vitest/coverage-v8/-/coverage-v8-5.0.1.tgz"
+    },
+    "@vitest/istanbul-lib-coverage@1.0.1": {
+      "integrity": "sha512-k3DJZ8LhMBK9NS4SclF1ASD3OgXEWDorbIcPTRDK0/Zae6fRvu+fJRxtFdLfHsa9Y24beCdPnoNZ4LviTNstfA==",
+      "tarball": "https://registry.npmmirror.com/@vitest/istanbul-lib-coverage/-/istanbul-lib-coverage-1.0.1.tgz"
+    },
+    "@vitest/istanbul-lib-report@1.0.1": {
+      "integrity": "sha512-1EOLRfsTMnyAr3+kEAsP4o9dhaDlGPpD7H5iLBBeq//YpNB1VIahkPhB+eRp9N2Dkfw8oySROjE3yf9XDeaIkQ==",
+      "dependencies": [
+        "@vitest/istanbul-lib-coverage"
+      ],
+      "tarball": "https://registry.npmmirror.com/@vitest/istanbul-lib-report/-/istanbul-lib-report-1.0.1.tgz"
+    },
     "@vitest/mocker@5.0.1_vite@8.3.0": {
       "integrity": "sha512-6K1DoBNAPGvuOcSsGA4D6x+5zEEff/KmOOP3uetT2TrGpVfI+HRHRnJJfKi5ib/g1vx8IYHQD8s0pbJz8WQI7Q==",
       "dependencies": [
@@ -187,17 +246,59 @@
       ],
       "tarball": "https://registry.npmmirror.com/@vitest/mocker/-/mocker-5.0.1.tgz"
     },
+    "@vitest/pretty-format@5.0.1": {
+      "integrity": "sha512-6guWwj5d9bguuefTOvJoq387tfpkzSv554YdUEGzjJH2PnnmvzTLQ1UQSuAk5wBFVhf2CUmy/S/palOcb6dmpA==",
+      "dependencies": [
+        "tinyrainbow"
+      ],
+      "tarball": "https://registry.npmmirror.com/@vitest/pretty-format/-/pretty-format-5.0.1.tgz"
+    },
     "@vitest/spy@5.0.1": {
       "integrity": "sha512-rbto/mF/SGERxEgYOek7Xm6B9b+y+mVoo+f4b2LymYO8zM1b7uB5nHuhVMTP2hxdzgxvGiZYGxGIaMvL5y180Q==",
       "tarball": "https://registry.npmmirror.com/@vitest/spy/-/spy-5.0.1.tgz"
+    },
+    "@vitest/ui@5.0.1_vitest@5.0.1_@vitest+coverage-v8@5.0.1_vite@8.3.0": {
+      "integrity": "sha512-7PvQu/X9/pQoHYfNLAYL22qsD4/+sx2k7zpUA7XvjW0sc40r3/r0lGZ2fsEyOHMuO8Q1KjiO1QQVjJdnWUy/WQ==",
+      "dependencies": [
+        "@vitest/utils",
+        "fflate",
+        "flatted",
+        "pathe",
+        "sirv",
+        "tinyrainbow",
+        "vitest"
+      ],
+      "tarball": "https://registry.npmmirror.com/@vitest/ui/-/ui-5.0.1.tgz"
+    },
+    "@vitest/utils@5.0.1": {
+      "integrity": "sha512-E9+yEA+jsfaoxZcUHFzEqUrQcoNh2EwrPT5efIqkUPUwD5Ua2Li9BRWaYeRwvzvdLgTSVrre8oKNeyrfg7KkdQ==",
+      "dependencies": [
+        "@vitest/pretty-format",
+        "convert-source-map",
+        "tinyrainbow"
+      ],
+      "tarball": "https://registry.npmmirror.com/@vitest/utils/-/utils-5.0.1.tgz"
     },
     "assertion-error@2.0.1": {
       "integrity": "sha512-Izi8RQcffqCeNVgFigKli1ssklIbpHnCYc6AknXGYoB6grJqyeby7jv12JUQgmTAnIDnbck1uxksT4dzN3PWBA==",
       "tarball": "https://registry.npmmirror.com/assertion-error/-/assertion-error-2.0.1.tgz"
     },
+    "ast-v8-to-istanbul@1.0.6": {
+      "integrity": "sha512-fvpl29helSO2w/z7utIbrkNXILdrLwDwAMH2I/zPKlGf5244+gf+B4cyS1sANcrPY2h+hWCGSgC8N61s/+AF9A==",
+      "dependencies": [
+        "@jridgewell/trace-mapping",
+        "estree-walker",
+        "js-tokens"
+      ],
+      "tarball": "https://registry.npmmirror.com/ast-v8-to-istanbul/-/ast-v8-to-istanbul-1.0.6.tgz"
+    },
     "chai@6.2.2": {
       "integrity": "sha512-NUPRluOfOiTKBKvWPtSD4PhFvWCqOi0BGStNWs57X9js7XGTprSmFoz5F0tWhR4WPjNeR9jXqdC7/UpSJTnlRg==",
       "tarball": "https://registry.npmmirror.com/chai/-/chai-6.2.2.tgz"
+    },
+    "convert-source-map@2.0.0": {
+      "integrity": "sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==",
+      "tarball": "https://registry.npmmirror.com/convert-source-map/-/convert-source-map-2.0.0.tgz"
     },
     "detect-libc@2.1.2": {
       "integrity": "sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==",
@@ -228,11 +329,23 @@
       ],
       "tarball": "https://registry.npmmirror.com/fdir/-/fdir-6.5.0.tgz"
     },
+    "fflate@0.8.3": {
+      "integrity": "sha512-tbZNuJrLwGUp3zshBtdy4W+ORxZuIh8a5ilyIEQDC5rY1f3U20JMry0Ll3WBzU58EZKsEuJFXhb5gwv8CsPvgA==",
+      "tarball": "https://registry.npmmirror.com/fflate/-/fflate-0.8.3.tgz"
+    },
+    "flatted@3.4.4": {
+      "integrity": "sha512-5+ybhBZANEJxaH3X5evAFatUxLfEHSr7n6kYJ+1Qd0mUqr4eu9gIf6GDbWHf8RJijHrjjO8G+la14SlL2SeS1Q==",
+      "tarball": "https://registry.npmmirror.com/flatted/-/flatted-3.4.4.tgz"
+    },
     "fsevents@2.3.3": {
       "integrity": "sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==",
       "os": ["darwin"],
       "scripts": true,
       "tarball": "https://registry.npmmirror.com/fsevents/-/fsevents-2.3.3.tgz"
+    },
+    "js-tokens@10.0.0": {
+      "integrity": "sha512-lM/UBzQmfJRo9ABXbPWemivdCW8V2G8FHaHdypQaIy523snUjog0W71ayWXTjiR+ixeMyVHN2XcpnTd/liPg/Q==",
+      "tarball": "https://registry.npmmirror.com/js-tokens/-/js-tokens-10.0.0.tgz"
     },
     "lightningcss-android-arm64@1.33.0": {
       "integrity": "sha512-gEpRTalKdosp4Bb8qWtc2iOgE5SeIHlpS1up9bFq2wAyYhl1UdTObYiHe98zEM9SQvSoqQZ1IQD0JNpg3Ml5pg==",
@@ -327,6 +440,19 @@
       ],
       "tarball": "https://registry.npmmirror.com/magic-string/-/magic-string-1.4.1.tgz"
     },
+    "magicast@0.5.5": {
+      "integrity": "sha512-UicdXN8zQ3JHlxVq+28afMXPr1z7WNY6+7EJnzTdQWkTAlMLF5fNCCKxJHBQwGaNGR11581EiQmQzx73+MvszA==",
+      "dependencies": [
+        "@babel/parser",
+        "@babel/types",
+        "source-map-js"
+      ],
+      "tarball": "https://registry.npmmirror.com/magicast/-/magicast-0.5.5.tgz"
+    },
+    "mrmime@2.0.1": {
+      "integrity": "sha512-Y3wQdFg2Va6etvQ5I82yUhGdsKrcYox6p7FfL1LbK2J4V01F9TGlepTIhnK24t7koZibmg82KGglhA1XK5IsLQ==",
+      "tarball": "https://registry.npmmirror.com/mrmime/-/mrmime-2.0.1.tgz"
+    },
     "nanoid@3.3.19": {
       "integrity": "sha512-Y2tUNy4ouw6tq5oDSKeQYGOyhkUBhNOcGV/02KC+6kd9eDGqdZd++mjMiIDilrBYvjEnCYvVtsuHCuP+okSfug==",
       "bin": true,
@@ -335,6 +461,10 @@
     "obug@2.2.1": {
       "integrity": "sha512-XrsrhT5sybtKI6wakr2SPOlGZWWYbUXZ7a0jT8/QOeAPau+1X/bSegNe5YR75oJmEZQbKningirmGOEJCIk61Q==",
       "tarball": "https://registry.npmmirror.com/obug/-/obug-2.2.1.tgz"
+    },
+    "pathe@2.0.3": {
+      "integrity": "sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==",
+      "tarball": "https://registry.npmmirror.com/pathe/-/pathe-2.0.3.tgz"
     },
     "picocolors@1.1.1": {
       "integrity": "sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==",
@@ -383,6 +513,15 @@
       "integrity": "sha512-ybx0WO1/8bSBLEWXZvEd7gMW3Sn3JFlW3TvX1nREbDLRNQNaeNN8WK0meBwPdAaOI7TtRRRJn/Es1zhrrCHu7g==",
       "tarball": "https://registry.npmmirror.com/siginfo/-/siginfo-2.0.0.tgz"
     },
+    "sirv@3.0.2": {
+      "integrity": "sha512-2wcC/oGxHis/BoHkkPwldgiPSYcpZK3JU28WoMVv55yHJgcZ8rlXvuG9iZggz+sU1d4bRgIGASwyWqjxu3FM0g==",
+      "dependencies": [
+        "@polka/url",
+        "mrmime",
+        "totalist"
+      ],
+      "tarball": "https://registry.npmmirror.com/sirv/-/sirv-3.0.2.tgz"
+    },
     "source-map-js@1.2.1": {
       "integrity": "sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==",
       "tarball": "https://registry.npmmirror.com/source-map-js/-/source-map-js-1.2.1.tgz"
@@ -411,6 +550,14 @@
       ],
       "tarball": "https://registry.npmmirror.com/tinyglobby/-/tinyglobby-0.2.17.tgz"
     },
+    "tinyrainbow@3.1.1": {
+      "integrity": "sha512-yau8yJdTt989Mm0Bd/236QnzEiPf2xLLTqUZRUJOo/3CB078LSwzei343DgtJVmfJKJE3TMINY1u42SQsP6mXw==",
+      "tarball": "https://registry.npmmirror.com/tinyrainbow/-/tinyrainbow-3.1.1.tgz"
+    },
+    "totalist@3.0.1": {
+      "integrity": "sha512-sf4i37nQ2LBx4m3wB74y+ubopq6W/dIzXg0FDGjsYnZHVa1Da8FH853wlL2gtUhg+xJXjfk3kUZS3BRoQeoQBQ==",
+      "tarball": "https://registry.npmmirror.com/totalist/-/totalist-3.0.1.tgz"
+    },
     "vite@8.3.0": {
       "integrity": "sha512-lhZBVvEHefgE+HQZC9O7EBJgCU/nVzFNl7vkS4RE0APtWLP02/8QVIkQtzBxPquh7lq5/78NHipTj7ODQ6XuyQ==",
       "dependencies": [
@@ -426,11 +573,13 @@
       "bin": true,
       "tarball": "https://registry.npmmirror.com/vite/-/vite-8.3.0.tgz"
     },
-    "vitest@5.0.1_vite@8.3.0": {
+    "vitest@5.0.1_@vitest+coverage-v8@5.0.1_@vitest+ui@5.0.1": {
       "integrity": "sha512-iA95lQbKEkvrtTkdAgnWbXfbipWiiWe/hDl2P5tMi6WFwD76G0NxXAGp/M9EOcYupeGJRr6wppMc7CoA41TQjg==",
       "dependencies": [
         "@types/chai",
+        "@vitest/coverage-v8",
         "@vitest/mocker",
+        "@vitest/ui",
         "chai",
         "es-module-lexer",
         "expect-type",
@@ -443,6 +592,10 @@
         "tinyglobby",
         "vite",
         "why-is-node-running"
+      ],
+      "optionalPeers": [
+        "@vitest/coverage-v8",
+        "@vitest/ui"
       ],
       "bin": true,
       "tarball": "https://registry.npmmirror.com/vitest/-/vitest-5.0.1.tgz"
@@ -460,6 +613,7 @@
   "workspace": {
     "dependencies": [
       "npm:@deno/vite-plugin@^2.0.3",
+      "npm:@vitest/coverage-v8@5.0.1",
       "npm:vitest@^5.0.1"
     ]
   }
