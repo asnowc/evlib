@@ -41,6 +41,9 @@
   "publish": {
     "include": ["LICENSE", "README.md", "src/**/*.ts"]
   },
+  "test": {
+    "include": []
+  },
   "compilerOptions": { "lib": ["esnext", "deno.window"] },
   "nodeModulesDir": "manual",
   "fmt": {
