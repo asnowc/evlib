@@ -17,5 +17,6 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
+      - run: deno ci
       - name: Publish-Jsr
         run: deno publish
