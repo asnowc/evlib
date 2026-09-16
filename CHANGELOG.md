@@ -1,5 +1,14 @@
 ## 3.x
 
+### 3.1.4
+
+##### async
+
+fix: 修复 ResourcePool 关闭期间连接创建失败导致 Promise 悬挂的问题
+fix: 修复关闭连接池时借用连接、排队请求和被移除连接的收尾流程
+feat: 新增 ResourcePool.destroy()，支持立即断开并清理所有连接
+fix: 修复 usageLimit 与排队连接交接时的连接淘汰逻辑
+
 ### 3.0.0
 
 ##### math
