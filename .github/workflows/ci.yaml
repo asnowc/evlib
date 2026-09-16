@@ -14,6 +14,7 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
+      - run: deno ci
       - name: Unit test
         run: deno task ci:test
   check:
@@ -25,6 +26,7 @@ jobs:
           deno-version: v2.x
       - run: deno ci
       - name: Check type
+        if: always()
         run: deno task check-type-src
       - name: Check type
         if: always()
